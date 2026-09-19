@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Entrar | Painel Luana Coin</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4efe4;
+    --black:#111111;
+    --blue:#2b6fff;
+    --orange:#ff6a2b;
+    --lime:#c3f53a;
+    --magenta:#ff3da6;
+    --white:#ffffff;
+    --shadow-hard: 5px 5px 0 var(--black);
+    --radius: 12px;
+    --ff-body: 'Poppins', sans-serif;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(rgba(17,17,17,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(17,17,17,.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+    font-family:var(--ff-body);
+    color:var(--black);
+  }
+  a{ color:inherit; }
+  .card{
+    width:100%;
+    max-width:360px;
+    background:var(--white);
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-hard);
+    padding:32px 28px;
+  }
+  .brand{
+    font-weight:700;
+    font-size:1.1rem;
+    margin-bottom:4px;
+  }
+  .sub{
+    font-size:.85rem;
+    opacity:.7;
+    margin-bottom:24px;
+  }
+  label{
+    display:block;
+    font-size:.82rem;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .field{ margin-bottom:16px; }
+  input{
+    width:100%;
+    padding:10px 12px;
+    font-family:inherit;
+    font-size:.95rem;
+    border:2px solid var(--black);
+    border-radius:8px;
+    background:var(--paper);
+  }
+  input:focus-visible{
+    outline:3px solid var(--blue);
+    outline-offset:2px;
+  }
+  button{
+    width:100%;
+    font-family:inherit;
+    font-weight:700;
+    font-size:.92rem;
+    padding:12px;
+    border-radius:999px;
+    border:2px solid var(--black);
+    background:var(--lime);
+    color:var(--black);
+    cursor:pointer;
+    box-shadow:3px 3px 0 var(--black);
+    transition:transform .12s ease;
+  }
+  button:hover{ transform:translate(-1px,-1px); }
+  button:disabled{ opacity:.6; cursor:default; }
+  button:focus-visible{ outline:3px solid var(--blue); outline-offset:2px; }
+  .faixa{
+    margin-top:14px;
+    padding:10px 12px;
+    border-radius:8px;
+    border:2px solid var(--black);
+    font-size:.85rem;
+    font-weight:600;
+    display:none;
+  }
+  .faixa.erro{ background:#ffd9d9; display:block; }
+  .faixa.ok{ background:var(--lime); display:block; }
+  .links{
+    margin-top:18px;
+    text-align:center;
+    font-size:.82rem;
+  }
+  .links button.link{
+    background:none;
+    border:none;
+    box-shadow:none;
+    width:auto;
+    padding:0;
+    font-weight:600;
+    text-decoration:underline;
+    color:var(--blue);
+    font-size:.82rem;
+  }
+  .links button.link:hover{ transform:none; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="brand">Painel Luana Coin</p>
+  <p class="sub">Entre com seu e-mail e senha.</p>
+
+  <form id="formLogin">
+    <div class="field">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" name="email" required autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" name="senha" required autocomplete="current-password">
+    </div>
+    <button type="submit" id="btnEntrar">Entrar</button>
+    <p class="faixa" id="faixa" role="status"></p>
+  </form>
+
+  <p class="links">
+    <button type="button" class="link" id="btnEsqueci">Esqueci minha senha</button>
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/banco.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var form = document.getElementById("formLogin");
+  var faixa = document.getElementById("faixa");
+  var btnEntrar = document.getElementById("btnEntrar");
+  var btnEsqueci = document.getElementById("btnEsqueci");
+  var campoEmail = document.getElementById("email");
+  var campoSenha = document.getElementById("senha");
+
+  function mostrarFaixa(texto, tipo){
+    faixa.textContent = texto;
+    faixa.className = "faixa " + tipo;
+  }
+
+  function esconderFaixa(){
+    faixa.className = "faixa";
+    faixa.textContent = "";
+  }
+
+  // Se já tiver sessão aberta, manda direto para o admin.
+  banco.auth.getSession().then(function(resultado){
+    if(resultado.data && resultado.data.session){
+      window.location.href = "../admin/";
+    }
+  });
+
+  form.addEventListener("submit", async function(evento){
+    evento.preventDefault();
+    esconderFaixa();
+    btnEntrar.disabled = true;
+    btnEntrar.textContent = "Entrando...";
+
+    var resultado = await banco.auth.signInWithPassword({
+      email: campoEmail.value.trim(),
+      password: campoSenha.value
+    });
+
+    btnEntrar.disabled = false;
+    btnEntrar.textContent = "Entrar";
+
+    if(resultado.error){
+      mostrarFaixa("E-mail ou senha incorretos.", "erro");
+      return;
+    }
+
+    window.location.href = "../admin/";
+  });
+
+  btnEsqueci.addEventListener("click", async function(){
+    esconderFaixa();
+    var email = campoEmail.value.trim();
+    if(!email){
+      mostrarFaixa("Digite seu e-mail no campo acima primeiro.", "erro");
+      campoEmail.focus();
+      return;
+    }
+
+    btnEsqueci.disabled = true;
+    var resultado = await banco.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.href
+    });
+    btnEsqueci.disabled = false;
+
+    if(resultado.error){
+      mostrarFaixa("Não consegui enviar o e-mail de recuperação. Tente de novo.", "erro");
+      return;
+    }
+
+    mostrarFaixa("Enviei um e-mail de recuperação para " + email + ".", "ok");
+  });
+})();
+</script>
+</body>
+</html>

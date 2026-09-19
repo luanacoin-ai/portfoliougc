@@ -629,6 +629,16 @@
   .work-title{ font-family:var(--ff-display); font-size:.95rem; text-transform:none; margin-bottom:4px; }
   .work-brand{ font-size:.85rem; font-weight:600; opacity:.75; margin-bottom:8px; }
   .work-desc{ font-size:.88rem; opacity:.85; }
+  .vazio-portfolio{
+    grid-column:1 / -1;
+    text-align:center;
+    padding:32px 16px;
+    border:3px dashed var(--black);
+    border-radius:var(--radius);
+    font-family:var(--ff-hand);
+    font-size:1.2rem;
+    opacity:.7;
+  }
 
   /* ====== SERVIÇOS ====== */
   .services{ background:var(--paper-2); }
@@ -1120,6 +1130,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/banco.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1143,53 +1155,15 @@
     "Marca 07", "Marca 08", "Marca 09", "Marca 10", "Marca 11", "Marca 12"
   ];
 
-  // Conteudos de destaque (3 videos em formato 9:16).
-  // videoUrl: troque "#" pelo link real do video (YouTube, TikTok, Instagram etc).
-  // capaGradiente: classe css opcional, ou troque o bloco no HTML por uma imagem real de capa.
-  var destaques = [
-    {
-      videoUrl: "#", // TROQUE: link do video 1
-      capa: "linear-gradient(160deg, var(--blue), var(--magenta))", // TROQUE: pode virar uma <img> de capa 9:16
-      numero: "2,4M",
-      rotulo: "views no Reels",
-      titulo: "Rotina de skincare noturna",
-      contexto: "Vídeo para lançamento de linha facial"
-    },
-    {
-      videoUrl: "#", // TROQUE: link do video 2
-      capa: "linear-gradient(160deg, var(--orange), var(--lime))",
-      numero: "980 mil",
-      rotulo: "views no TikTok",
-      titulo: "Unboxing de kit de maternidade",
-      contexto: "Primeira impressão de uma caixa completa"
-    },
-    {
-      videoUrl: "#", // TROQUE: link do video 3
-      capa: "linear-gradient(160deg, var(--magenta), var(--orange))",
-      numero: "1,1M",
-      rotulo: "views no Reels",
-      titulo: "Teste de acessório para pet",
-      contexto: "Uso real do produto no dia a dia do pet"
-    }
-  ];
-
   // Nichos disponiveis para o filtro (a primeira opcao "Todos" e adicionada automaticamente).
   var nichos = ["Beleza", "Skincare", "Casa e Decoração", "Maternidade", "Pet", "Tech"];
 
-  // Trabalhos do portfolio. O campo "nicho" precisa bater com um dos itens do array nichos.
-  var trabalhos = [
-    { nicho: "Beleza", marca: "AVON", titulo: "Resenha de batom líquido", descricao: "Vídeo de resenha mostrando textura, cor e fixação do produto.", formato: "vídeo vertical 9:16" },
-    { nicho: "Beleza", marca: "Marca 03", titulo: "Tutorial de maquiagem rápida", descricao: "Passo a passo de maquiagem para o dia a dia em menos de um minuto.", formato: "vídeo vertical 9:16" },
-    { nicho: "Skincare", marca: "Marca 04", titulo: "Rotina de skincare matinal", descricao: "Sequência de produtos usados pela manhã, com comentários espontâneos.", formato: "vídeo vertical 9:16" },
-    { nicho: "Skincare", marca: "Marca 05", titulo: "Antes e depois de hidratação", descricao: "Registro fotográfico do efeito do produto após duas semanas de uso.", formato: "foto 4:5" },
-    { nicho: "Casa e Decoração", marca: "Marca 06", titulo: "Organização de sala de estar", descricao: "Vídeo mostrando um item de decoração sendo usado no ambiente real.", formato: "vídeo vertical 9:16" },
-    { nicho: "Casa e Decoração", marca: "Marca 07", titulo: "Ensaio de objeto decorativo", descricao: "Fotos do produto compondo diferentes cantos da casa.", formato: "foto 1:1" },
-    { nicho: "Maternidade", marca: "Marca 08", titulo: "Unboxing de kit de maternidade", descricao: "Abertura de caixa com reação genuína e comentários sobre cada item.", formato: "vídeo vertical 9:16" },
-    { nicho: "Maternidade", marca: "Marca 09", titulo: "Rotina com bebê usando o produto", descricao: "Registro do produto sendo usado na rotina real com o bebê.", formato: "vídeo vertical 9:16" },
-    { nicho: "Pet", marca: "Marca 10", titulo: "Teste de acessório para pet", descricao: "Reação do pet ao experimentar o produto pela primeira vez.", formato: "vídeo vertical 9:16" },
-    { nicho: "Pet", marca: "Marca 11", titulo: "Ensaio fotográfico pet friendly", descricao: "Fotos do pet interagindo com o produto em ambiente natural.", formato: "foto 4:5" },
-    { nicho: "Tech", marca: "ZOSS", titulo: "Unboxing de acessório tech", descricao: "Abertura de caixa e primeiras impressões sobre o acessório.", formato: "vídeo vertical 9:16" },
-    { nicho: "Tech", marca: "Marca 12", titulo: "Teste de uso no dia a dia", descricao: "Uso do produto tech em situações reais ao longo do dia.", formato: "vídeo vertical 9:16" }
+  // Degrades de capa usados nos cards de video, em sequencia (nao vem do banco).
+  var CAPAS_VIDEO = [
+    "linear-gradient(160deg, var(--blue), var(--magenta))",
+    "linear-gradient(160deg, var(--orange), var(--lime))",
+    "linear-gradient(160deg, var(--magenta), var(--orange))",
+    "linear-gradient(150deg, var(--blue), var(--lime))"
   ];
 
   // Servicos oferecidos.
@@ -1253,53 +1227,74 @@
     brandTrack.appendChild(el("span", null, nome));
   });
 
-  // Destaques
+  // Destaques e trabalhos por nicho: os videos vem do banco (tabela "videos"),
+  // nao de um array fixo. Assim, quando voce edita ou adiciona um video no
+  // admin, ele aparece aqui sozinho, sem precisar publicar o site de novo.
   var destaquesGrid = document.getElementById("destaquesGrid");
-  destaques.forEach(function(item){
-    var card = el("a", "destaque-card reveal");
-    card.href = item.videoUrl;
-    card.target = "_blank";
-    card.rel = "noopener";
-    card.setAttribute("aria-label", item.titulo + ", abrir vídeo");
-
-    var cover = el("div", "destaque-cover");
-    cover.style.background = item.capa;
-    var play = el("span", "play-btn");
-    play.setAttribute("aria-hidden", "true");
-    cover.appendChild(play);
-    cover.appendChild(el("span", "cover-label", "capa vertical 9:16"));
-    card.appendChild(cover);
-
-    var body = el("div", "destaque-body");
-    body.appendChild(el("span", "destaque-number", "+" + item.numero));
-    body.appendChild(el("span", "destaque-label", item.rotulo));
-    body.appendChild(el("h3", "destaque-title", item.titulo));
-    body.appendChild(el("p", "destaque-context", item.contexto));
-    card.appendChild(body);
-
-    destaquesGrid.appendChild(card);
-  });
-
-  // Filtros de nicho
   var filterBar = document.getElementById("filterBar");
   var workGrid = document.getElementById("workGrid");
   var todosOs = ["Todos"].concat(nichos);
+  var videosCarregados = [];
+
+  function renderDestaques(videos){
+    destaquesGrid.innerHTML = "";
+    if(videos.length === 0){
+      destaquesGrid.appendChild(el("p", "vazio-portfolio", "Em breve, os vídeos de destaque aparecem aqui."));
+      return;
+    }
+    videos.slice(0, 3).forEach(function(item, indice){
+      var card = el("a", "destaque-card reveal");
+      card.href = item.link || "#";
+      card.target = "_blank";
+      card.rel = "noopener";
+      card.setAttribute("aria-label", item.titulo + ", abrir vídeo");
+
+      var cover = el("div", "destaque-cover");
+      cover.style.background = CAPAS_VIDEO[indice % CAPAS_VIDEO.length];
+      var play = el("span", "play-btn");
+      play.setAttribute("aria-hidden", "true");
+      cover.appendChild(play);
+      cover.appendChild(el("span", "cover-label", "capa vertical 9:16"));
+      card.appendChild(cover);
+
+      var body = el("div", "destaque-body");
+      if(item.destaque){ body.appendChild(el("span", "destaque-number", item.destaque)); }
+      body.appendChild(el("span", "destaque-label", item.marca || item.nicho || ""));
+      body.appendChild(el("h3", "destaque-title", item.titulo));
+      body.appendChild(el("p", "destaque-context", item.formato || ""));
+      card.appendChild(body);
+
+      destaquesGrid.appendChild(card);
+    });
+  }
 
   function renderWorkGrid(filtro){
     workGrid.innerHTML = "";
-    trabalhos.forEach(function(item){
-      if(filtro !== "Todos" && item.nicho !== filtro) return;
+    var lista = videosCarregados.filter(function(item){
+      return filtro === "Todos" || item.nicho === filtro;
+    });
+
+    if(videosCarregados.length === 0){
+      workGrid.appendChild(el("p", "vazio-portfolio", "Em breve, os trabalhos aparecem aqui."));
+      return;
+    }
+    if(lista.length === 0){
+      workGrid.appendChild(el("p", "vazio-portfolio", "Nenhum trabalho nesse nicho ainda."));
+      return;
+    }
+
+    lista.forEach(function(item, indice){
       var card = el("div", "work-card");
       var cover = el("div", "work-cover");
-      cover.style.background = "linear-gradient(150deg, var(--blue), var(--lime))";
-      cover.appendChild(el("span", null, item.formato));
+      cover.style.background = CAPAS_VIDEO[indice % CAPAS_VIDEO.length];
+      cover.appendChild(el("span", null, item.formato || ""));
       card.appendChild(cover);
 
       var info = el("div", "work-info");
       info.appendChild(el("span", "work-niche", item.nicho));
       info.appendChild(el("h3", "work-title", item.titulo));
-      info.appendChild(el("p", "work-brand", item.marca));
-      info.appendChild(el("p", "work-desc", item.descricao));
+      info.appendChild(el("p", "work-brand", item.marca || ""));
+      info.appendChild(el("p", "work-desc", item.destaque || item.formato || ""));
       card.appendChild(info);
 
       workGrid.appendChild(card);
@@ -1319,7 +1314,31 @@
     });
     filterBar.appendChild(btn);
   });
-  renderWorkGrid("Todos");
+
+  // Busca os videos visiveis no banco. Se der qualquer problema (banco fora
+  // do ar, tabela ainda nao criada, etc), o site continua funcionando e so
+  // mostra um aviso simples no lugar dos videos, sem quebrar o resto.
+  function carregarVideosDoPortfolio(){
+    if(!window.banco){
+      renderDestaques([]);
+      renderWorkGrid("Todos");
+      return;
+    }
+    banco.from("videos").select("*").eq("visivel", true).order("ordem", { ascending: true })
+      .then(function(resultado){
+        if(resultado.error) throw resultado.error;
+        videosCarregados = resultado.data || [];
+        renderDestaques(videosCarregados);
+        renderWorkGrid("Todos");
+      })
+      .catch(function(erro){
+        console.error("Não consegui carregar os vídeos do banco:", erro);
+        videosCarregados = [];
+        renderDestaques([]);
+        renderWorkGrid("Todos");
+      });
+  }
+  carregarVideosDoPortfolio();
 
   // Servicos
   var serviceGrid = document.getElementById("serviceGrid");
@@ -1466,6 +1485,22 @@
       contactForm.reportValidity();
       return;
     }
+
+    // Salva a marca como "lead" na sua base. Se o banco falhar por qualquer
+    // motivo, a pessoa que preencheu o formulário ainda assim ve a confirmacao
+    // normalmente, sem susto, e o erro fica so no console para voce investigar.
+    if(window.banco){
+      banco.from("marcas").insert({
+        nome: document.getElementById("nome").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        obs: document.getElementById("mensagem").value.trim(),
+        situacao: "lead",
+        ultimo_contato: new Date().toISOString().slice(0, 10)
+      }).then(function(resultado){
+        if(resultado.error) console.error("Não consegui salvar o contato:", resultado.error);
+      }).catch(function(erro){ console.error("Não consegui salvar o contato:", erro); });
+    }
+
     formMsg.hidden = false;
     contactForm.reset();
   });
@@ -1519,6 +1554,29 @@
     captureForm.reset();
     setTimeout(fecharCaptura, 2200);
   });
+
+  /* =========================================================================
+     REGISTRO SIMPLES DE VISITA
+     Uma linha por carregamento de pagina, so para as metricas do admin.
+     Nao usa nenhum servico de fora e nao pede nada para quem visita.
+  ========================================================================= */
+  async function registrarVisita(){
+    if(!window.banco) return;
+    var origem = "Direto";
+    if(document.referrer){
+      try{ origem = new URL(document.referrer).hostname; } catch(erro){ origem = "Direto"; }
+    }
+    try{
+      var resultado = await banco.from("visitas").insert({
+        pagina: window.location.pathname,
+        origem: origem
+      });
+      if(resultado.error) console.error("Não consegui registrar a visita:", resultado.error);
+    }catch(erro){
+      console.error("Não consegui registrar a visita:", erro);
+    }
+  }
+  registrarVisita();
 
 })();
 </script>
