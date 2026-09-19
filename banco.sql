@@ -138,22 +138,30 @@ alter table public.marcados enable row level security;
 alter table public.visitas enable row level security;
 
 
+-- Cada policy é apagada antes de ser recriada ("drop policy if exists"),
+-- para este arquivo poder ser rodado de novo no futuro sem dar erro de
+-- "já existe".
+
 -- ---------- videos ----------
 -- Qualquer pessoa pode ler os vídeos visíveis (para o site funcionar).
 -- Você, logada, pode ler todos (visíveis ou não, para editar no admin).
+drop policy if exists "videos_select_publico_ou_logada" on public.videos;
 create policy "videos_select_publico_ou_logada"
   on public.videos for select
   using ( visivel = true or auth.role() = 'authenticated' );
 
 -- Só você, logada, pode adicionar, editar ou apagar vídeos.
+drop policy if exists "videos_insert_somente_logada" on public.videos;
 create policy "videos_insert_somente_logada"
   on public.videos for insert
   with check ( auth.role() = 'authenticated' );
 
+drop policy if exists "videos_update_somente_logada" on public.videos;
 create policy "videos_update_somente_logada"
   on public.videos for update
   using ( auth.role() = 'authenticated' );
 
+drop policy if exists "videos_delete_somente_logada" on public.videos;
 create policy "videos_delete_somente_logada"
   on public.videos for delete
   using ( auth.role() = 'authenticated' );
@@ -161,20 +169,24 @@ create policy "videos_delete_somente_logada"
 
 -- ---------- marcas ----------
 -- Só você, logada, pode ler a sua base de contatos.
+drop policy if exists "marcas_select_somente_logada" on public.marcas;
 create policy "marcas_select_somente_logada"
   on public.marcas for select
   using ( auth.role() = 'authenticated' );
 
 -- Qualquer pessoa pode inserir (é o formulário de contato do portfólio).
+drop policy if exists "marcas_insert_qualquer_pessoa" on public.marcas;
 create policy "marcas_insert_qualquer_pessoa"
   on public.marcas for insert
   with check ( true );
 
 -- Só você, logada, pode editar ou apagar.
+drop policy if exists "marcas_update_somente_logada" on public.marcas;
 create policy "marcas_update_somente_logada"
   on public.marcas for update
   using ( auth.role() = 'authenticated' );
 
+drop policy if exists "marcas_delete_somente_logada" on public.marcas;
 create policy "marcas_delete_somente_logada"
   on public.marcas for delete
   using ( auth.role() = 'authenticated' );
@@ -182,18 +194,22 @@ create policy "marcas_delete_somente_logada"
 
 -- ---------- calendario ----------
 -- Só você, logada, pode ler, adicionar, editar ou apagar.
+drop policy if exists "calendario_select_somente_logada" on public.calendario;
 create policy "calendario_select_somente_logada"
   on public.calendario for select
   using ( auth.role() = 'authenticated' );
 
+drop policy if exists "calendario_insert_somente_logada" on public.calendario;
 create policy "calendario_insert_somente_logada"
   on public.calendario for insert
   with check ( auth.role() = 'authenticated' );
 
+drop policy if exists "calendario_update_somente_logada" on public.calendario;
 create policy "calendario_update_somente_logada"
   on public.calendario for update
   using ( auth.role() = 'authenticated' );
 
+drop policy if exists "calendario_delete_somente_logada" on public.calendario;
 create policy "calendario_delete_somente_logada"
   on public.calendario for delete
   using ( auth.role() = 'authenticated' );
@@ -201,18 +217,22 @@ create policy "calendario_delete_somente_logada"
 
 -- ---------- campanhas ----------
 -- Só você, logada, pode ler, adicionar, editar ou apagar.
+drop policy if exists "campanhas_select_somente_logada" on public.campanhas;
 create policy "campanhas_select_somente_logada"
   on public.campanhas for select
   using ( auth.role() = 'authenticated' );
 
+drop policy if exists "campanhas_insert_somente_logada" on public.campanhas;
 create policy "campanhas_insert_somente_logada"
   on public.campanhas for insert
   with check ( auth.role() = 'authenticated' );
 
+drop policy if exists "campanhas_update_somente_logada" on public.campanhas;
 create policy "campanhas_update_somente_logada"
   on public.campanhas for update
   using ( auth.role() = 'authenticated' );
 
+drop policy if exists "campanhas_delete_somente_logada" on public.campanhas;
 create policy "campanhas_delete_somente_logada"
   on public.campanhas for delete
   using ( auth.role() = 'authenticated' );
@@ -220,18 +240,22 @@ create policy "campanhas_delete_somente_logada"
 
 -- ---------- marcados ----------
 -- Só você, logada, pode ler, marcar ou desmarcar itens do checklist.
+drop policy if exists "marcados_select_somente_logada" on public.marcados;
 create policy "marcados_select_somente_logada"
   on public.marcados for select
   using ( auth.role() = 'authenticated' );
 
+drop policy if exists "marcados_insert_somente_logada" on public.marcados;
 create policy "marcados_insert_somente_logada"
   on public.marcados for insert
   with check ( auth.role() = 'authenticated' );
 
+drop policy if exists "marcados_update_somente_logada" on public.marcados;
 create policy "marcados_update_somente_logada"
   on public.marcados for update
   using ( auth.role() = 'authenticated' );
 
+drop policy if exists "marcados_delete_somente_logada" on public.marcados;
 create policy "marcados_delete_somente_logada"
   on public.marcados for delete
   using ( auth.role() = 'authenticated' );
@@ -239,15 +263,18 @@ create policy "marcados_delete_somente_logada"
 
 -- ---------- visitas ----------
 -- Qualquer pessoa pode inserir (é o registro de visita do portfólio).
+drop policy if exists "visitas_insert_qualquer_pessoa" on public.visitas;
 create policy "visitas_insert_qualquer_pessoa"
   on public.visitas for insert
   with check ( true );
 
 -- Só você, logada, pode ler ou apagar os registros de visita.
+drop policy if exists "visitas_select_somente_logada" on public.visitas;
 create policy "visitas_select_somente_logada"
   on public.visitas for select
   using ( auth.role() = 'authenticated' );
 
+drop policy if exists "visitas_delete_somente_logada" on public.visitas;
 create policy "visitas_delete_somente_logada"
   on public.visitas for delete
   using ( auth.role() = 'authenticated' );
@@ -263,6 +290,12 @@ create policy "visitas_delete_somente_logada"
 -- Os vídeos de exemplo entram como "visivel = false", ou seja, NÃO aparecem
 -- no seu site publicado, só no admin, até você criar e marcar os seus de
 -- verdade como visíveis.
+--
+-- Atenção: diferente das tabelas e das travas acima, estas linhas NÃO são
+-- seguras de rodar duas vezes. Se você já rodou este arquivo antes, pule
+-- direto para o próximo bloco (SEUS 3 VÍDEOS DE DESTAQUE), ou vai ficar
+-- com linhas de exemplo repetidas (o que não quebra nada, só fica
+-- bagunçado, e dá pra apagar as repetidas direto pelo admin).
 -- ============================================================================
 
 insert into public.videos (titulo, link, nicho, formato, marca, destaque, ordem, visivel)
