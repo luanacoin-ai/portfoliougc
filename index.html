@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Luana Coin | Portfólio UGC Creator</title>
+<meta name="description" content="Portfólio de Luana Coin, criadora de conteúdo UGC para marcas de beleza, skincare, casa, maternidade, pet e tech.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@600;700&family=Permanent+Marker&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ====== TOKENS DE COR E TIPOGRAFIA (Sticker Bomb v2) ====== */
+  :root{
+    --paper:#f4efe4;
+    --paper-2:#eae2d0;
+    --black:#111111;
+    --blue:#2b6fff;
+    --orange:#ff6a2b;
+    --lime:#c3f53a;
+    --magenta:#ff3da6;
+    --white:#ffffff;
+    --shadow-hard: 6px 6px 0 var(--black);
+    --shadow-hard-sm: 4px 4px 0 var(--black);
+    --shadow-hard-lg: 10px 10px 0 var(--black);
+    --radius: 14px;
+    --ff-display: 'Archivo Black', sans-serif;
+    --ff-hand: 'Caveat', cursive;
+    --ff-marker: 'Permanent Marker', cursive;
+    --ff-body: 'Poppins', sans-serif;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+  }
+
+  body{
+    margin:0;
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(rgba(17,17,17,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(17,17,17,.05) 1px, transparent 1px);
+    background-size: 36px 36px;
+    color:var(--black);
+    font-family:var(--ff-body);
+    line-height:1.5;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  img, svg{ display:block; max-width:100%; }
+
+  a{ color:inherit; text-decoration:none; }
+
+  ul{ margin:0; padding:0; list-style:none; }
+
+  h1,h2,h3,h4{ font-family:var(--ff-display); line-height:1.1; margin:0; text-transform:uppercase; }
+
+  p{ margin:0; }
+
+  button{ font-family:inherit; cursor:pointer; }
+
+  input, textarea{ font-family:inherit; font-size:1rem; }
+
+  .container{
+    width:100%;
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 20px;
+  }
+
+  section{ position:relative; padding:90px 0; }
+
+  /* foco visivel para acessibilidade */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible{
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .skip-link{
+    position:absolute;
+    left:-999px;
+    top:0;
+    background:var(--black);
+    color:var(--white);
+    padding:12px 18px;
+    z-index:1000;
+    border-radius:0 0 8px 0;
+  }
+  .skip-link:focus{ left:0; }
+
+  .eyebrow{
+    display:inline-block;
+    font-family:var(--ff-marker);
+    font-size:1rem;
+    color:var(--white);
+    background:var(--black);
+    padding:6px 16px;
+    border-radius:999px;
+    transform:rotate(-3deg);
+    margin-bottom:16px;
+    border:2px solid var(--black);
+  }
+
+  .section-title{
+    font-size:clamp(2rem, 5vw, 3.2rem);
+    margin-bottom:14px;
+  }
+
+  .section-sub{
+    font-family:var(--ff-hand);
+    font-size:1.5rem;
+    color:var(--blue);
+    display:block;
+    margin-bottom:28px;
+  }
+
+  .section-head{
+    max-width:640px;
+    margin-bottom:56px;
+  }
+
+  .sticker{
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-hard);
+    background:var(--white);
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-family:var(--ff-display);
+    font-size:.95rem;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    padding:16px 28px;
+    border-radius:999px;
+    border:3px solid var(--black);
+    box-shadow:var(--shadow-hard-sm);
+    background:var(--lime);
+    color:var(--black);
+    transition:transform .15s ease, box-shadow .15s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{
+    transform:translate(-2px,-2px);
+    box-shadow:6px 6px 0 var(--black);
+  }
+  .btn:active{
+    transform:translate(0,0);
+    box-shadow:2px 2px 0 var(--black);
+  }
+  .btn-alt{ background:var(--orange); color:var(--white); }
+  .btn-blue{ background:var(--blue); color:var(--white); }
+  .btn-outline{ background:var(--white); }
+  .btn-block{ width:100%; }
+
+  @media (prefers-reduced-motion: reduce){
+    .btn{ transition:none; }
+    .btn:hover{ transform:none; }
+  }
+
+  /* ====== NAV ====== */
+  .nav{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:500;
+    background:var(--paper);
+    border-bottom:3px solid var(--black);
+  }
+  .nav-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 20px;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .nav-logo{
+    font-family:var(--ff-display);
+    font-size:1.3rem;
+    text-transform:uppercase;
+    background:var(--black);
+    color:var(--white);
+    padding:8px 14px;
+    border-radius:8px;
+    transform:rotate(-2deg);
+  }
+  .nav-links{
+    display:flex;
+    gap:6px;
+  }
+  .nav-links a{
+    font-family:var(--ff-display);
+    font-size:.8rem;
+    text-transform:uppercase;
+    padding:10px 14px;
+    border-radius:999px;
+    border:2px solid transparent;
+  }
+  .nav-links a:hover,
+  .nav-links a:focus-visible{
+    border-color:var(--black);
+    background:var(--lime);
+  }
+  .nav-toggle{
+    display:none;
+    width:46px;
+    height:46px;
+    border:3px solid var(--black);
+    border-radius:8px;
+    background:var(--white);
+    box-shadow:var(--shadow-hard-sm);
+    position:relative;
+  }
+  .nav-toggle span,
+  .nav-toggle span::before,
+  .nav-toggle span::after{
+    content:'';
+    position:absolute;
+    left:10px; right:10px;
+    height:3px;
+    background:var(--black);
+    transition:transform .2s ease, opacity .2s ease;
+  }
+  .nav-toggle span{ top:22px; }
+  .nav-toggle span::before{ top:-8px; }
+  .nav-toggle span::after{ top:8px; }
+  .nav-toggle[aria-expanded="true"] span{ background:transparent; }
+  .nav-toggle[aria-expanded="true"] span::before{ transform:translateY(8px) rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] span::after{ transform:translateY(-8px) rotate(-45deg); }
+
+  @media (max-width: 860px){
+    .nav-links{
+      position:absolute;
+      top:100%; left:0; right:0;
+      flex-direction:column;
+      background:var(--paper);
+      border-bottom:3px solid var(--black);
+      padding:10px 20px 20px;
+      gap:4px;
+      display:none;
+    }
+    .nav-links.open{ display:flex; }
+    .nav-links a{ padding:14px; text-align:center; }
+    .nav-toggle{ display:block; }
+  }
+
+  /* ====== HERO / CAPA ====== */
+  .hero{
+    padding-top:150px;
+    padding-bottom:60px;
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:48px;
+    align-items:center;
+  }
+  .hero-name{
+    font-size:clamp(2.6rem, 8vw, 5.4rem);
+    letter-spacing:-.01em;
+  }
+  .hero-name .hi{
+    color:var(--white);
+    -webkit-text-stroke:2px var(--black);
+    text-shadow:4px 4px 0 var(--blue);
+  }
+  .hero-tag{
+    font-family:var(--ff-hand);
+    color:var(--black);
+    background:var(--lime);
+    display:inline-block;
+    padding:2px 10px;
+    transform:rotate(-1deg);
+    border-radius:6px;
+    margin:18px 0 8px;
+  }
+  .hero-desc{
+    font-size:1.1rem;
+    max-width:520px;
+    margin-bottom:28px;
+  }
+  .hero-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    margin-bottom:40px;
+  }
+  .hero-photo{
+    aspect-ratio:4/5;
+    border-radius:var(--radius);
+    border:3px solid var(--black);
+    box-shadow:var(--shadow-hard-lg);
+    background:linear-gradient(150deg, var(--blue), var(--magenta) 55%, var(--orange));
+    display:flex;
+    align-items:flex-end;
+    padding:18px;
+    position:relative;
+    transform:rotate(2deg);
+  }
+  .hero-photo::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.15) 0 12px, transparent 12px 24px);
+    border-radius:calc(var(--radius) - 3px);
+  }
+  .hero-photo span{
+    position:relative;
+    font-family:var(--ff-marker);
+    color:var(--white);
+    background:rgba(17,17,17,.55);
+    padding:8px 12px;
+    border-radius:8px;
+    font-size:.9rem;
+  }
+  .hero-badge{
+    position:absolute;
+    top:-18px;
+    right:-18px;
+    background:var(--magenta);
+    color:var(--white);
+    font-family:var(--ff-marker);
+    font-size:.85rem;
+    padding:10px 14px;
+    border-radius:50%;
+    border:3px solid var(--black);
+    box-shadow:var(--shadow-hard-sm);
+    transform:rotate(8deg);
+    text-align:center;
+    width:96px;
+    height:96px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .hero-stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+  }
+  .stat-card{
+    background:var(--white);
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-hard-sm);
+    padding:18px 14px;
+    text-align:center;
+  }
+  .stat-num{
+    font-family:var(--ff-display);
+    font-size:1.8rem;
+    color:var(--blue);
+  }
+  .stat-label{
+    font-size:.8rem;
+    margin-top:4px;
+    font-weight:600;
+  }
+
+  @media (max-width: 860px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .hero-photo{ max-width:320px; margin:0 auto; }
+  }
+
+  .brand-strip{
+    margin-top:70px;
+    border-top:3px solid var(--black);
+    border-bottom:3px solid var(--black);
+    background:var(--black);
+    padding:16px 0;
+    overflow:hidden;
+  }
+  .brand-track{
+    display:flex;
+    gap:48px;
+    width:max-content;
+    animation:scrollBrands 22s linear infinite;
+  }
+  @keyframes scrollBrands{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .brand-track{ animation:none; flex-wrap:wrap; }
+  }
+  .brand-track span{
+    font-family:var(--ff-display);
+    color:var(--white);
+    font-size:1.1rem;
+    text-transform:uppercase;
+    opacity:.85;
+    white-space:nowrap;
+  }
+
+  /* ====== SOBRE ====== */
+  .about{ background:var(--paper-2); }
+  .about-grid{
+    display:grid;
+    grid-template-columns:.8fr 1.2fr;
+    gap:56px;
+    align-items:center;
+  }
+  .about-photo{
+    aspect-ratio:1/1;
+    border-radius:var(--radius);
+    border:3px solid var(--black);
+    box-shadow:var(--shadow-hard-lg);
+    background:linear-gradient(160deg, var(--orange), var(--lime));
+    display:flex;
+    align-items:flex-end;
+    padding:16px;
+    transform:rotate(-2deg);
+  }
+  .about-photo span{
+    font-family:var(--ff-marker);
+    color:var(--black);
+    background:rgba(255,255,255,.75);
+    padding:8px 12px;
+    border-radius:8px;
+    font-size:.85rem;
+  }
+  .about-text p{ margin-bottom:16px; font-size:1.05rem; }
+  .promises{
+    margin:24px 0;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .promises li{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    background:var(--white);
+    border:3px solid var(--black);
+    border-radius:10px;
+    padding:12px 16px;
+    box-shadow:var(--shadow-hard-sm);
+    font-weight:600;
+  }
+  .promises li .mark{
+    font-family:var(--ff-display);
+    background:var(--blue);
+    color:var(--white);
+    border-radius:50%;
+    width:28px;
+    height:28px;
+    min-width:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.9rem;
+  }
+  .signature{
+    font-family:var(--ff-hand);
+    font-size:2.6rem;
+    color:var(--black);
+    margin-top:10px;
+  }
+
+  @media (max-width: 860px){
+    .about-grid{ grid-template-columns:1fr; }
+    .about-photo{ max-width:280px; margin:0 auto; }
+  }
+
+  /* ====== DESTAQUES ====== */
+  .destaques-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:28px;
+  }
+  @media (max-width: 900px){
+    .destaques-grid{ grid-template-columns:1fr; max-width:420px; margin:0 auto; }
+  }
+  .destaque-card{
+    display:block;
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-hard);
+    background:var(--white);
+    overflow:hidden;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .destaque-card:hover,
+  .destaque-card:focus-visible{
+    transform:translate(-4px,-4px);
+    box-shadow:12px 12px 0 var(--black);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .destaque-card{ transition:none; }
+    .destaque-card:hover{ transform:none; }
+  }
+  .destaque-cover{
+    aspect-ratio:9/16;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .destaque-cover .cover-label{
+    position:absolute;
+    bottom:12px;
+    left:12px;
+    font-family:var(--ff-marker);
+    font-size:.75rem;
+    color:var(--white);
+    background:rgba(17,17,17,.55);
+    padding:6px 10px;
+    border-radius:6px;
+  }
+  .play-btn{
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background:var(--white);
+    border:3px solid var(--black);
+    box-shadow:var(--shadow-hard-sm);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .play-btn::after{
+    content:'';
+    border-style:solid;
+    border-width:11px 0 11px 18px;
+    border-color:transparent transparent transparent var(--black);
+    margin-left:4px;
+  }
+  .destaque-body{ padding:18px; }
+  .destaque-number{
+    font-family:var(--ff-display);
+    font-size:1.6rem;
+    color:var(--magenta);
+  }
+  .destaque-label{
+    font-family:var(--ff-marker);
+    font-size:.72rem;
+    text-transform:uppercase;
+    color:var(--black);
+    opacity:.75;
+    margin-bottom:8px;
+    display:block;
+  }
+  .destaque-title{
+    font-family:var(--ff-display);
+    font-size:1.05rem;
+    text-transform:none;
+    margin-bottom:6px;
+  }
+  .destaque-context{ font-size:.9rem; opacity:.8; }
+
+  /* ====== TRABALHOS ====== */
+  .filters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:36px;
+  }
+  .filter-btn{
+    font-family:var(--ff-display);
+    font-size:.75rem;
+    text-transform:uppercase;
+    padding:10px 16px;
+    border-radius:999px;
+    border:2.5px solid var(--black);
+    background:var(--white);
+    box-shadow:3px 3px 0 var(--black);
+    transition:transform .12s ease, background .12s ease;
+  }
+  .filter-btn:hover{ transform:translate(-2px,-2px); }
+  .filter-btn[aria-pressed="true"]{
+    background:var(--blue);
+    color:var(--white);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .filter-btn{ transition:none; }
+    .filter-btn:hover{ transform:none; }
+  }
+
+  .work-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+    gap:24px;
+  }
+  .work-card{
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    background:var(--white);
+    box-shadow:var(--shadow-hard-sm);
+    overflow:hidden;
+  }
+  .work-cover{
+    aspect-ratio:4/5;
+    display:flex;
+    align-items:flex-end;
+    padding:12px;
+  }
+  .work-cover span{
+    font-family:var(--ff-marker);
+    font-size:.72rem;
+    color:var(--white);
+    background:rgba(17,17,17,.55);
+    padding:5px 9px;
+    border-radius:6px;
+  }
+  .work-info{ padding:16px; }
+  .work-niche{
+    display:inline-block;
+    font-family:var(--ff-marker);
+    font-size:.68rem;
+    text-transform:uppercase;
+    background:var(--lime);
+    border:2px solid var(--black);
+    padding:3px 9px;
+    border-radius:999px;
+    margin-bottom:10px;
+    transform:rotate(-1deg);
+  }
+  .work-title{ font-family:var(--ff-display); font-size:.95rem; text-transform:none; margin-bottom:4px; }
+  .work-brand{ font-size:.85rem; font-weight:600; opacity:.75; margin-bottom:8px; }
+  .work-desc{ font-size:.88rem; opacity:.85; }
+
+  /* ====== SERVIÇOS ====== */
+  .services{ background:var(--paper-2); }
+  .service-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+  }
+  @media (max-width: 900px){
+    .service-grid{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width: 600px){
+    .service-grid{ grid-template-columns:1fr; }
+  }
+  .service-card{
+    background:var(--white);
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-hard-sm);
+    padding:24px;
+    position:relative;
+  }
+  .service-num{
+    font-family:var(--ff-display);
+    font-size:1.6rem;
+    color:var(--white);
+    background:var(--black);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:48px;
+    height:48px;
+    border-radius:10px;
+    margin-bottom:16px;
+    transform:rotate(-4deg);
+  }
+  .service-card:nth-child(2) .service-num{ background:var(--blue); }
+  .service-card:nth-child(3) .service-num{ background:var(--orange); }
+  .service-card:nth-child(4) .service-num{ background:var(--magenta); }
+  .service-card:nth-child(5) .service-num{ background:var(--lime); color:var(--black); }
+  .service-card:nth-child(6) .service-num{ background:var(--black); }
+  .service-title{ font-family:var(--ff-display); font-size:1.05rem; text-transform:none; margin-bottom:10px; }
+  .service-desc{ font-size:.92rem; opacity:.85; }
+
+  /* ====== NUMEROS E DEPOIMENTOS ====== */
+  .metrics-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:20px;
+    margin-bottom:64px;
+  }
+  @media (max-width: 760px){
+    .metrics-grid{ grid-template-columns:repeat(2,1fr); }
+  }
+  .metric-card{
+    text-align:center;
+    background:var(--black);
+    color:var(--white);
+    border-radius:var(--radius);
+    padding:28px 14px;
+    border:3px solid var(--black);
+    box-shadow:var(--shadow-hard-sm);
+  }
+  .metric-num{
+    font-family:var(--ff-display);
+    font-size:2.4rem;
+    color:var(--lime);
+  }
+  .metric-label{ font-size:.82rem; margin-top:6px; font-weight:600; }
+
+  .results-title, .testimonials-title{
+    font-family:var(--ff-hand);
+    font-size:1.8rem;
+    color:var(--magenta);
+    margin-bottom:24px;
+    display:block;
+  }
+  .results-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+    margin-bottom:64px;
+  }
+  @media (max-width: 900px){
+    .results-grid{ grid-template-columns:1fr; }
+  }
+  .result-card{
+    background:var(--white);
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-hard-sm);
+    padding:22px;
+  }
+  .result-brand{
+    font-family:var(--ff-marker);
+    font-size:.75rem;
+    background:var(--orange);
+    color:var(--white);
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    margin-bottom:12px;
+  }
+  .result-goal{ font-weight:700; margin-bottom:8px; }
+  .result-outcome{ font-size:.92rem; opacity:.85; }
+
+  .testimonial-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px;
+  }
+  @media (max-width: 760px){
+    .testimonial-grid{ grid-template-columns:1fr; }
+  }
+  .testimonial-card{
+    background:var(--white);
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-hard-sm);
+    padding:22px;
+  }
+  .testimonial-quote{
+    font-size:.98rem;
+    margin-bottom:14px;
+  }
+  .testimonial-quote::before{ content:'"'; }
+  .testimonial-quote::after{ content:'"'; }
+  .testimonial-author{ font-family:var(--ff-display); font-size:.82rem; }
+  .testimonial-company{ font-size:.8rem; opacity:.7; }
+
+  /* ====== CONTATO ====== */
+  .contact{ background:var(--paper-2); }
+  .contact-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:48px;
+    align-items:start;
+  }
+  @media (max-width: 860px){
+    .contact-grid{ grid-template-columns:1fr; }
+  }
+  .form-card{
+    background:var(--white);
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-hard);
+    padding:28px;
+  }
+  .field{ margin-bottom:18px; }
+  .field label{
+    display:block;
+    font-weight:700;
+    font-size:.9rem;
+    margin-bottom:6px;
+  }
+  .field input,
+  .field textarea{
+    width:100%;
+    padding:12px 14px;
+    border:2.5px solid var(--black);
+    border-radius:8px;
+    background:var(--paper);
+  }
+  .field textarea{ min-height:120px; resize:vertical; }
+  .form-msg{
+    margin-top:16px;
+    background:var(--lime);
+    border:3px solid var(--black);
+    border-radius:10px;
+    padding:14px 16px;
+    font-weight:700;
+    box-shadow:var(--shadow-hard-sm);
+  }
+  .form-msg[hidden]{ display:none; }
+
+  .contact-side{ display:flex; flex-direction:column; gap:16px; }
+  .contact-side p{ font-size:1.05rem; margin-bottom:8px; }
+  .contact-buttons{ display:flex; flex-direction:column; gap:14px; }
+  .contact-buttons .btn{ justify-content:flex-start; }
+
+  /* ====== RODAPE ====== */
+  footer{
+    background:var(--black);
+    color:var(--white);
+    padding:44px 0 28px;
+    border-top:3px solid var(--black);
+  }
+  .footer-inner{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+  }
+  .footer-name{ font-family:var(--ff-display); font-size:1.3rem; }
+  .footer-links{ display:flex; gap:18px; flex-wrap:wrap; }
+  .footer-links a{ font-weight:600; font-size:.92rem; }
+  .footer-links a:hover{ color:var(--lime); }
+  .footer-year{ width:100%; text-align:center; font-size:.78rem; opacity:.6; margin-top:24px; }
+
+  /* ====== ANIMACAO DE ENTRADA ====== */
+  .reveal{
+    opacity:0;
+    transform:translateY(26px);
+    transition:opacity .6s ease, transform .6s ease;
+  }
+  .reveal.in-view{
+    opacity:1;
+    transform:translateY(0);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+  }
+
+  /* ====== MODAL DE CAPTURA ====== */
+  .capture-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(17,17,17,.7);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:900;
+  }
+  .capture-overlay[hidden]{ display:none; }
+  .capture-modal{
+    position:relative;
+    max-width:420px;
+    width:100%;
+    background:var(--paper);
+    border:3px solid var(--black);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-hard-lg);
+    padding:32px 26px 26px;
+    transform:rotate(-1deg);
+  }
+  .capture-close{
+    position:absolute;
+    top:-14px;
+    right:-14px;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:var(--orange);
+    color:var(--white);
+    border:3px solid var(--black);
+    box-shadow:var(--shadow-hard-sm);
+    font-family:var(--ff-display);
+    font-size:1rem;
+    line-height:1;
+  }
+  .capture-title{
+    font-size:1.6rem;
+    margin-bottom:8px;
+  }
+  .capture-sub{
+    font-family:var(--ff-hand);
+    color:var(--blue);
+    font-size:1.3rem;
+    display:block;
+    margin-bottom:18px;
+  }
+  .capture-msg[hidden]{ display:none; }
+
+  /* util */
+  .visually-hidden{
+    position:absolute !important;
+    width:1px; height:1px;
+    overflow:hidden;
+    clip:rect(0 0 0 0);
+    white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+<!-- ====== MENU FIXO ====== -->
+<header class="nav">
+  <div class="nav-inner">
+    <a href="#topo" class="nav-logo">Luana Coin</a>
+    <nav aria-label="Navegação principal">
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Abrir menu">
+        <span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#destaques">Destaques</a></li>
+        <li><a href="#trabalhos">Trabalhos</a></li>
+        <li><a href="#servicos">Serviços</a></li>
+        <li><a href="#numeros">Números</a></li>
+        <li><a href="#contato">Contato</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+
+  <!-- ====== 1. CAPA ====== -->
+  <section id="topo" class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">UGC Creator</span>
+          <h1 class="hero-name">LUANA <span class="hi">COIN</span></h1>
+          <span class="hero-tag">@luanacoin</span>
+          <p class="hero-desc">Eu crio vídeos e fotos autênticos que fazem a sua marca parar o scroll e conquistar a confiança de quem assiste, do roteiro à entrega final.</p>
+          <div class="hero-actions">
+            <a class="btn" href="#contato">Falar comigo</a>
+            <a class="btn btn-outline" href="#trabalhos">Ver os trabalhos</a>
+          </div>
+          <div class="hero-stats" id="heroStats">
+            <!-- números preenchidos via JavaScript a partir do array heroStats -->
+          </div>
+        </div>
+        <div class="hero-photo">
+          <!-- TROQUE AQUI: troque este bloco de degradê por <img src="sua-foto.jpg" alt="Foto de Luana Coin"> mantendo a proporção 4:5 -->
+          <div class="hero-badge">UGC<br>real</div>
+          <span>foto da creator 4:5</span>
+        </div>
+      </div>
+    </div>
+    <div class="brand-strip" aria-label="Marcas que já trabalharam com Luana Coin">
+      <div class="brand-track" id="brandTrack">
+        <!-- marcas preenchidas via JavaScript a partir do array marcas -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 2. SOBRE MIM ====== -->
+  <section id="sobre" class="about">
+    <div class="container about-grid reveal">
+      <div class="about-photo">
+        <!-- TROQUE AQUI: troque este bloco de degradê por <img src="sua-foto-sobre.jpg" alt="Foto de Luana Coin"> mantendo a proporção 1:1 -->
+        <span>foto da creator 1:1</span>
+      </div>
+      <div class="about-text">
+        <span class="eyebrow">Sobre mim</span>
+        <p>Oi, eu sou a Luana! Moro em Cabo de Santo Agostinho e transformo produtos em conteúdo que conversa de verdade com as pessoas. Gosto de gravar do jeito que eu mesma consumo conteúdo nas redes, sem enrolação e com sensação de recomendação de amiga.</p>
+        <p>Já criei conteúdo para marcas de beleza, skincare, casa e decoração, maternidade, pet e tech, sempre pensando primeiro no que faz o público parar de rolar o feed e prestar atenção na sua marca.</p>
+        <ul class="promises">
+          <li><span class="mark">1</span> Roteiro aprovado antes de gravar</li>
+          <li><span class="mark">2</span> Uma rodada de ajuste inclusa</li>
+          <li><span class="mark">3</span> Entrega em até 72 horas úteis</li>
+        </ul>
+        <p class="signature">Luana Coin</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 3. CONTEUDOS DE DESTAQUE ====== -->
+  <section id="destaques">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-sub">Assista</span>
+        <h2 class="section-title">Conteúdos de Destaque</h2>
+      </div>
+      <div class="destaques-grid" id="destaquesGrid">
+        <!-- cards preenchidos via JavaScript a partir do array destaques -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 4. TRABALHOS POR NICHO ====== -->
+  <section id="trabalhos">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-sub">Portfólio</span>
+        <h2 class="section-title">Trabalhos por Nicho</h2>
+      </div>
+      <div class="filters reveal" id="filterBar" role="group" aria-label="Filtrar trabalhos por nicho">
+        <!-- botões preenchidos via JavaScript a partir do array nichos -->
+      </div>
+      <div class="work-grid reveal" id="workGrid">
+        <!-- cards preenchidos via JavaScript a partir do array trabalhos -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 5. COMO EU TE AJUDO ====== -->
+  <section id="servicos" class="services">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-sub">Serviços</span>
+        <h2 class="section-title">Como Eu Te Ajudo</h2>
+      </div>
+      <div class="service-grid" id="serviceGrid">
+        <!-- cards preenchidos via JavaScript a partir do array servicos -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 6. NUMEROS E DEPOIMENTOS ====== -->
+  <section id="numeros">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-sub">Prova</span>
+        <h2 class="section-title">Números e Depoimentos</h2>
+      </div>
+
+      <div class="metrics-grid reveal" id="metricsGrid">
+        <!-- métricas preenchidas via JavaScript a partir do array metricas -->
+      </div>
+
+      <span class="results-title reveal">resultados de campanha</span>
+      <div class="results-grid reveal" id="resultsGrid">
+        <!-- resultados preenchidos via JavaScript a partir do array resultados -->
+      </div>
+
+      <span class="testimonials-title reveal">o que dizem sobre meu trabalho</span>
+      <div class="testimonial-grid reveal" id="testimonialGrid">
+        <!-- depoimentos preenchidos via JavaScript a partir do array depoimentos -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 7. BORA CRIAR JUNTOS ====== -->
+  <section id="contato" class="contact">
+    <div class="container contact-grid reveal">
+      <div class="form-card">
+        <h2 class="section-title" style="font-size:1.8rem; margin-bottom:20px;">Bora Criar Juntos</h2>
+        <form id="contactForm" novalidate>
+          <div class="field">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" required autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" required autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="mensagem">Mensagem</label>
+            <textarea id="mensagem" name="mensagem" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-block">Enviar mensagem</button>
+          <p class="form-msg" id="formMsg" role="status" hidden>Mensagem enviada! Vou te responder em breve, obrigada pelo contato.</p>
+        </form>
+      </div>
+      <div class="contact-side">
+        <span class="eyebrow">Fale comigo</span>
+        <p>Prefere falar direto? Escolhe o canal que for melhor pra você.</p>
+        <div class="contact-buttons">
+          <a class="btn btn-alt" href="https://wa.me/5581989477095" target="_blank" rel="noopener">WhatsApp: (81) 98947-7095</a>
+          <a class="btn btn-blue" href="mailto:luanacoin@gmail.com">E-mail: luanacoin@gmail.com</a>
+          <a class="btn btn-outline" href="https://instagram.com/luanacoin" target="_blank" rel="noopener">Instagram: @luanacoin</a>
+        </div>
+        <p style="margin-top:10px; font-size:.9rem; opacity:.75;">Atendo criadoras e marcas em todo o Brasil, a partir de Cabo de Santo Agostinho.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ====== 8. RODAPE ====== -->
+<footer>
+  <div class="container footer-inner">
+    <span class="footer-name">Luana Coin</span>
+    <div class="footer-links">
+      <a href="https://instagram.com/luanacoin" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://wa.me/5581989477095" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="mailto:luanacoin@gmail.com">E-mail</a>
+    </div>
+    <span class="footer-year"></span>
+  </div>
+</footer>
+
+<!-- ====== CARD DE CAPTURA (aparece depois de 7 segundos) ====== -->
+<div class="capture-overlay" id="captureOverlay" hidden>
+  <div class="capture-modal" role="dialog" aria-modal="true" aria-labelledby="captureTitle">
+    <button class="capture-close" id="captureClose" aria-label="Fechar">X</button>
+    <span class="capture-sub">psst, vem cá</span>
+    <h3 class="capture-title" id="captureTitle">Quer meu mídia kit completo?</h3>
+    <p style="margin-bottom:18px; font-size:.95rem;">Deixa seu nome e e-mail que eu te mando o material completo com portfólio, formatos e valores.</p>
+    <form id="captureForm">
+      <div class="field">
+        <label for="captureNome">Nome</label>
+        <input type="text" id="captureNome" name="captureNome" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="captureEmail">E-mail</label>
+        <input type="email" id="captureEmail" name="captureEmail" required autocomplete="email">
+      </div>
+      <button type="submit" class="btn btn-alt btn-block">Quero receber</button>
+      <p class="form-msg capture-msg" id="captureMsg" role="status" hidden>Recebido! Vou te enviar o mídia kit no e-mail informado.</p>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================================
+     DADOS DO PORTFOLIO
+     Edite os valores abaixo para atualizar o site sem mexer no HTML/CSS.
+  ========================================================================= */
+
+  // Números curtos mostrados na primeira dobra (capa).
+  // EXEMPLO: troque "valor" pelos seus números reais.
+  var heroStats = [
+    { valor: "120+", rotulo: "vídeos entregues" },
+    { valor: "18", rotulo: "marcas atendidas" },
+    { valor: "5M+", rotulo: "views somadas" }
+  ];
+
+  // Marcas que já trabalharam com você. Troque ou adicione quantas quiser.
+  var marcas = [
+    "AVON", "ZOSS", "Marca 03", "Marca 04", "Marca 05", "Marca 06",
+    "Marca 07", "Marca 08", "Marca 09", "Marca 10", "Marca 11", "Marca 12"
+  ];
+
+  // Conteudos de destaque (3 videos em formato 9:16).
+  // videoUrl: troque "#" pelo link real do video (YouTube, TikTok, Instagram etc).
+  // capaGradiente: classe css opcional, ou troque o bloco no HTML por uma imagem real de capa.
+  var destaques = [
+    {
+      videoUrl: "#", // TROQUE: link do video 1
+      capa: "linear-gradient(160deg, var(--blue), var(--magenta))", // TROQUE: pode virar uma <img> de capa 9:16
+      numero: "2,4M",
+      rotulo: "views no Reels",
+      titulo: "Rotina de skincare noturna",
+      contexto: "Vídeo para lançamento de linha facial"
+    },
+    {
+      videoUrl: "#", // TROQUE: link do video 2
+      capa: "linear-gradient(160deg, var(--orange), var(--lime))",
+      numero: "980 mil",
+      rotulo: "views no TikTok",
+      titulo: "Unboxing de kit de maternidade",
+      contexto: "Primeira impressão de uma caixa completa"
+    },
+    {
+      videoUrl: "#", // TROQUE: link do video 3
+      capa: "linear-gradient(160deg, var(--magenta), var(--orange))",
+      numero: "1,1M",
+      rotulo: "views no Reels",
+      titulo: "Teste de acessório para pet",
+      contexto: "Uso real do produto no dia a dia do pet"
+    }
+  ];
+
+  // Nichos disponiveis para o filtro (a primeira opcao "Todos" e adicionada automaticamente).
+  var nichos = ["Beleza", "Skincare", "Casa e Decoração", "Maternidade", "Pet", "Tech"];
+
+  // Trabalhos do portfolio. O campo "nicho" precisa bater com um dos itens do array nichos.
+  var trabalhos = [
+    { nicho: "Beleza", marca: "AVON", titulo: "Resenha de batom líquido", descricao: "Vídeo de resenha mostrando textura, cor e fixação do produto.", formato: "vídeo vertical 9:16" },
+    { nicho: "Beleza", marca: "Marca 03", titulo: "Tutorial de maquiagem rápida", descricao: "Passo a passo de maquiagem para o dia a dia em menos de um minuto.", formato: "vídeo vertical 9:16" },
+    { nicho: "Skincare", marca: "Marca 04", titulo: "Rotina de skincare matinal", descricao: "Sequência de produtos usados pela manhã, com comentários espontâneos.", formato: "vídeo vertical 9:16" },
+    { nicho: "Skincare", marca: "Marca 05", titulo: "Antes e depois de hidratação", descricao: "Registro fotográfico do efeito do produto após duas semanas de uso.", formato: "foto 4:5" },
+    { nicho: "Casa e Decoração", marca: "Marca 06", titulo: "Organização de sala de estar", descricao: "Vídeo mostrando um item de decoração sendo usado no ambiente real.", formato: "vídeo vertical 9:16" },
+    { nicho: "Casa e Decoração", marca: "Marca 07", titulo: "Ensaio de objeto decorativo", descricao: "Fotos do produto compondo diferentes cantos da casa.", formato: "foto 1:1" },
+    { nicho: "Maternidade", marca: "Marca 08", titulo: "Unboxing de kit de maternidade", descricao: "Abertura de caixa com reação genuína e comentários sobre cada item.", formato: "vídeo vertical 9:16" },
+    { nicho: "Maternidade", marca: "Marca 09", titulo: "Rotina com bebê usando o produto", descricao: "Registro do produto sendo usado na rotina real com o bebê.", formato: "vídeo vertical 9:16" },
+    { nicho: "Pet", marca: "Marca 10", titulo: "Teste de acessório para pet", descricao: "Reação do pet ao experimentar o produto pela primeira vez.", formato: "vídeo vertical 9:16" },
+    { nicho: "Pet", marca: "Marca 11", titulo: "Ensaio fotográfico pet friendly", descricao: "Fotos do pet interagindo com o produto em ambiente natural.", formato: "foto 4:5" },
+    { nicho: "Tech", marca: "ZOSS", titulo: "Unboxing de acessório tech", descricao: "Abertura de caixa e primeiras impressões sobre o acessório.", formato: "vídeo vertical 9:16" },
+    { nicho: "Tech", marca: "Marca 12", titulo: "Teste de uso no dia a dia", descricao: "Uso do produto tech em situações reais ao longo do dia.", formato: "vídeo vertical 9:16" }
+  ];
+
+  // Servicos oferecidos.
+  var servicos = [
+    { titulo: "Vídeo UGC", descricao: "Vídeo autêntico estilo depoimento, roteirizado para parecer conteúdo espontâneo de rede social." },
+    { titulo: "Corte para anúncio", descricao: "Edição rápida e chamativa, pronta para rodar como anúncio em redes sociais." },
+    { titulo: "Fotos do produto", descricao: "Ensaio de fotos claras e bem compostas para usar no site, embalagem e redes." },
+    { titulo: "Unboxing", descricao: "Vídeo mostrando a abertura do produto, com reação genuína e primeiro contato." },
+    { titulo: "Publicação no meu perfil", descricao: "Post no meu Instagram apresentando sua marca para o meu público." },
+    { titulo: "Pacote mensal", descricao: "Conteúdo recorrente todo mês, com calendário fechado e entrega prevista." }
+  ];
+
+  // Metricas com contador animado. "valor" precisa ser um numero (sem texto).
+  // EXEMPLO: troque pelos seus numeros reais.
+  var metricas = [
+    { valor: 120, sufixo: "+", rotulo: "vídeos entregues" },
+    { valor: 18, sufixo: "", rotulo: "marcas atendidas" },
+    { valor: 5, sufixo: "M+", rotulo: "views somadas" },
+    { valor: 98, sufixo: "%", rotulo: "entregas no prazo" }
+  ];
+
+  // Resultados de campanha.
+  var resultados = [
+    { marca: "Marca 01", objetivo: "Lançamento de produto novo", resultado: "Vídeo usado como principal criativo de anúncio durante o lançamento." },
+    { marca: "Marca 02", objetivo: "Aumentar prova social", resultado: "Conteúdo gerou comentários e mensagens diretas perguntando onde comprar." },
+    { marca: "Marca 03", objetivo: "Reforçar campanha sazonal", resultado: "Vídeo reaproveitado em Stories e em anúncio pago pela marca." }
+  ];
+
+  // Depoimentos de clientes.
+  var depoimentos = [
+    { texto: "A Luana entendeu o briefing rápido e entregou um vídeo que parecia feito por uma cliente de verdade da marca.", nome: "Cliente 01", empresa: "Empresa 01" },
+    { texto: "Processo super organizado, do roteiro até a entrega final. Recomendo para quem precisa de agilidade.", nome: "Cliente 02", empresa: "Empresa 02" },
+    { texto: "O conteúdo teve um desempenho muito acima do que a gente esperava nos anúncios.", nome: "Cliente 03", empresa: "Empresa 03" },
+    { texto: "Profissional, pontual e com uma naturalidade em frente às câmeras que faz toda a diferença.", nome: "Cliente 04", empresa: "Empresa 04" }
+  ];
+
+  /* =========================================================================
+     RENDERIZACAO DOS DADOS NA TELA
+  ========================================================================= */
+
+  function el(tag, className, html){
+    var e = document.createElement(tag);
+    if(className) e.className = className;
+    if(html !== undefined) e.innerHTML = html;
+    return e;
+  }
+
+  // Hero stats
+  var heroStatsEl = document.getElementById("heroStats");
+  heroStats.forEach(function(item){
+    var card = el("div", "stat-card");
+    card.appendChild(el("div", "stat-num", item.valor));
+    card.appendChild(el("div", "stat-label", item.rotulo));
+    heroStatsEl.appendChild(card);
+  });
+
+  // Faixa de marcas (duplicada para permitir loop continuo)
+  var brandTrack = document.getElementById("brandTrack");
+  var brandList = marcas.concat(marcas);
+  brandList.forEach(function(nome){
+    brandTrack.appendChild(el("span", null, nome));
+  });
+
+  // Destaques
+  var destaquesGrid = document.getElementById("destaquesGrid");
+  destaques.forEach(function(item){
+    var card = el("a", "destaque-card reveal");
+    card.href = item.videoUrl;
+    card.target = "_blank";
+    card.rel = "noopener";
+    card.setAttribute("aria-label", item.titulo + ", abrir vídeo");
+
+    var cover = el("div", "destaque-cover");
+    cover.style.background = item.capa;
+    var play = el("span", "play-btn");
+    play.setAttribute("aria-hidden", "true");
+    cover.appendChild(play);
+    cover.appendChild(el("span", "cover-label", "capa vertical 9:16"));
+    card.appendChild(cover);
+
+    var body = el("div", "destaque-body");
+    body.appendChild(el("span", "destaque-number", "+" + item.numero));
+    body.appendChild(el("span", "destaque-label", item.rotulo));
+    body.appendChild(el("h3", "destaque-title", item.titulo));
+    body.appendChild(el("p", "destaque-context", item.contexto));
+    card.appendChild(body);
+
+    destaquesGrid.appendChild(card);
+  });
+
+  // Filtros de nicho
+  var filterBar = document.getElementById("filterBar");
+  var workGrid = document.getElementById("workGrid");
+  var todosOs = ["Todos"].concat(nichos);
+
+  function renderWorkGrid(filtro){
+    workGrid.innerHTML = "";
+    trabalhos.forEach(function(item){
+      if(filtro !== "Todos" && item.nicho !== filtro) return;
+      var card = el("div", "work-card");
+      var cover = el("div", "work-cover");
+      cover.style.background = "linear-gradient(150deg, var(--blue), var(--lime))";
+      cover.appendChild(el("span", null, item.formato));
+      card.appendChild(cover);
+
+      var info = el("div", "work-info");
+      info.appendChild(el("span", "work-niche", item.nicho));
+      info.appendChild(el("h3", "work-title", item.titulo));
+      info.appendChild(el("p", "work-brand", item.marca));
+      info.appendChild(el("p", "work-desc", item.descricao));
+      card.appendChild(info);
+
+      workGrid.appendChild(card);
+    });
+  }
+
+  todosOs.forEach(function(nicho, index){
+    var btn = el("button", "filter-btn", nicho);
+    btn.type = "button";
+    btn.setAttribute("aria-pressed", index === 0 ? "true" : "false");
+    btn.addEventListener("click", function(){
+      Array.prototype.forEach.call(filterBar.children, function(b){
+        b.setAttribute("aria-pressed", "false");
+      });
+      btn.setAttribute("aria-pressed", "true");
+      renderWorkGrid(nicho);
+    });
+    filterBar.appendChild(btn);
+  });
+  renderWorkGrid("Todos");
+
+  // Servicos
+  var serviceGrid = document.getElementById("serviceGrid");
+  servicos.forEach(function(item, index){
+    var card = el("div", "service-card reveal");
+    var numero = String(index + 1);
+    if(numero.length < 2) numero = "0" + numero;
+    card.appendChild(el("span", "service-num", numero));
+    card.appendChild(el("h3", "service-title", item.titulo));
+    card.appendChild(el("p", "service-desc", item.descricao));
+    serviceGrid.appendChild(card);
+  });
+
+  // Metricas (contador animado)
+  var metricsGrid = document.getElementById("metricsGrid");
+  metricas.forEach(function(item){
+    var card = el("div", "metric-card");
+    var num = el("div", "metric-num", "0" + item.sufixo);
+    num.setAttribute("data-valor", item.valor);
+    num.setAttribute("data-sufixo", item.sufixo);
+    card.appendChild(num);
+    card.appendChild(el("div", "metric-label", item.rotulo));
+    metricsGrid.appendChild(card);
+  });
+
+  // Resultados de campanha
+  var resultsGrid = document.getElementById("resultsGrid");
+  resultados.forEach(function(item){
+    var card = el("div", "result-card");
+    card.appendChild(el("span", "result-brand", item.marca));
+    card.appendChild(el("p", "result-goal", item.objetivo));
+    card.appendChild(el("p", "result-outcome", item.resultado));
+    resultsGrid.appendChild(card);
+  });
+
+  // Depoimentos
+  var testimonialGrid = document.getElementById("testimonialGrid");
+  depoimentos.forEach(function(item){
+    var card = el("div", "testimonial-card");
+    card.appendChild(el("p", "testimonial-quote", item.texto));
+    card.appendChild(el("p", "testimonial-author", item.nome));
+    card.appendChild(el("p", "testimonial-company", item.empresa));
+    testimonialGrid.appendChild(card);
+  });
+
+  /* =========================================================================
+     MENU MOBILE
+  ========================================================================= */
+  var navToggle = document.getElementById("navToggle");
+  var navLinks = document.getElementById("navLinks");
+
+  navToggle.addEventListener("click", function(){
+    var aberto = navToggle.getAttribute("aria-expanded") === "true";
+    navToggle.setAttribute("aria-expanded", String(!aberto));
+    navLinks.classList.toggle("open", !aberto);
+  });
+
+  Array.prototype.forEach.call(navLinks.querySelectorAll("a"), function(link){
+    link.addEventListener("click", function(){
+      navToggle.setAttribute("aria-expanded", "false");
+      navLinks.classList.remove("open");
+    });
+  });
+
+  /* =========================================================================
+     ANO AUTOMATICO NO RODAPE
+  ========================================================================= */
+  document.querySelector(".footer-year").textContent = "© " + new Date().getFullYear() + " Luana Coin. Todos os direitos reservados.";
+
+  /* =========================================================================
+     ANIMACAO DE ENTRADA AO ROLAR (IntersectionObserver)
+  ========================================================================= */
+  var reduzMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var elementosReveal = document.querySelectorAll(".reveal");
+
+  if(reduzMovimento || !("IntersectionObserver" in window)){
+    elementosReveal.forEach(function(elemento){ elemento.classList.add("in-view"); });
+  } else {
+    var observerReveal = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(entrada){
+        if(entrada.isIntersecting){
+          entrada.target.classList.add("in-view");
+          observerReveal.unobserve(entrada.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    elementosReveal.forEach(function(elemento){ observerReveal.observe(elemento); });
+  }
+
+  /* =========================================================================
+     CONTADOR ANIMADO DAS METRICAS
+  ========================================================================= */
+  function animarContador(elemento){
+    var alvo = parseFloat(elemento.getAttribute("data-valor"));
+    var sufixo = elemento.getAttribute("data-sufixo") || "";
+
+    if(reduzMovimento){
+      elemento.textContent = alvo + sufixo;
+      return;
+    }
+
+    var inicio = 0;
+    var duracao = 1400;
+    var comeco = null;
+
+    function passo(timestamp){
+      if(!comeco) comeco = timestamp;
+      var progresso = Math.min((timestamp - comeco) / duracao, 1);
+      var valorAtual = Math.floor(inicio + (alvo - inicio) * progresso);
+      elemento.textContent = valorAtual + sufixo;
+      if(progresso < 1){
+        window.requestAnimationFrame(passo);
+      } else {
+        elemento.textContent = alvo + sufixo;
+      }
+    }
+    window.requestAnimationFrame(passo);
+  }
+
+  var metricNums = document.querySelectorAll(".metric-num");
+  if("IntersectionObserver" in window){
+    var observerMetricas = new IntersectionObserver(function(entradas){
+      entradas.forEach(function(entrada){
+        if(entrada.isIntersecting){
+          animarContador(entrada.target);
+          observerMetricas.unobserve(entrada.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    metricNums.forEach(function(elemento){ observerMetricas.observe(elemento); });
+  } else {
+    metricNums.forEach(animarContador);
+  }
+
+  /* =========================================================================
+     FORMULARIO DE CONTATO PRINCIPAL
+  ========================================================================= */
+  var contactForm = document.getElementById("contactForm");
+  var formMsg = document.getElementById("formMsg");
+
+  contactForm.addEventListener("submit", function(evento){
+    evento.preventDefault();
+    if(!contactForm.checkValidity()){
+      contactForm.reportValidity();
+      return;
+    }
+    formMsg.hidden = false;
+    contactForm.reset();
+  });
+
+  /* =========================================================================
+     CARD DE CAPTURA (midia kit)
+  ========================================================================= */
+  var captureOverlay = document.getElementById("captureOverlay");
+  var captureClose = document.getElementById("captureClose");
+  var captureForm = document.getElementById("captureForm");
+  var captureMsg = document.getElementById("captureMsg");
+  var CHAVE_SESSAO = "ugcCaptureMostrado";
+
+  function abrirCaptura(){
+    if(sessionStorage.getItem(CHAVE_SESSAO)) return;
+    captureOverlay.hidden = false;
+    sessionStorage.setItem(CHAVE_SESSAO, "1");
+    var primeiroCampo = document.getElementById("captureNome");
+    if(primeiroCampo) primeiroCampo.focus();
+  }
+
+  function fecharCaptura(){
+    captureOverlay.hidden = true;
+  }
+
+  setTimeout(function(){
+    try{
+      abrirCaptura();
+    } catch(erro){
+      // sessionStorage pode falhar em modos restritos de navegacao; o card simplesmente nao aparece
+    }
+  }, 7000);
+
+  captureClose.addEventListener("click", fecharCaptura);
+
+  captureOverlay.addEventListener("click", function(evento){
+    if(evento.target === captureOverlay) fecharCaptura();
+  });
+
+  document.addEventListener("keydown", function(evento){
+    if(evento.key === "Escape" && !captureOverlay.hidden) fecharCaptura();
+  });
+
+  captureForm.addEventListener("submit", function(evento){
+    evento.preventDefault();
+    if(!captureForm.checkValidity()){
+      captureForm.reportValidity();
+      return;
+    }
+    captureMsg.hidden = false;
+    captureForm.reset();
+    setTimeout(fecharCaptura, 2200);
+  });
+
+})();
+</script>
+</body>
+</html>
