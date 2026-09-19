@@ -171,23 +171,43 @@
     faixa.textContent = "";
   }
 
-  // Se já tiver sessão aberta, manda direto para o admin.
-  banco.auth.getSession().then(function(resultado){
-    if(resultado.data && resultado.data.session){
-      window.location.href = "../admin/";
-    }
-  });
+  // Se o Supabase nao carregou (internet, bloqueador de anuncios, etc), avisa
+  // aqui em vez de deixar o formulario sem fazer nada quando ela clicar em Entrar.
+  if(!window.banco){
+    mostrarFaixa("Não consegui carregar a conexão com o banco de dados. Recarregue a página. Se continuar, verifique sua internet ou desative bloqueadores de anúncio.", "erro");
+  } else {
+    // Se já tiver sessão aberta, manda direto para o admin.
+    banco.auth.getSession().then(function(resultado){
+      if(resultado.data && resultado.data.session){
+        window.location.href = "../admin/";
+      }
+    }).catch(function(erro){ console.error(erro); });
+  }
 
   form.addEventListener("submit", async function(evento){
     evento.preventDefault();
     esconderFaixa();
+
+    if(!window.banco){
+      mostrarFaixa("Não consegui carregar a conexão com o banco de dados. Recarregue a página e tente de novo.", "erro");
+      return;
+    }
+
     btnEntrar.disabled = true;
     btnEntrar.textContent = "Entrando...";
 
-    var resultado = await banco.auth.signInWithPassword({
-      email: campoEmail.value.trim(),
-      password: campoSenha.value
-    });
+    var resultado;
+    try{
+      resultado = await banco.auth.signInWithPassword({
+        email: campoEmail.value.trim(),
+        password: campoSenha.value
+      });
+    }catch(erro){
+      btnEntrar.disabled = false;
+      btnEntrar.textContent = "Entrar";
+      mostrarFaixa("Não consegui falar com o banco de dados. Verifique sua internet e tente de novo.", "erro");
+      return;
+    }
 
     btnEntrar.disabled = false;
     btnEntrar.textContent = "Entrar";
@@ -202,6 +222,12 @@
 
   btnEsqueci.addEventListener("click", async function(){
     esconderFaixa();
+
+    if(!window.banco){
+      mostrarFaixa("Não consegui carregar a conexão com o banco de dados. Recarregue a página e tente de novo.", "erro");
+      return;
+    }
+
     var email = campoEmail.value.trim();
     if(!email){
       mostrarFaixa("Digite seu e-mail no campo acima primeiro.", "erro");
@@ -210,9 +236,16 @@
     }
 
     btnEsqueci.disabled = true;
-    var resultado = await banco.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.href
-    });
+    var resultado;
+    try{
+      resultado = await banco.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.href
+      });
+    }catch(erro){
+      btnEsqueci.disabled = false;
+      mostrarFaixa("Não consegui falar com o banco de dados. Verifique sua internet e tente de novo.", "erro");
+      return;
+    }
     btnEsqueci.disabled = false;
 
     if(resultado.error){

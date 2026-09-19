@@ -1924,34 +1924,65 @@ function desenharSubRevisao(area){
 /* ============================================================================
    SESSÃO / LOGIN / SAIR
 ============================================================================ */
-async function iniciar(){
-  var resultado = await banco.auth.getSession();
-  var sessao = resultado.data && resultado.data.session;
-
-  if(!sessao){
-    window.location.href = "../login/";
-    return;
-  }
-
-  document.getElementById("emailUsuaria").textContent = sessao.user.email;
-  document.getElementById("btnSair").innerHTML = icone("sair") + "Sair";
-  document.getElementById("btnSair").addEventListener("click", async function(){
-    await banco.auth.signOut();
-    window.location.href = "../login/";
-  });
-
-  document.body.classList.remove("carregando");
-  document.getElementById("telaCarregando").hidden = true;
-  document.getElementById("app").hidden = false;
-
-  irParaAba("portfolio");
+// Se algo impedir o painel de abrir (banco fora do ar, internet, CDN
+// bloqueada, etc), mostra um aviso claro no lugar do "Carregando..." que
+// ficaria preso na tela para sempre.
+function mostrarErroCarregamento(mensagem){
+  var tela = document.getElementById("telaCarregando");
+  if(!tela) return;
+  tela.innerHTML =
+    '<div style="max-width:380px; text-align:center; padding:24px;">' +
+      '<p style="font-weight:700; margin-bottom:8px;">Não consegui abrir o painel</p>' +
+      '<p style="font-size:.85rem; color:#666; margin-bottom:16px;">' + mensagem + '</p>' +
+      '<button onclick="window.location.reload()" style="font-family:inherit; font-weight:700; font-size:.82rem; padding:9px 18px; border-radius:999px; border:1.5px solid #111; background:#c3f53a; cursor:pointer;">Tentar de novo</button>' +
+    '</div>';
 }
 
-banco.auth.onAuthStateChange(function(evento){
-  if(evento === "SIGNED_OUT"){
-    window.location.href = "../login/";
+async function iniciar(){
+  try{
+    if(!window.banco){
+      mostrarErroCarregamento("Não consegui carregar a conexão com o banco de dados (Supabase). Verifique sua internet e clique em tentar de novo. Se continuar, veja se algum bloqueador de anúncios ou extensão do navegador não está travando o carregamento.");
+      return;
+    }
+
+    // Se a verificação de login demorar demais (mais de 10 segundos),
+    // mostra o aviso em vez de deixar a tela presa em "Carregando...".
+    var resultado = await Promise.race([
+      banco.auth.getSession(),
+      new Promise(function(_, rejeitar){
+        setTimeout(function(){ rejeitar(new Error("Demorou demais para responder")); }, 10000);
+      })
+    ]);
+    var sessao = resultado.data && resultado.data.session;
+
+    if(!sessao){
+      window.location.href = "../login/";
+      return;
+    }
+
+    document.getElementById("emailUsuaria").textContent = sessao.user.email;
+    document.getElementById("btnSair").innerHTML = icone("sair") + "Sair";
+    document.getElementById("btnSair").addEventListener("click", async function(){
+      await banco.auth.signOut();
+      window.location.href = "../login/";
+    });
+
+    banco.auth.onAuthStateChange(function(evento){
+      if(evento === "SIGNED_OUT"){
+        window.location.href = "../login/";
+      }
+    });
+
+    document.body.classList.remove("carregando");
+    document.getElementById("telaCarregando").hidden = true;
+    document.getElementById("app").hidden = false;
+
+    irParaAba("portfolio");
+  }catch(erro){
+    console.error(erro);
+    mostrarErroCarregamento("Algo deu errado ao verificar seu login (" + (erro && erro.message ? erro.message : "erro desconhecido") + "). Clique em tentar de novo. Se continuar, confira sua internet.");
   }
-});
+}
 
 iniciar();
 </script>
