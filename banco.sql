@@ -313,5 +313,52 @@ values (
 
 
 -- ============================================================================
+-- SEUS 3 VÍDEOS DE DESTAQUE
+-- ============================================================================
+-- Se você JÁ rodou tudo o que está acima (as tabelas e as travas), não rode
+-- o arquivo inteiro de novo, senão as linhas de exemplo duplicam. Rode só
+-- este trecho daqui pra baixo, uma vez.
+--
+-- Troque o "titulo", o "nicho" e a "marca" de cada um pelo texto certo
+-- depois (pode editar direto pelo admin, na aba Portfólio, não precisa
+-- mexer em SQL de novo). Deixei "visivel = true" porque são vídeos de
+-- verdade, então eles já aparecem no site assim que você rodar isto.
+-- ============================================================================
+
+insert into public.videos (titulo, link, nicho, formato, marca, destaque, ordem, visivel)
+values
+  (
+    'Vídeo de destaque 1 (edite o título)',
+    'https://youtube.com/shorts/4Va5HqzsFY0?feature=share',
+    'Troque o nicho',
+    'vídeo vertical 9:16',
+    '',
+    '',
+    1,
+    true
+  ),
+  (
+    'Vídeo de destaque 2 (edite o título)',
+    'https://youtube.com/shorts/GlviMWWgpTc?feature=share',
+    'Troque o nicho',
+    'vídeo vertical 9:16',
+    '',
+    '',
+    2,
+    true
+  ),
+  (
+    'Vídeo de destaque 3 (edite o título)',
+    'https://youtube.com/shorts/YNd1idaCO3A?feature=share',
+    'Troque o nicho',
+    'vídeo vertical 9:16',
+    '',
+    '',
+    3,
+    true
+  );
+
+
+-- ============================================================================
 -- FIM DO SCRIPT
 -- ============================================================================
