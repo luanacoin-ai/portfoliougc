@@ -853,10 +853,16 @@
 
   /* ====== CONTATO ====== */
   .contact{ background:var(--bg-alt); }
+  .contact-lead{
+    font-size:1.05rem;
+    color:var(--gray-text);
+    max-width:520px;
+    margin:-6px 0 40px;
+  }
   .contact-grid{
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:48px;
+    grid-template-columns:1.15fr .85fr;
+    gap:24px;
     align-items:start;
   }
   @media (max-width: 860px){
@@ -872,7 +878,7 @@
   .field label{
     display:block;
     font-weight:700;
-    font-size:.88rem;
+    font-size:.85rem;
     margin-bottom:6px;
   }
   .field input,
@@ -883,6 +889,8 @@
     border-radius:10px;
     background:var(--bg);
   }
+  .field input::placeholder,
+  .field textarea::placeholder{ color:#9a9c93; }
   .field input:focus-visible,
   .field textarea:focus-visible{ outline-color:var(--black); }
   .field textarea{ min-height:120px; resize:vertical; }
@@ -896,9 +904,48 @@
   .form-msg[hidden]{ display:none; }
 
   .contact-side{ display:flex; flex-direction:column; gap:16px; }
-  .contact-side p{ font-size:1.03rem; margin-bottom:8px; }
-  .contact-buttons{ display:flex; flex-direction:column; gap:12px; }
-  .contact-buttons .btn{ justify-content:flex-start; }
+  .contact-card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--card);
+    border-radius:var(--radius-sm);
+    box-shadow:var(--shadow-soft-sm);
+    padding:16px 18px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  a.contact-card:hover,
+  a.contact-card:focus-visible{
+    transform:translateY(-3px);
+    box-shadow:var(--shadow-soft);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .contact-card{ transition:none; }
+    a.contact-card:hover{ transform:none; }
+  }
+  .contact-card .icone{
+    width:42px;
+    height:42px;
+    min-width:42px;
+    border-radius:50%;
+    background:var(--bg-alt);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .contact-card .icone svg{ width:18px; height:18px; }
+  .contact-card .rotulo{
+    font-size:.68rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--gray-text);
+  }
+  .contact-card .valor{
+    font-weight:700;
+    font-size:.95rem;
+    margin-top:2px;
+  }
 
   /* ====== RODAPE ====== */
   footer{
@@ -1206,35 +1253,33 @@
 
   <!-- ====== 7. BORA CRIAR JUNTOS ====== -->
   <section id="contato" class="contact">
-    <div class="container contact-grid reveal">
-      <div class="form-card">
-        <h2 class="section-title" style="font-size:1.6rem; margin-bottom:20px;">Bora criar juntos</h2>
-        <form id="contactForm" novalidate>
-          <div class="field">
-            <label for="nome">Nome</label>
-            <input type="text" id="nome" name="nome" required autocomplete="name">
-          </div>
-          <div class="field">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" required autocomplete="email">
-          </div>
-          <div class="field">
-            <label for="mensagem">Mensagem</label>
-            <textarea id="mensagem" name="mensagem" required></textarea>
-          </div>
-          <button type="submit" class="btn btn-lime btn-block">Enviar mensagem</button>
-          <p class="form-msg" id="formMsg" role="status" hidden>Mensagem enviada! Vou te responder em breve, obrigada pelo contato.</p>
-        </form>
-      </div>
-      <div class="contact-side">
-        <span class="eyebrow">Fale comigo</span>
-        <p>Prefere falar direto? Escolhe o canal que for melhor pra você.</p>
-        <div class="contact-buttons">
-          <a class="btn btn-outline" href="https://wa.me/5581989477095" target="_blank" rel="noopener">WhatsApp: (81) 98947-7095</a>
-          <a class="btn btn-outline" href="mailto:contato@luanacoin.com">E-mail: contato@luanacoin.com</a>
-          <a class="btn btn-outline" href="https://instagram.com/luanacoin" target="_blank" rel="noopener">Instagram: @luanacoin</a>
+    <div class="container reveal">
+      <span class="eyebrow">Novo projeto</span>
+      <h2 class="section-title">Bora criar juntos</h2>
+      <p class="contact-lead">Me conta a marca, o produto e a data. Eu volto com prazo e valor.</p>
+
+      <div class="contact-grid">
+        <div class="form-card">
+          <form id="contactForm" novalidate>
+            <div class="field">
+              <label for="nome">seu nome</label>
+              <input type="text" id="nome" name="nome" required autocomplete="name" placeholder="quem está falando">
+            </div>
+            <div class="field">
+              <label for="email">e-mail</label>
+              <input type="email" id="email" name="email" required autocomplete="email" placeholder="voce@suamarca.com">
+            </div>
+            <div class="field">
+              <label for="mensagem">o que você precisa</label>
+              <textarea id="mensagem" name="mensagem" required placeholder="produto, quantidade de vídeos e prazo"></textarea>
+            </div>
+            <button type="submit" class="btn btn-lime btn-block">enviar recado</button>
+            <p class="form-msg" id="formMsg" role="status" hidden>Mensagem enviada! Vou te responder em breve, obrigada pelo contato.</p>
+          </form>
         </div>
-        <p style="margin-top:10px; font-size:.9rem; color:var(--gray-text);">Atendo criadoras e marcas em todo o Brasil, a partir de Cabo de Santo Agostinho.</p>
+        <div class="contact-side" id="contactSide">
+          <!-- cartões preenchidos via JavaScript a partir do array contatoInfo -->
+        </div>
       </div>
     </div>
   </section>
@@ -1320,6 +1365,15 @@
     "linear-gradient(140deg, #eef0ec, #ffffff)"
   ];
 
+  // Canais de contato mostrados na seção "Bora criar juntos".
+  // "href" pode ficar em branco (null) para um cartão sem link, tipo o de agenda.
+  var contatoInfo = [
+    { icone: "email", rotulo: "E-mail", valor: "contato@luanacoin.com", href: "mailto:contato@luanacoin.com" },
+    { icone: "whatsapp", rotulo: "WhatsApp", valor: "(81) 98947-7095", href: "https://wa.me/5581989477095" },
+    { icone: "instagram", rotulo: "Instagram", valor: "@luanacoin", href: "https://instagram.com/luanacoin" },
+    { icone: "agenda", rotulo: "Agenda", valor: "Aberta pro mês que vem", href: null }
+  ];
+
   // Servicos oferecidos.
   var servicos = [
     { titulo: "Vídeo UGC", descricao: "Vídeo autêntico estilo depoimento, roteirizado para parecer conteúdo espontâneo de rede social." },
@@ -1364,6 +1418,37 @@
     if(html !== undefined) e.innerHTML = html;
     return e;
   }
+
+  // Icones de traco usados nos cartoes de contato.
+  var ICONES_CONTATO = {
+    email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg>',
+    whatsapp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+    instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="6"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.2" cy="6.8" r="1"/></svg>',
+    agenda: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>'
+  };
+
+  // Cartoes de contato (E-mail, WhatsApp, Instagram, Agenda)
+  var contactSideEl = document.getElementById("contactSide");
+  contatoInfo.forEach(function(item){
+    var card = el(item.href ? "a" : "div", "contact-card");
+    if(item.href){
+      card.href = item.href;
+      if(item.href.indexOf("http") === 0){
+        card.target = "_blank";
+        card.rel = "noopener";
+      }
+    }
+    var icone = el("span", "icone", ICONES_CONTATO[item.icone] || "");
+    icone.setAttribute("aria-hidden", "true");
+    card.appendChild(icone);
+    var texto = el("span");
+    texto.appendChild(el("span", "rotulo", item.rotulo));
+    texto.appendChild(el("span", "valor", item.valor));
+    texto.style.display = "flex";
+    texto.style.flexDirection = "column";
+    card.appendChild(texto);
+    contactSideEl.appendChild(card);
+  });
 
   // Hero stats
   var heroStatsEl = document.getElementById("heroStats");
