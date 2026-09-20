@@ -20,7 +20,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // ---- ajustes fixos deste disparo ----
 const EMAIL_PERMITIDO = "luanacoin@gmail.com";   // só esta pessoa pode disparar
 const EMAIL_RESPOSTA = "contato@luanacoin.com";   // pra onde as respostas das marcas vão (reply-to)
-const REMETENTE = "Luana Coin <contato@luanacoin.com>"; // quem aparece como remetente
+const REMETENTE = "Luana Coin <contato@luanacoin.com>"; // quem aparece como remetente pras marcas
+// Enquanto o domínio luanacoin.com não estiver verificado no Resend, ele só
+// deixa mandar e-mail usando este remetente de teste dele mesmo, e só pra
+// quem é dona da conta Resend. Por isso: e-mail pra você mesma usa este
+// remetente (funciona hoje, sem precisar verificar nada); e-mail pra
+// qualquer outra pessoa usa o REMETENTE de verdade (precisa do domínio
+// verificado, porque é um envio de verdade pra fora).
+const REMETENTE_TESTE = "Luana Coin <onboarding@resend.dev>";
 const MAXIMO_POR_CHAMADA = 250;                   // limite de segurança por chamada
 const ESPERA_ENTRE_ENVIOS_MS = 200;               // ~5 e-mails por segundo, ritmo seguro do Resend
 
@@ -137,6 +144,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const htmlPersonalizado = personalizar(html, destinatario?.nome || "");
+    const remetenteUsado = emailDestino === EMAIL_PERMITIDO.toLowerCase() ? REMETENTE_TESTE : REMETENTE;
 
     try {
       const respostaResend = await fetch("https://api.resend.com/emails", {
@@ -146,7 +154,7 @@ Deno.serve(async (req: Request) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: REMETENTE,
+          from: remetenteUsado,
           to: [emailDestino],
           reply_to: EMAIL_RESPOSTA,
           subject: assunto,
