@@ -643,6 +643,24 @@ function icone(nome){ return ICONES[nome] || ""; }
    LISTAS FIXAS USADAS EM VÁRIOS PONTOS DO PAINEL
 ============================================================================ */
 var NICHOS_VIDEO = ["Beleza", "Skincare", "Casa e Decoração", "Maternidade", "Pet", "Tech"];
+var CORES_NICHO = ["#ff3da6", "#7ea600", "#ff6a2b", "#2b6fff", "#00b8a9", "#7c5cff"];
+function corNicho(nicho){
+  var idx = NICHOS_VIDEO.indexOf(nicho);
+  return idx === -1 ? "#8a8a8a" : CORES_NICHO[idx % CORES_NICHO.length];
+}
+// Monta as <option> do seletor de nicho. Se o valor atual não bater com
+// nenhum nicho da lista fixa (ex: veio de uma planilha antiga com texto
+// livre), ele entra como uma opção extra, pra não sumir dado ninguém pediu.
+function opcoesSelectNicho(valorAtual){
+  var opcoes = '<option value="" ' + (!valorAtual ? "selected" : "") + '>-</option>';
+  opcoes += NICHOS_VIDEO.map(function(n){
+    return '<option value="' + escapa(n) + '" ' + (valorAtual === n ? "selected" : "") + '>' + escapa(n) + '</option>';
+  }).join("");
+  if(valorAtual && NICHOS_VIDEO.indexOf(valorAtual) === -1){
+    opcoes += '<option value="' + escapa(valorAtual) + '" selected>' + escapa(valorAtual) + '</option>';
+  }
+  return opcoes;
+}
 
 var SITUACOES = [
   { valor: "lead", rotulo: "Lead", cor: "#2b6fff" },
@@ -1318,15 +1336,10 @@ async function abaProspeccao(painel){
   });
   html += '</div>';
 
-  var nichos = valoresUnicos(todas, "nicho");
   var origens = valoresUnicos(todas, "origem");
 
   html += '<div class="barra-acoes">' +
     '<div class="campo-busca">' + icone("busca") + '<input id="buscaProsp" placeholder="Buscar por nome, @ ou e-mail" value="' + escapa(buscaProspTexto) + '"></div>' +
-    '<select id="filtroProspNichoSelect" class="btn">' +
-      '<option value="todos">Todos os nichos</option>' +
-      nichos.map(function(n){ return '<option value="' + escapa(n) + '" ' + (filtroProspNicho === n ? "selected" : "") + '>' + escapa(n) + '</option>'; }).join("") +
-    '</select>' +
     '<select id="filtroProspOrigemSelect" class="btn">' +
       '<option value="todos">Todas as origens</option>' +
       origens.map(function(o){ return '<option value="' + escapa(o) + '" ' + (filtroProspOrigem === o ? "selected" : "") + '>' + escapa(o) + '</option>'; }).join("") +
@@ -1336,7 +1349,8 @@ async function abaProspeccao(painel){
     '<button class="btn btn-principal" id="btnNovaProsp">' + icone("mais") + ' Adicionar</button>' +
   '</div>';
 
-  html += '<div class="chips" id="chipsStatusProsp" style="margin-bottom:14px;"></div>';
+  html += '<div class="chips" id="chipsStatusProsp" style="margin-bottom:8px;"></div>';
+  html += '<div class="chips" id="chipsNichoProsp" style="margin-bottom:14px;"></div>';
 
   html += '<div class="painel-branco"><div class="tabela-scroll" id="areaTabelaProsp"></div></div>';
 
@@ -1350,12 +1364,16 @@ async function abaProspeccao(painel){
     chipsStatus.appendChild(chip);
   });
 
+  var chipsNicho = document.getElementById("chipsNichoProsp");
+  var opcoesChipNicho = [{ valor: "todos", rotulo: "Todos os nichos" }].concat(NICHOS_VIDEO.map(function(n){ return { valor: n, rotulo: n }; }));
+  opcoesChipNicho.forEach(function(op){
+    var chip = el('<button type="button" class="chip ' + (filtroProspNicho === op.valor ? "ativo" : "") + '">' + op.rotulo + '</button>');
+    chip.addEventListener("click", function(){ filtroProspNicho = op.valor; irParaAba("prospeccao"); });
+    chipsNicho.appendChild(chip);
+  });
+
   document.getElementById("buscaProsp").addEventListener("input", function(e){
     buscaProspTexto = e.target.value;
-    desenharTabelaProspeccao(todas);
-  });
-  document.getElementById("filtroProspNichoSelect").addEventListener("change", function(e){
-    filtroProspNicho = e.target.value;
     desenharTabelaProspeccao(todas);
   });
   document.getElementById("filtroProspOrigemSelect").addEventListener("change", function(e){
@@ -1410,12 +1428,13 @@ function desenharTabelaProspeccao(todas){
     var opcoesStatus = STATUS_PROSPECCAO.map(function(s){
       return '<option value="' + s.valor + '" ' + (m.status === s.valor ? "selected" : "") + '>' + s.rotulo + '</option>';
     }).join("");
+    var corNichoAtual = corNicho(m.nicho);
 
     var tr = el(
       '<tr class="clicavel">' +
         '<td><strong>' + escapa(m.nome) + '</strong></td>' +
         '<td>' + (linkI ? '<a href="' + linkI + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + escapa(m.instagram) + '</a>' : (m.instagram ? escapa(m.instagram) : "-")) + '</td>' +
-        '<td>' + escapa(m.nicho || "-") + '</td>' +
+        '<td><select class="select-status select-nicho" style="background:' + corNichoAtual + '22; color:' + corNichoAtual + '">' + opcoesSelectNicho(m.nicho) + '</select></td>' +
         '<td>' + escapa(m.origem || "-") + '</td>' +
         '<td>' + escapa(m.seguidores || "-") + '</td>' +
         '<td><select class="select-status" style="background:' + corStatus + '22; color:' + corStatus + '">' + opcoesStatus + '</select></td>' +
@@ -1424,7 +1443,14 @@ function desenharTabelaProspeccao(todas){
       '</tr>'
     );
 
-    var seletorStatus = tr.querySelector(".select-status");
+    var seletorNicho = tr.querySelector(".select-nicho");
+    seletorNicho.addEventListener("click", function(e){ e.stopPropagation(); });
+    seletorNicho.addEventListener("change", async function(e){
+      var res = await buscarSeguro(banco.from("prospeccao").update({ nicho: e.target.value || null }).eq("id", m.id));
+      if(res.ok) irParaAba("prospeccao");
+    });
+
+    var seletorStatus = tr.querySelector(".select-status:not(.select-nicho)");
     seletorStatus.addEventListener("click", function(e){ e.stopPropagation(); });
     seletorStatus.addEventListener("change", async function(e){
       var res = await buscarSeguro(banco.from("prospeccao").update({ status: e.target.value }).eq("id", m.id));
@@ -1456,7 +1482,7 @@ function abrirFormProspeccao(marca){
       '</div>' +
       '<div class="form-linha">' +
         '<div class="campo"><label>Seguidores</label><input id="fpSeguidores" placeholder="ex: 120 mil" value="' + (editando ? escapa(marca.seguidores || "") : "") + '"></div>' +
-        '<div class="campo"><label>Nicho</label><input id="fpNicho" value="' + (editando ? escapa(marca.nicho || "") : "") + '"></div>' +
+        '<div class="campo"><label>Nicho</label><select id="fpNicho">' + opcoesSelectNicho(editando ? marca.nicho : "") + '</select></div>' +
       '</div>' +
       '<div class="form-linha">' +
         '<div class="campo"><label>E-mail</label><input id="fpEmail" value="' + (editando ? escapa(marca.email || "") : "") + '"></div>' +
