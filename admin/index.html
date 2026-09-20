@@ -1009,8 +1009,10 @@ function abrirFormVideo(video){
       '</div>' +
       '<div class="form-linha">' +
         '<div class="campo"><label>Marca</label><input id="fvMarca" value="' + (editando ? escapa(video.marca || "") : "") + '"></div>' +
-        '<div class="campo"><label>Destaque (ex: 2,4M views)</label><input id="fvDestaque" value="' + (editando ? escapa(video.destaque || "") : "") + '"></div>' +
+        '<div class="campo"><label>Duração (ex: 00:32)</label><input id="fvDuracao" value="' + (editando ? escapa(video.duracao || "") : "") + '"></div>' +
       '</div>' +
+      '<div class="campo"><label>Legenda (linha curta explicando o vídeo)</label><input id="fvLegenda" placeholder="Vídeo de 30s pra anúncio, com três ganchos." value="' + (editando ? escapa(video.legenda || "") : "") + '"></div>' +
+      '<div class="campo"><label>Destaque (ex: 2,4M views, opcional)</label><input id="fvDestaque" value="' + (editando ? escapa(video.destaque || "") : "") + '"></div>' +
       '<div class="campo campo-check"><input type="checkbox" id="fvVisivel" ' + (!editando || video.visivel ? "checked" : "") + '><label for="fvVisivel">Visível no site</label></div>' +
       '<div class="form-acoes">' +
         '<span></span>' +
@@ -1028,6 +1030,8 @@ function abrirFormVideo(video){
       nicho: document.getElementById("fvNicho").value,
       formato: document.getElementById("fvFormato").value.trim(),
       marca: document.getElementById("fvMarca").value.trim(),
+      duracao: document.getElementById("fvDuracao").value.trim(),
+      legenda: document.getElementById("fvLegenda").value.trim(),
       destaque: document.getElementById("fvDestaque").value.trim(),
       visivel: document.getElementById("fvVisivel").checked
     };

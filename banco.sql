@@ -23,10 +23,17 @@ create table if not exists public.videos (
   formato text not null,
   marca text,
   destaque text,              -- texto livre, ex: "2,4M views" ou "980 mil views"
+  legenda text,                -- linha curta explicando o video, ex: "Video de 30s pra anuncio, com tres ganchos."
+  duracao text,                -- texto livre, ex: "00:32"
   ordem integer not null default 0,   -- ordem de exibição no site (menor aparece primeiro)
   visivel boolean not null default true,  -- se falso, some do site mas continua no admin
   criado_em timestamptz not null default now()
 );
+
+-- Se a tabela "videos" ja existia de antes (sem as colunas legenda e duracao),
+-- este comando adiciona as colunas sem apagar nada do que ja esta la.
+alter table public.videos add column if not exists legenda text;
+alter table public.videos add column if not exists duracao text;
 
 
 -- ============================================================================

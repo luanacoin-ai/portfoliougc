@@ -580,6 +580,14 @@
     .destaque-card{ transition:none; }
     .destaque-card:hover{ transform:none; }
   }
+  .destaque-nicho{
+    display:block;
+    padding:16px 18px 0;
+    font-size:.7rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
   .destaque-cover{
     aspect-ratio:9/16;
     position:relative;
@@ -594,22 +602,11 @@
     border:2px dashed var(--lime-strong);
     border-radius:10px;
   }
-  .destaque-cover .cover-label{
-    position:absolute;
-    bottom:12px;
-    left:12px;
-    font-size:.72rem;
-    font-weight:700;
-    color:#fff;
-    background:rgba(17,17,17,.6);
-    padding:6px 10px;
-    border-radius:999px;
-  }
   .play-btn{
-    width:58px;
-    height:58px;
+    width:60px;
+    height:60px;
     border-radius:50%;
-    background:#fff;
+    background:var(--lime);
     box-shadow:var(--shadow-soft-sm);
     display:flex;
     align-items:center;
@@ -623,30 +620,31 @@
     border-color:transparent transparent transparent var(--black);
     margin-left:4px;
   }
-  .destaque-body{ padding:18px; }
-  .destaque-number{
-    display:inline-block;
-    font-weight:800;
-    font-size:1.3rem;
-    background:var(--lime);
-    padding:2px 8px;
-    border-radius:6px;
-  }
-  .destaque-label{
+  .destaque-body{ padding:16px 18px 18px; }
+  .destaque-formato{
+    display:block;
     font-size:.7rem;
     font-weight:700;
     text-transform:uppercase;
-    letter-spacing:.05em;
+    letter-spacing:.04em;
     color:var(--gray-text);
-    margin:8px 0 6px;
-    display:block;
+    margin-bottom:10px;
   }
   .destaque-title{
     font-size:1.02rem;
     font-weight:800;
     margin-bottom:6px;
   }
-  .destaque-context{ font-size:.88rem; color:var(--gray-text); }
+  .destaque-legenda{
+    font-size:.86rem;
+    color:var(--gray-text);
+    margin-bottom:10px;
+  }
+  .destaque-meta{
+    font-size:.76rem;
+    font-weight:600;
+    color:var(--gray-text);
+  }
 
   /* ====== TRABALHOS ====== */
   .filters{
@@ -1559,22 +1557,28 @@
       card.setAttribute("aria-label", item.titulo + ", assistir vídeo");
       card.addEventListener("click", function(){ abrirVideo(item.link); });
 
+      if(item.nicho){ card.appendChild(el("span", "destaque-nicho", item.nicho)); }
+
       var cover = el("div", "destaque-cover");
       aplicarCapa(cover, item, indice);
       cover.appendChild(el("span", "frame-mini"));
       var play = el("span", "play-btn");
       play.setAttribute("aria-hidden", "true");
       cover.appendChild(play);
-      cover.appendChild(el("span", "cover-label", "capa vertical 9:16"));
       card.appendChild(cover);
 
       var body = el("div", "destaque-body");
-      if(item.destaque){ body.appendChild(el("span", "destaque-number", item.destaque)); }
-      body.appendChild(el("span", "destaque-label", item.marca || item.nicho || ""));
+      if(item.formato){ body.appendChild(el("span", "destaque-formato", item.formato)); }
       body.appendChild(el("h3", "destaque-title", item.titulo));
-      body.appendChild(el("p", "destaque-context", item.formato || ""));
-      card.appendChild(body);
+      if(item.legenda){ body.appendChild(el("p", "destaque-legenda", item.legenda)); }
 
+      var metaPartes = [];
+      if(item.duracao) metaPartes.push(item.duracao);
+      if(item.formato) metaPartes.push(item.formato);
+      metaPartes.push(item.visivel ? "pronto" : "rascunho");
+      body.appendChild(el("p", "destaque-meta", metaPartes.join(" · ")));
+
+      card.appendChild(body);
       destaquesGrid.appendChild(card);
     });
   }
