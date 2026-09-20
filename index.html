@@ -298,6 +298,7 @@
   /* ---- visual flutuante ---- */
   .hero-visual{
     position:relative;
+    width:100%;
     padding:34px 30px 56px;
   }
   .hero-photo{
@@ -306,19 +307,15 @@
     border-radius:var(--radius);
     background:linear-gradient(150deg, #eef0ec, #ffffff);
     box-shadow:var(--shadow-soft);
-    display:flex;
-    align-items:flex-end;
-    padding:18px;
+    overflow:hidden;
     z-index:2;
   }
-  .hero-photo span.legenda{
-    position:relative;
-    font-size:.8rem;
-    font-weight:700;
-    color:#fff;
-    background:rgba(17,17,17,.6);
-    padding:7px 12px;
-    border-radius:999px;
+  .hero-video{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
   }
   .select-frame{
     position:absolute;
@@ -1131,10 +1128,12 @@
         </div>
 
         <div class="hero-visual">
-          <!-- TROQUE AQUI: troque o degradê dentro de .hero-photo por <img src="sua-foto.jpg" alt="Foto de Luana Coin"> mantendo a proporção 4:5 -->
+          <!-- TROQUE AQUI: pra trocar o video, substitua midia/apresentacao.mp4 e midia/apresentacao-capa.jpg
+               por outro vídeo (mesmo nome) ou volte a ser foto trocando a tag video por
+               <img src="sua-foto.jpg" alt="Foto de Luana Coin"> -->
           <div class="hero-photo">
+            <video class="hero-video" src="midia/apresentacao.mp4" poster="midia/apresentacao-capa.jpg" autoplay muted loop playsinline aria-label="Vídeo de apresentação de Luana Coin"></video>
             <div class="select-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-            <span class="legenda">foto da creator 4:5</span>
           </div>
 
           <!-- decoracoes flutuantes, so enfeite, somem no celular -->
@@ -1335,6 +1334,17 @@
 (function(){
   "use strict";
 
+  // Quem prefere menos movimento nao precisa do video da capa tocando
+  // sozinho: para nesse caso e fica so na primeira imagem (poster).
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    var videoHero = document.querySelector(".hero-video");
+    if(videoHero){
+      videoHero.removeAttribute("autoplay");
+      videoHero.pause();
+      videoHero.currentTime = 0;
+    }
+  }
+
   /* =========================================================================
      DADOS DO PORTFOLIO
      Edite os valores abaixo para atualizar o site sem mexer no HTML/CSS.
@@ -1351,7 +1361,7 @@
   // Marcas que já trabalharam com você. Troque ou adicione quantas quiser.
   var marcas = [
     "AVON", "ZOSS", "LIVEALOE", "L'ORÉAL PARIS", "GIOVANNA BABY", "YUUPI",
-    "SOFT COLOR", "MAYBELLINE", "THE SKIN SOUL", "DOVE", "JEITÔ FYS", "Marca 12"
+    "SOFT COLOR", "MAYBELLINE", "THE SKIN SOUL", "DOVE", "JEITÔ", "FYS"
   ];
 
   // Nichos disponiveis para o filtro (a primeira opcao "Todos" e adicionada automaticamente).
