@@ -341,6 +341,32 @@
   .etiqueta.atrasado{ background:#fdeaea; color:var(--vermelho); }
   .etiqueta.vence{ background:#fff6de; color:#8a6400; }
 
+  .select-status{
+    border:none;
+    border-radius:999px;
+    padding:4px 22px 4px 10px;
+    font-size:.7rem;
+    font-weight:700;
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    background-repeat:no-repeat;
+    background-position:right 6px center;
+    background-size:12px;
+    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23111111" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>');
+  }
+  .barra-acoes select.btn{
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    padding-right:28px;
+    background-repeat:no-repeat;
+    background-position:right 10px center;
+    background-size:12px;
+    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23111111" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>');
+  }
+
   .linha-favorita{ box-shadow: inset 3px 0 0 var(--magenta); }
 
   .acoes-linha{ display:flex; gap:4px; }
@@ -548,6 +574,7 @@
       <p class="grupo-label">meu site</p>
       <button class="item-menu" data-tab="portfolio"></button>
       <button class="item-menu" data-tab="marcas"></button>
+      <button class="item-menu" data-tab="prospeccao"></button>
       <p class="grupo-label">minha rotina</p>
       <button class="item-menu" data-tab="calendario"></button>
       <button class="item-menu" data-tab="campanhas"></button>
@@ -587,6 +614,7 @@
 var ICONES = {
   portfolio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3V9z"/></svg>',
   marcas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  prospeccao: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>',
   calendario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
   campanhas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20V10M10 20V4M17 20v-7"/></svg>',
   checklist: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>',
@@ -620,6 +648,15 @@ var SITUACOES = [
   { valor: "conversando", rotulo: "Conversando", cor: "#ff6a2b" },
   { valor: "cliente", rotulo: "Cliente", cor: "#7ea600" },
   { valor: "parada", rotulo: "Parada", cor: "#8a8a8a" }
+];
+
+var STATUS_PROSPECCAO = [
+  { valor: "a_enviar", rotulo: "A enviar", cor: "#8a8a8a" },
+  { valor: "enviado", rotulo: "Enviado", cor: "#2b6fff" },
+  { valor: "respondeu", rotulo: "Respondeu", cor: "#ff6a2b" },
+  { valor: "proposta", rotulo: "Proposta", cor: "#ff3da6" },
+  { valor: "fechado", rotulo: "Fechado", cor: "#7ea600" },
+  { valor: "sem_interesse", rotulo: "Sem interesse", cor: "#e5484d" }
 ];
 
 var TIPOS_CALENDARIO = [
@@ -759,6 +796,7 @@ document.addEventListener("keydown", function(e){ if(e.key === "Escape" && !moda
 var ABAS = {
   portfolio: { titulo: "Portfólio", icone: "portfolio" },
   marcas: { titulo: "Marcas", icone: "marcas" },
+  prospeccao: { titulo: "Prospecção", icone: "prospeccao" },
   calendario: { titulo: "Calendário", icone: "calendario" },
   campanhas: { titulo: "Campanhas", icone: "campanhas" },
   checklist: { titulo: "Checklist Portfólio", icone: "checklist" }
@@ -788,6 +826,7 @@ async function renderizarAba(nome){
   try{
     if(nome === "portfolio") await abaPortfolio(painel);
     else if(nome === "marcas") await abaMarcas(painel);
+    else if(nome === "prospeccao") await abaProspeccao(painel);
     else if(nome === "calendario") await abaCalendario(painel);
     else if(nome === "campanhas") await abaCampanhas(painel);
     else if(nome === "checklist") await abaChecklist(painel);
@@ -1235,6 +1274,388 @@ function abrirFormMarca(marca){
     fecharModal();
     irParaAba("marcas");
   });
+}
+
+/* ============================================================================
+   ABA: PROSPECÇÃO
+   Sua base de prospecção ativa: marcas que você vai atrás para oferecer
+   parceria. Guardada na tabela "prospeccao" (diferente da tabela "marcas",
+   que recebe contatos vindos do formulário do site).
+============================================================================ */
+var filtroProspStatus = "todos";
+var filtroProspNicho = "todos";
+var filtroProspOrigem = "todos";
+var buscaProspTexto = "";
+
+function valoresUnicos(lista, campo){
+  var vistos = {};
+  var resultado = [];
+  lista.forEach(function(item){
+    var v = (item[campo] || "").trim();
+    if(!v || vistos[v]) return;
+    vistos[v] = true;
+    resultado.push(v);
+  });
+  resultado.sort();
+  return resultado;
+}
+
+async function abaProspeccao(painel){
+  var res = await buscarSeguro(banco.from("prospeccao").select("*").order("criado_em", { ascending: false }));
+
+  var html = "";
+  if(!res.ok) html += faixaAviso("Não consegui carregar a tabela de prospecção. Confira se ela existe no seu Supabase (veja o arquivo banco.sql).", "erro");
+
+  var todas = res.dados;
+
+  // ---- contador no topo: total + quantas em cada status ----
+  html += '<div class="grade-cartoes">';
+  html += '<div class="cartao"><div class="numero">' + todas.length + '</div><div class="rotulo">total</div></div>';
+  STATUS_PROSPECCAO.forEach(function(s){
+    var qtd = todas.filter(function(m){ return m.status === s.valor; }).length;
+    html += '<div class="cartao"><div class="numero" style="color:' + s.cor + '">' + qtd + '</div><div class="rotulo">' + s.rotulo + '</div></div>';
+  });
+  html += '</div>';
+
+  var nichos = valoresUnicos(todas, "nicho");
+  var origens = valoresUnicos(todas, "origem");
+
+  html += '<div class="barra-acoes">' +
+    '<div class="campo-busca">' + icone("busca") + '<input id="buscaProsp" placeholder="Buscar por nome, @ ou e-mail" value="' + escapa(buscaProspTexto) + '"></div>' +
+    '<select id="filtroProspNichoSelect" class="btn">' +
+      '<option value="todos">Todos os nichos</option>' +
+      nichos.map(function(n){ return '<option value="' + escapa(n) + '" ' + (filtroProspNicho === n ? "selected" : "") + '>' + escapa(n) + '</option>'; }).join("") +
+    '</select>' +
+    '<select id="filtroProspOrigemSelect" class="btn">' +
+      '<option value="todos">Todas as origens</option>' +
+      origens.map(function(o){ return '<option value="' + escapa(o) + '" ' + (filtroProspOrigem === o ? "selected" : "") + '>' + escapa(o) + '</option>'; }).join("") +
+    '</select>' +
+    '<input type="file" id="arquivoCSVProsp" accept=".csv" style="display:none">' +
+    '<button class="btn" id="btnImportarCSVProsp">' + icone("baixar") + ' Importar CSV</button>' +
+    '<button class="btn btn-principal" id="btnNovaProsp">' + icone("mais") + ' Adicionar</button>' +
+  '</div>';
+
+  html += '<div class="chips" id="chipsStatusProsp" style="margin-bottom:14px;"></div>';
+
+  html += '<div class="painel-branco"><div class="tabela-scroll" id="areaTabelaProsp"></div></div>';
+
+  painel.innerHTML = html;
+
+  var chipsStatus = document.getElementById("chipsStatusProsp");
+  var opcoesChip = [{ valor: "todos", rotulo: "Todos" }].concat(STATUS_PROSPECCAO.map(function(s){ return { valor: s.valor, rotulo: s.rotulo }; }));
+  opcoesChip.forEach(function(op){
+    var chip = el('<button type="button" class="chip ' + (filtroProspStatus === op.valor ? "ativo" : "") + '">' + op.rotulo + '</button>');
+    chip.addEventListener("click", function(){ filtroProspStatus = op.valor; irParaAba("prospeccao"); });
+    chipsStatus.appendChild(chip);
+  });
+
+  document.getElementById("buscaProsp").addEventListener("input", function(e){
+    buscaProspTexto = e.target.value;
+    desenharTabelaProspeccao(todas);
+  });
+  document.getElementById("filtroProspNichoSelect").addEventListener("change", function(e){
+    filtroProspNicho = e.target.value;
+    desenharTabelaProspeccao(todas);
+  });
+  document.getElementById("filtroProspOrigemSelect").addEventListener("change", function(e){
+    filtroProspOrigem = e.target.value;
+    desenharTabelaProspeccao(todas);
+  });
+
+  document.getElementById("btnNovaProsp").addEventListener("click", function(){ abrirFormProspeccao(null); });
+
+  var inputArquivo = document.getElementById("arquivoCSVProsp");
+  document.getElementById("btnImportarCSVProsp").addEventListener("click", function(){ inputArquivo.click(); });
+  inputArquivo.addEventListener("change", function(e){
+    var arquivo = e.target.files && e.target.files[0];
+    if(arquivo) lerCSVProspeccao(arquivo);
+    inputArquivo.value = "";
+  });
+
+  desenharTabelaProspeccao(todas);
+}
+
+function filtrarProspeccao(lista){
+  return lista.filter(function(m){
+    if(filtroProspStatus !== "todos" && m.status !== filtroProspStatus) return false;
+    if(filtroProspNicho !== "todos" && (m.nicho || "") !== filtroProspNicho) return false;
+    if(filtroProspOrigem !== "todos" && (m.origem || "") !== filtroProspOrigem) return false;
+    if(!buscaProspTexto) return true;
+    var alvo = (m.nome + " " + (m.instagram||"") + " " + (m.email||"")).toLowerCase();
+    return alvo.indexOf(buscaProspTexto.toLowerCase()) !== -1;
+  });
+}
+
+function desenharTabelaProspeccao(todas){
+  var area = document.getElementById("areaTabelaProsp");
+  var lista = filtrarProspeccao(todas);
+
+  if(todas.length === 0){
+    area.innerHTML = '<div class="vazio-explicacao">Você ainda não tem nenhuma marca na prospecção. Clique em "Adicionar" para cadastrar a primeira, ou em "Importar CSV" para trazer uma planilha inteira de uma vez.</div>';
+    return;
+  }
+  if(lista.length === 0){
+    area.innerHTML = '<div class="vazio-explicacao">Nenhuma marca encontrada com esse filtro.</div>';
+    return;
+  }
+
+  var tabela = el('<table><thead><tr><th>Marca</th><th>Instagram</th><th>Nicho</th><th>Origem</th><th>Seguidores</th><th>Status</th><th>Data</th><th></th></tr></thead><tbody></tbody></table>');
+  var corpo = tabela.querySelector("tbody");
+
+  lista.forEach(function(m){
+    var linkW = linkWhatsapp(m.whatsapp);
+    var linkI = linkInstagram(m.instagram);
+    var corStatus = (STATUS_PROSPECCAO.find(function(s){ return s.valor === m.status; }) || STATUS_PROSPECCAO[0]).cor;
+    var opcoesStatus = STATUS_PROSPECCAO.map(function(s){
+      return '<option value="' + s.valor + '" ' + (m.status === s.valor ? "selected" : "") + '>' + s.rotulo + '</option>';
+    }).join("");
+
+    var tr = el(
+      '<tr class="clicavel">' +
+        '<td><strong>' + escapa(m.nome) + '</strong></td>' +
+        '<td>' + (linkI ? '<a href="' + linkI + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + escapa(m.instagram) + '</a>' : (m.instagram ? escapa(m.instagram) : "-")) + '</td>' +
+        '<td>' + escapa(m.nicho || "-") + '</td>' +
+        '<td>' + escapa(m.origem || "-") + '</td>' +
+        '<td>' + escapa(m.seguidores || "-") + '</td>' +
+        '<td><select class="select-status" style="background:' + corStatus + '22; color:' + corStatus + '">' + opcoesStatus + '</select></td>' +
+        '<td>' + (m.data ? formatarData(m.data) : "-") + '</td>' +
+        '<td><div class="acoes-linha">' + (linkW ? '<a class="btn btn-icone" href="' + linkW + '" target="_blank" rel="noopener" title="WhatsApp" onclick="event.stopPropagation()">' + icone("whats") + '</a>' : '') + '</div></td>' +
+      '</tr>'
+    );
+
+    var seletorStatus = tr.querySelector(".select-status");
+    seletorStatus.addEventListener("click", function(e){ e.stopPropagation(); });
+    seletorStatus.addEventListener("change", async function(e){
+      var res = await buscarSeguro(banco.from("prospeccao").update({ status: e.target.value }).eq("id", m.id));
+      if(res.ok) irParaAba("prospeccao");
+    });
+
+    tr.addEventListener("click", function(){ abrirFormProspeccao(m); });
+    corpo.appendChild(tr);
+  });
+
+  area.innerHTML = "";
+  area.appendChild(tabela);
+}
+
+function abrirFormProspeccao(marca){
+  var editando = !!marca;
+  var opcoesStatus = STATUS_PROSPECCAO.map(function(s){
+    var sel = editando && marca.status === s.valor ? "selected" : "";
+    return '<option value="' + s.valor + '" ' + sel + '>' + s.rotulo + '</option>';
+  }).join("");
+
+  abrirModal(
+    '<p class="form-titulo">' + (editando ? "Editar marca" : "Adicionar marca") + '</p>' +
+    '<form id="formProsp">' +
+      '<div class="campo"><label>Nome</label><input required id="fpNome" value="' + (editando ? escapa(marca.nome) : "") + '"></div>' +
+      '<div class="form-linha">' +
+        '<div class="campo"><label>Site</label><input id="fpSite" value="' + (editando ? escapa(marca.site || "") : "") + '"></div>' +
+        '<div class="campo"><label>Instagram</label><input id="fpInstagram" value="' + (editando ? escapa(marca.instagram || "") : "") + '"></div>' +
+      '</div>' +
+      '<div class="form-linha">' +
+        '<div class="campo"><label>Seguidores</label><input id="fpSeguidores" placeholder="ex: 120 mil" value="' + (editando ? escapa(marca.seguidores || "") : "") + '"></div>' +
+        '<div class="campo"><label>Nicho</label><input id="fpNicho" value="' + (editando ? escapa(marca.nicho || "") : "") + '"></div>' +
+      '</div>' +
+      '<div class="form-linha">' +
+        '<div class="campo"><label>E-mail</label><input id="fpEmail" value="' + (editando ? escapa(marca.email || "") : "") + '"></div>' +
+        '<div class="campo"><label>WhatsApp</label><input id="fpWhatsapp" value="' + (editando ? escapa(marca.whatsapp || "") : "") + '"></div>' +
+      '</div>' +
+      '<div class="form-linha">' +
+        '<div class="campo"><label>Pessoa de contato</label><input id="fpContato" value="' + (editando ? escapa(marca.contato || "") : "") + '"></div>' +
+        '<div class="campo"><label>Origem (onde encontrou)</label><input id="fpOrigem" value="' + (editando ? escapa(marca.origem || "") : "") + '"></div>' +
+      '</div>' +
+      '<div class="form-linha">' +
+        '<div class="campo"><label>Status</label><select id="fpStatus">' + opcoesStatus + '</select></div>' +
+        '<div class="campo"><label>Data</label><input type="date" id="fpData" value="' + (editando && marca.data ? marca.data : "") + '"></div>' +
+      '</div>' +
+      '<div class="campo"><label>Observação</label><textarea id="fpObs">' + (editando ? escapa(marca.observacao || "") : "") + '</textarea></div>' +
+      '<div class="form-acoes">' +
+        (editando ? '<button type="button" class="btn btn-perigo" id="btnApagarProsp">Apagar</button>' : '<span></span>') +
+        '<button type="submit" class="btn btn-principal">Salvar</button>' +
+      '</div>' +
+      '<p class="aviso erro oculto" id="fpErro"></p>' +
+    '</form>'
+  );
+
+  if(editando){
+    document.getElementById("btnApagarProsp").addEventListener("click", async function(){
+      await buscarSeguro(banco.from("prospeccao").delete().eq("id", marca.id));
+      fecharModal();
+      irParaAba("prospeccao");
+    });
+  }
+
+  document.getElementById("formProsp").addEventListener("submit", async function(e){
+    e.preventDefault();
+    var dados = {
+      nome: document.getElementById("fpNome").value.trim(),
+      site: document.getElementById("fpSite").value.trim(),
+      instagram: document.getElementById("fpInstagram").value.trim(),
+      seguidores: document.getElementById("fpSeguidores").value.trim(),
+      email: document.getElementById("fpEmail").value.trim(),
+      whatsapp: document.getElementById("fpWhatsapp").value.trim(),
+      contato: document.getElementById("fpContato").value.trim(),
+      nicho: document.getElementById("fpNicho").value.trim(),
+      origem: document.getElementById("fpOrigem").value.trim(),
+      status: document.getElementById("fpStatus").value,
+      data: document.getElementById("fpData").value || null,
+      observacao: document.getElementById("fpObs").value.trim()
+    };
+    var res = editando
+      ? await buscarSeguro(banco.from("prospeccao").update(dados).eq("id", marca.id))
+      : await buscarSeguro(banco.from("prospeccao").insert(dados));
+
+    if(!res.ok){
+      var erroEl = document.getElementById("fpErro");
+      erroEl.textContent = "Não consegui salvar: " + res.mensagem;
+      erroEl.classList.remove("oculto");
+      return;
+    }
+    fecharModal();
+    irParaAba("prospeccao");
+  });
+}
+
+/* ---------- importação de planilha CSV ---------- */
+var MAPA_CABECALHO_PROSPECCAO = {
+  "nome": "nome", "marca": "nome",
+  "site": "site",
+  "instagram": "instagram",
+  "seguidores": "seguidores",
+  "email": "email", "e-mail": "email",
+  "whatsapp": "whatsapp", "whats": "whatsapp", "telefone": "whatsapp",
+  "contato": "contato", "pessoa de contato": "contato",
+  "nicho": "nicho",
+  "origem": "origem",
+  "status": "status", "situacao": "status", "situação": "status",
+  "observacao": "observacao", "observação": "observacao", "obs": "observacao",
+  "data": "data"
+};
+
+function normalizarTextoCSV(texto){
+  return String(texto || "")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Lê um texto CSV inteiro e devolve uma matriz de linhas x colunas, tratando
+// aspas (campos com vírgula/ponto e vírgula dentro) e detectando sozinho se
+// o separador é ";" (padrão do Excel em PT-BR) ou "," (padrão internacional).
+function analisarCSV(texto){
+  var t = texto.charCodeAt(0) === 0xFEFF ? texto.slice(1) : texto;
+  var primeiraLinha = t.split(/\r?\n/, 1)[0] || "";
+  var separador = primeiraLinha.split(";").length >= primeiraLinha.split(",").length ? ";" : ",";
+
+  var linhas = [];
+  var linhaAtual = [];
+  var campoAtual = "";
+  var dentroDeAspas = false;
+  var i = 0;
+
+  while(i < t.length){
+    var c = t[i];
+    if(dentroDeAspas){
+      if(c === '"'){
+        if(t[i+1] === '"'){ campoAtual += '"'; i += 2; continue; }
+        dentroDeAspas = false; i++; continue;
+      }
+      campoAtual += c; i++; continue;
+    }
+    if(c === '"'){ dentroDeAspas = true; i++; continue; }
+    if(c === separador){ linhaAtual.push(campoAtual); campoAtual = ""; i++; continue; }
+    if(c === "\r"){ i++; continue; }
+    if(c === "\n"){
+      linhaAtual.push(campoAtual); campoAtual = "";
+      linhas.push(linhaAtual); linhaAtual = [];
+      i++; continue;
+    }
+    campoAtual += c; i++;
+  }
+  linhaAtual.push(campoAtual);
+  if(linhaAtual.length > 1 || linhaAtual[0] !== "") linhas.push(linhaAtual);
+
+  return linhas.filter(function(l){ return l.length > 1 || (l[0] && l[0].trim() !== ""); });
+}
+
+function converterDataCSV(texto){
+  texto = String(texto || "").trim();
+  if(!texto) return null;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto;
+  var m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m) return m[3] + "-" + m[2].padStart(2,"0") + "-" + m[1].padStart(2,"0");
+  return null;
+}
+
+function converterStatusCSV(texto){
+  var norm = normalizarTextoCSV(texto).replace(/\s+/g, "_");
+  var encontrado = STATUS_PROSPECCAO.find(function(s){
+    return s.valor === norm || normalizarTextoCSV(s.rotulo).replace(/\s+/g, "_") === norm;
+  });
+  return encontrado ? encontrado.valor : "a_enviar";
+}
+
+function lerCSVProspeccao(arquivo){
+  var leitor = new FileReader();
+  leitor.onload = function(){
+    var linhas = analisarCSV(String(leitor.result));
+    if(linhas.length < 2){
+      abrirModal(
+        '<p class="form-titulo">Importar CSV</p>' +
+        '<p style="font-size:.85rem;">Não encontrei linhas para importar nesse arquivo. Confira se a planilha tem uma linha de cabeçalho e pelo menos uma linha de dados.</p>' +
+        '<div class="form-acoes"><span></span><button class="btn" id="btnFecharImport">Fechar</button></div>'
+      );
+      document.getElementById("btnFecharImport").addEventListener("click", fecharModal);
+      return;
+    }
+
+    var cabecalho = linhas[0].map(function(c){ return MAPA_CABECALHO_PROSPECCAO[normalizarTextoCSV(c)] || null; });
+
+    var registros = [];
+    for(var i = 1; i < linhas.length; i++){
+      var linha = linhas[i];
+      var obj = {};
+      cabecalho.forEach(function(chave, idx){
+        if(!chave) return;
+        var valor = (linha[idx] || "").trim();
+        if(chave === "status") obj.status = converterStatusCSV(valor);
+        else if(chave === "data") obj.data = converterDataCSV(valor);
+        else obj[chave] = valor;
+      });
+      if(obj.nome && obj.nome.trim()) registros.push(obj);
+    }
+
+    if(registros.length === 0){
+      abrirModal(
+        '<p class="form-titulo">Importar CSV</p>' +
+        '<p style="font-size:.85rem;">Nenhuma linha com o campo "Nome" preenchido foi encontrada. O nome é obrigatório para importar cada marca.</p>' +
+        '<div class="form-acoes"><span></span><button class="btn" id="btnFecharImport">Fechar</button></div>'
+      );
+      document.getElementById("btnFecharImport").addEventListener("click", fecharModal);
+      return;
+    }
+
+    abrirModal(
+      '<p class="form-titulo">Importar CSV</p>' +
+      '<p style="font-size:.85rem; margin-bottom:18px;">Encontrei <strong>' + registros.length + '</strong> marca(s) para importar. Quer adicionar todas na sua base de prospecção agora?</p>' +
+      '<div class="form-acoes"><button class="btn" id="btnCancelarImport">Cancelar</button><button class="btn btn-principal" id="btnConfirmarImport">Importar</button></div>' +
+      '<p class="aviso erro oculto" id="fpErroImport"></p>'
+    );
+    document.getElementById("btnCancelarImport").addEventListener("click", fecharModal);
+    document.getElementById("btnConfirmarImport").addEventListener("click", async function(){
+      var res = await buscarSeguro(banco.from("prospeccao").insert(registros));
+      if(!res.ok){
+        var erroEl = document.getElementById("fpErroImport");
+        erroEl.textContent = "Não consegui importar: " + res.mensagem;
+        erroEl.classList.remove("oculto");
+        return;
+      }
+      fecharModal();
+      irParaAba("prospeccao");
+    });
+  };
+  leitor.readAsText(arquivo, "UTF-8");
 }
 
 /* ============================================================================
