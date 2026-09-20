@@ -603,6 +603,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="../js/banco.js"></script>
 <script src="../js/biblioteca.js"></script>
 <script>
@@ -1330,8 +1331,8 @@ async function abaProspeccao(painel){
       '<option value="todos">Todas as origens</option>' +
       origens.map(function(o){ return '<option value="' + escapa(o) + '" ' + (filtroProspOrigem === o ? "selected" : "") + '>' + escapa(o) + '</option>'; }).join("") +
     '</select>' +
-    '<input type="file" id="arquivoCSVProsp" accept=".csv" style="display:none">' +
-    '<button class="btn" id="btnImportarCSVProsp">' + icone("baixar") + ' Importar CSV</button>' +
+    '<input type="file" id="arquivoCSVProsp" accept=".csv,.xlsx,.xls" style="display:none">' +
+    '<button class="btn" id="btnImportarCSVProsp">' + icone("baixar") + ' Importar planilha</button>' +
     '<button class="btn btn-principal" id="btnNovaProsp">' + icone("mais") + ' Adicionar</button>' +
   '</div>';
 
@@ -1368,7 +1369,7 @@ async function abaProspeccao(painel){
   document.getElementById("btnImportarCSVProsp").addEventListener("click", function(){ inputArquivo.click(); });
   inputArquivo.addEventListener("change", function(e){
     var arquivo = e.target.files && e.target.files[0];
-    if(arquivo) lerCSVProspeccao(arquivo);
+    if(arquivo) lerPlanilhaProspeccao(arquivo);
     inputArquivo.value = "";
   });
 
@@ -1391,7 +1392,7 @@ function desenharTabelaProspeccao(todas){
   var lista = filtrarProspeccao(todas);
 
   if(todas.length === 0){
-    area.innerHTML = '<div class="vazio-explicacao">Você ainda não tem nenhuma marca na prospecção. Clique em "Adicionar" para cadastrar a primeira, ou em "Importar CSV" para trazer uma planilha inteira de uma vez.</div>';
+    area.innerHTML = '<div class="vazio-explicacao">Você ainda não tem nenhuma marca na prospecção. Clique em "Adicionar" para cadastrar a primeira, ou em "Importar planilha" para trazer uma planilha CSV ou Excel inteira de uma vez.</div>';
     return;
   }
   if(lista.length === 0){
@@ -1517,7 +1518,7 @@ function abrirFormProspeccao(marca){
   });
 }
 
-/* ---------- importação de planilha CSV ---------- */
+/* ---------- importação de planilha (CSV ou Excel .xlsx) ---------- */
 var MAPA_CABECALHO_PROSPECCAO = {
   "nome": "nome", "marca": "nome",
   "site": "site",
@@ -1596,66 +1597,108 @@ function converterStatusCSV(texto){
   return encontrado ? encontrado.valor : "a_enviar";
 }
 
-function lerCSVProspeccao(arquivo){
+// Numa planilha Excel, uma célula de data "de verdade" chega aqui como um
+// objeto Date (não como texto). Convertemos pela data local (ano/mês/dia),
+// nunca por UTC, pra não cair um dia antes ou depois.
+function converterCelulaData(bruto){
+  if(bruto instanceof Date){
+    var ano = bruto.getFullYear();
+    var mes = String(bruto.getMonth() + 1).padStart(2, "0");
+    var dia = String(bruto.getDate()).padStart(2, "0");
+    return ano + "-" + mes + "-" + dia;
+  }
+  return converterDataCSV(bruto);
+}
+
+// Recebe uma matriz de linhas x colunas (primeira linha = cabeçalho, vinda
+// tanto de um CSV quanto de uma planilha Excel) e devolve os registros
+// prontos para inserir na tabela "prospeccao".
+function registrosDeLinhas(linhas){
+  var cabecalho = linhas[0].map(function(c){ return MAPA_CABECALHO_PROSPECCAO[normalizarTextoCSV(c)] || null; });
+
+  var registros = [];
+  for(var i = 1; i < linhas.length; i++){
+    var linha = linhas[i];
+    var obj = {};
+    cabecalho.forEach(function(chave, idx){
+      if(!chave) return;
+      var bruto = linha[idx];
+      if(chave === "data"){ obj.data = converterCelulaData(bruto); return; }
+      var valor = (bruto === null || bruto === undefined ? "" : String(bruto)).trim();
+      if(chave === "status") obj.status = converterStatusCSV(valor);
+      else obj[chave] = valor;
+    });
+    if(obj.nome && obj.nome.trim()) registros.push(obj);
+  }
+  return registros;
+}
+
+function mostrarErroImportacao(mensagem){
+  abrirModal(
+    '<p class="form-titulo">Importar planilha</p>' +
+    '<p style="font-size:.85rem;">' + escapa(mensagem) + '</p>' +
+    '<div class="form-acoes"><span></span><button class="btn" id="btnFecharImport">Fechar</button></div>'
+  );
+  document.getElementById("btnFecharImport").addEventListener("click", fecharModal);
+}
+
+function processarLinhasImportadas(linhas){
+  if(linhas.length < 2){
+    mostrarErroImportacao("Não encontrei linhas para importar nesse arquivo. Confira se a planilha tem uma linha de cabeçalho e pelo menos uma linha de dados.");
+    return;
+  }
+
+  var registros = registrosDeLinhas(linhas);
+
+  if(registros.length === 0){
+    mostrarErroImportacao('Nenhuma linha com o campo "Nome" preenchido foi encontrada. O nome é obrigatório para importar cada marca.');
+    return;
+  }
+
+  abrirModal(
+    '<p class="form-titulo">Importar planilha</p>' +
+    '<p style="font-size:.85rem; margin-bottom:18px;">Encontrei <strong>' + registros.length + '</strong> marca(s) para importar. Quer adicionar todas na sua base de prospecção agora?</p>' +
+    '<div class="form-acoes"><button class="btn" id="btnCancelarImport">Cancelar</button><button class="btn btn-principal" id="btnConfirmarImport">Importar</button></div>' +
+    '<p class="aviso erro oculto" id="fpErroImport"></p>'
+  );
+  document.getElementById("btnCancelarImport").addEventListener("click", fecharModal);
+  document.getElementById("btnConfirmarImport").addEventListener("click", async function(){
+    var res = await buscarSeguro(banco.from("prospeccao").insert(registros));
+    if(!res.ok){
+      var erroEl = document.getElementById("fpErroImport");
+      erroEl.textContent = "Não consegui importar: " + res.mensagem;
+      erroEl.classList.remove("oculto");
+      return;
+    }
+    fecharModal();
+    irParaAba("prospeccao");
+  });
+}
+
+function lerPlanilhaProspeccao(arquivo){
+  var nome = arquivo.name || "";
+  var ehExcel = /\.xlsx?$/i.test(nome);
+
+  if(ehExcel && !window.XLSX){
+    mostrarErroImportacao("Não consegui carregar o componente que lê arquivos .xlsx. Verifique sua internet e tente de novo. Se continuar, salve a planilha como CSV (Arquivo > Salvar como > CSV) e importe o CSV.");
+    return;
+  }
+
   var leitor = new FileReader();
   leitor.onload = function(){
-    var linhas = analisarCSV(String(leitor.result));
-    if(linhas.length < 2){
-      abrirModal(
-        '<p class="form-titulo">Importar CSV</p>' +
-        '<p style="font-size:.85rem;">Não encontrei linhas para importar nesse arquivo. Confira se a planilha tem uma linha de cabeçalho e pelo menos uma linha de dados.</p>' +
-        '<div class="form-acoes"><span></span><button class="btn" id="btnFecharImport">Fechar</button></div>'
-      );
-      document.getElementById("btnFecharImport").addEventListener("click", fecharModal);
-      return;
+    var linhas;
+    if(ehExcel){
+      var pasta = XLSX.read(leitor.result, { type: "array", cellDates: true });
+      var planilha = pasta.Sheets[pasta.SheetNames[0]];
+      linhas = XLSX.utils.sheet_to_json(planilha, { header: 1, raw: true, defval: "" });
+    } else {
+      linhas = analisarCSV(String(leitor.result));
     }
-
-    var cabecalho = linhas[0].map(function(c){ return MAPA_CABECALHO_PROSPECCAO[normalizarTextoCSV(c)] || null; });
-
-    var registros = [];
-    for(var i = 1; i < linhas.length; i++){
-      var linha = linhas[i];
-      var obj = {};
-      cabecalho.forEach(function(chave, idx){
-        if(!chave) return;
-        var valor = (linha[idx] || "").trim();
-        if(chave === "status") obj.status = converterStatusCSV(valor);
-        else if(chave === "data") obj.data = converterDataCSV(valor);
-        else obj[chave] = valor;
-      });
-      if(obj.nome && obj.nome.trim()) registros.push(obj);
-    }
-
-    if(registros.length === 0){
-      abrirModal(
-        '<p class="form-titulo">Importar CSV</p>' +
-        '<p style="font-size:.85rem;">Nenhuma linha com o campo "Nome" preenchido foi encontrada. O nome é obrigatório para importar cada marca.</p>' +
-        '<div class="form-acoes"><span></span><button class="btn" id="btnFecharImport">Fechar</button></div>'
-      );
-      document.getElementById("btnFecharImport").addEventListener("click", fecharModal);
-      return;
-    }
-
-    abrirModal(
-      '<p class="form-titulo">Importar CSV</p>' +
-      '<p style="font-size:.85rem; margin-bottom:18px;">Encontrei <strong>' + registros.length + '</strong> marca(s) para importar. Quer adicionar todas na sua base de prospecção agora?</p>' +
-      '<div class="form-acoes"><button class="btn" id="btnCancelarImport">Cancelar</button><button class="btn btn-principal" id="btnConfirmarImport">Importar</button></div>' +
-      '<p class="aviso erro oculto" id="fpErroImport"></p>'
-    );
-    document.getElementById("btnCancelarImport").addEventListener("click", fecharModal);
-    document.getElementById("btnConfirmarImport").addEventListener("click", async function(){
-      var res = await buscarSeguro(banco.from("prospeccao").insert(registros));
-      if(!res.ok){
-        var erroEl = document.getElementById("fpErroImport");
-        erroEl.textContent = "Não consegui importar: " + res.mensagem;
-        erroEl.classList.remove("oculto");
-        return;
-      }
-      fecharModal();
-      irParaAba("prospeccao");
-    });
+    processarLinhasImportadas(linhas);
   };
-  leitor.readAsText(arquivo, "UTF-8");
+
+  if(ehExcel) leitor.readAsArrayBuffer(arquivo);
+  else leitor.readAsText(arquivo, "UTF-8");
 }
 
 /* ============================================================================
