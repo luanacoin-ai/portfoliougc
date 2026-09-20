@@ -558,7 +558,8 @@
     .destaques-grid{ grid-template-columns:1fr; max-width:420px; margin:0 auto; }
   }
   .destaque-card{
-    display:block;
+    display:flex;
+    flex-direction:column;
     width:100%;
     text-align:left;
     border:none;
@@ -590,6 +591,7 @@
   }
   .destaque-cover{
     aspect-ratio:9/16;
+    flex-shrink:0;
     position:relative;
     display:flex;
     align-items:center;
