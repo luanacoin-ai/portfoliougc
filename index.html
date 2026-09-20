@@ -1406,6 +1406,19 @@
     return null;
   }
 
+  // Coloca a miniatura de verdade do video (vinda do proprio Youtube) como
+  // capa do card. Se o link nao for do Youtube, usa o degrade de reserva.
+  function aplicarCapa(coverEl, item, indice){
+    var id = extrairIdYoutube(item.link);
+    if(id){
+      coverEl.style.backgroundImage = "url('https://img.youtube.com/vi/" + id + "/hqdefault.jpg')";
+      coverEl.style.backgroundSize = "cover";
+      coverEl.style.backgroundPosition = "center";
+    } else {
+      coverEl.style.background = CAPAS_VIDEO[indice % CAPAS_VIDEO.length];
+    }
+  }
+
   function abrirVideo(link){
     var id = extrairIdYoutube(link);
     if(!id){
@@ -1452,7 +1465,7 @@
       card.addEventListener("click", function(){ abrirVideo(item.link); });
 
       var cover = el("div", "destaque-cover");
-      cover.style.background = CAPAS_VIDEO[indice % CAPAS_VIDEO.length];
+      aplicarCapa(cover, item, indice);
       cover.appendChild(el("span", "frame-mini"));
       var play = el("span", "play-btn");
       play.setAttribute("aria-hidden", "true");
@@ -1489,7 +1502,7 @@
     lista.forEach(function(item, indice){
       var card = el("div", "work-card");
       var cover = el("div", "work-cover");
-      cover.style.background = CAPAS_VIDEO[indice % CAPAS_VIDEO.length];
+      aplicarCapa(cover, item, indice);
       cover.appendChild(el("span", null, item.formato || ""));
       card.appendChild(cover);
 
