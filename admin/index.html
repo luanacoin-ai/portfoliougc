@@ -1519,20 +1519,48 @@ function abrirFormProspeccao(marca){
 }
 
 /* ---------- importação de planilha (CSV ou Excel .xlsx) ---------- */
-var MAPA_CABECALHO_PROSPECCAO = {
-  "nome": "nome", "marca": "nome",
-  "site": "site",
-  "instagram": "instagram",
-  "seguidores": "seguidores",
-  "email": "email", "e-mail": "email",
-  "whatsapp": "whatsapp", "whats": "whatsapp", "telefone": "whatsapp",
-  "contato": "contato", "pessoa de contato": "contato",
-  "nicho": "nicho",
-  "origem": "origem",
-  "status": "status", "situacao": "status", "situação": "status",
-  "observacao": "observacao", "observação": "observacao", "obs": "observacao",
-  "data": "data"
-};
+var CAMPOS_PROSPECCAO_IMPORTAVEIS = [
+  { chave: "", rotulo: "Não importar esta coluna" },
+  { chave: "nome", rotulo: "Nome" },
+  { chave: "site", rotulo: "Site" },
+  { chave: "instagram", rotulo: "Instagram" },
+  { chave: "seguidores", rotulo: "Seguidores" },
+  { chave: "email", rotulo: "E-mail" },
+  { chave: "whatsapp", rotulo: "WhatsApp" },
+  { chave: "contato", rotulo: "Pessoa de contato" },
+  { chave: "nicho", rotulo: "Nicho" },
+  { chave: "origem", rotulo: "Origem" },
+  { chave: "status", rotulo: "Status" },
+  { chave: "observacao", rotulo: "Observação" },
+  { chave: "data", rotulo: "Data" }
+];
+
+// Cada planilha vem com nomes de coluna diferentes (ex: "Nome da empresa" em
+// vez de "Nome"). Em vez de exigir o nome exato, chutamos o campo mais
+// provável pelo que aparece no texto do cabeçalho — e a pessoa confirma ou
+// troca na tela de importação antes de qualquer coisa ser gravada.
+var REGRAS_CABECALHO_PROSPECCAO = [
+  { campo: "nome", teste: /nome|marca|empresa|loja/ },
+  { campo: "instagram", teste: /instagram/ },
+  { campo: "seguidores", teste: /seguidor/ },
+  { campo: "whatsapp", teste: /whatsapp|telefone|celular|\bfone\b/ },
+  { campo: "email", teste: /e-?mail/ },
+  { campo: "contato", teste: /pessoa.*contato|contato.*pessoa|respons[aá]vel/ },
+  { campo: "nicho", teste: /nicho|segmento|categoria/ },
+  { campo: "origem", teste: /origem|onde.*encontr|\bfonte\b/ },
+  { campo: "status", teste: /^status$|situac/ },
+  { campo: "observacao", teste: /observa|coment[aá]rio|\bnota\b/ },
+  { campo: "data", teste: /\bdata\b/ },
+  { campo: "site", teste: /\bsite\b|website|p[aá]gina|\blink\b|produto|\burl\b/ }
+];
+
+function sugerirCampoCabecalho(textoOriginal){
+  var norm = normalizarTextoCSV(textoOriginal);
+  for(var i = 0; i < REGRAS_CABECALHO_PROSPECCAO.length; i++){
+    if(REGRAS_CABECALHO_PROSPECCAO[i].teste.test(norm)) return REGRAS_CABECALHO_PROSPECCAO[i].campo;
+  }
+  return "";
+}
 
 function normalizarTextoCSV(texto){
   return String(texto || "")
@@ -1610,15 +1638,12 @@ function converterCelulaData(bruto){
   return converterDataCSV(bruto);
 }
 
-// Recebe uma matriz de linhas x colunas (primeira linha = cabeçalho, vinda
-// tanto de um CSV quanto de uma planilha Excel) e devolve os registros
-// prontos para inserir na tabela "prospeccao".
-function registrosDeLinhas(linhas){
-  var cabecalho = linhas[0].map(function(c){ return MAPA_CABECALHO_PROSPECCAO[normalizarTextoCSV(c)] || null; });
-
+// Recebe só as linhas de DADOS (sem o cabeçalho) mais o mapeamento coluna→campo
+// já confirmado pela pessoa, e devolve os registros prontos para inserir na
+// tabela "prospeccao".
+function registrosDeLinhas(linhasDados, cabecalho){
   var registros = [];
-  for(var i = 1; i < linhas.length; i++){
-    var linha = linhas[i];
+  linhasDados.forEach(function(linha){
     var obj = {};
     cabecalho.forEach(function(chave, idx){
       if(!chave) return;
@@ -1629,7 +1654,7 @@ function registrosDeLinhas(linhas){
       else obj[chave] = valor;
     });
     if(obj.nome && obj.nome.trim()) registros.push(obj);
-  }
+  });
   return registros;
 }
 
@@ -1642,30 +1667,63 @@ function mostrarErroImportacao(mensagem){
   document.getElementById("btnFecharImport").addEventListener("click", fecharModal);
 }
 
+// Mostra uma linha de cabeçalho por coluna encontrada na planilha, com o
+// campo da prospecção que a gente já chutou pra ela (dá pra trocar antes
+// de importar). Só depois de confirmar aqui é que algo é gravado no banco.
 function processarLinhasImportadas(linhas){
   if(linhas.length < 2){
     mostrarErroImportacao("Não encontrei linhas para importar nesse arquivo. Confira se a planilha tem uma linha de cabeçalho e pelo menos uma linha de dados.");
     return;
   }
 
-  var registros = registrosDeLinhas(linhas);
+  var cabecalhoOriginal = linhas[0];
+  var linhasDados = linhas.slice(1);
 
-  if(registros.length === 0){
-    mostrarErroImportacao('Nenhuma linha com o campo "Nome" preenchido foi encontrada. O nome é obrigatório para importar cada marca.');
-    return;
-  }
+  var htmlColunas = cabecalhoOriginal.map(function(textoColuna, idx){
+    var sugestao = sugerirCampoCabecalho(textoColuna);
+    var opcoes = CAMPOS_PROSPECCAO_IMPORTAVEIS.map(function(c){
+      return '<option value="' + c.chave + '" ' + (c.chave === sugestao ? "selected" : "") + '>' + c.rotulo + '</option>';
+    }).join("");
+    var rotuloColuna = String(textoColuna || "").trim() || ("Coluna " + (idx + 1));
+    return '<div class="form-linha" style="align-items:center; margin-bottom:8px;">' +
+      '<div style="font-size:.8rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + escapa(rotuloColuna) + '">' + escapa(rotuloColuna) + '</div>' +
+      '<select class="mapa-coluna" data-idx="' + idx + '">' + opcoes + '</select>' +
+    '</div>';
+  }).join("");
 
   abrirModal(
     '<p class="form-titulo">Importar planilha</p>' +
-    '<p style="font-size:.85rem; margin-bottom:18px;">Encontrei <strong>' + registros.length + '</strong> marca(s) para importar. Quer adicionar todas na sua base de prospecção agora?</p>' +
+    '<p style="font-size:.85rem; margin-bottom:14px;">Confira se cada coluna da sua planilha caiu no campo certo da prospecção (já deixei um palpite marcado — troque o que precisar) e clique em Importar.</p>' +
+    htmlColunas +
+    '<p style="font-size:.78rem; color:#8a8272; margin:14px 0;">' + linhasDados.length + ' linha(s) de dados encontradas na planilha.</p>' +
     '<div class="form-acoes"><button class="btn" id="btnCancelarImport">Cancelar</button><button class="btn btn-principal" id="btnConfirmarImport">Importar</button></div>' +
-    '<p class="aviso erro oculto" id="fpErroImport"></p>'
+    '<p class="aviso erro oculto" id="fpErroImport"></p>',
+    true
   );
+
   document.getElementById("btnCancelarImport").addEventListener("click", fecharModal);
   document.getElementById("btnConfirmarImport").addEventListener("click", async function(){
+    var cabecalho = [];
+    modalConteudo.querySelectorAll(".mapa-coluna").forEach(function(sel){
+      cabecalho[Number(sel.dataset.idx)] = sel.value || null;
+    });
+
+    var erroEl = document.getElementById("fpErroImport");
+    if(cabecalho.indexOf("nome") === -1){
+      erroEl.textContent = 'Marque alguma coluna como "Nome" — ele é obrigatório para importar cada marca.';
+      erroEl.classList.remove("oculto");
+      return;
+    }
+
+    var registros = registrosDeLinhas(linhasDados, cabecalho);
+    if(registros.length === 0){
+      erroEl.textContent = 'Nenhuma linha com a coluna "Nome" preenchida foi encontrada.';
+      erroEl.classList.remove("oculto");
+      return;
+    }
+
     var res = await buscarSeguro(banco.from("prospeccao").insert(registros));
     if(!res.ok){
-      var erroEl = document.getElementById("fpErroImport");
       erroEl.textContent = "Não consegui importar: " + res.mensagem;
       erroEl.classList.remove("oculto");
       return;
