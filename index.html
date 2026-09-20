@@ -490,21 +490,21 @@
     align-items:center;
   }
   .about-photo{
+    position:relative;
+    width:100%;
     aspect-ratio:1/1;
     border-radius:var(--radius);
     background:linear-gradient(160deg, #eef0ec, #ffffff);
     box-shadow:var(--shadow-soft);
-    display:flex;
-    align-items:flex-end;
-    padding:16px;
+    overflow:hidden;
   }
-  .about-photo span{
-    font-size:.8rem;
-    font-weight:700;
-    color:#fff;
-    background:rgba(17,17,17,.6);
-    padding:7px 12px;
-    border-radius:999px;
+  .about-photo img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center 20%;
   }
   .about-text p{ margin-bottom:16px; font-size:1.03rem; }
   .promises{
@@ -1167,8 +1167,8 @@
   <section id="sobre" class="about">
     <div class="container about-grid reveal">
       <div class="about-photo">
-        <!-- TROQUE AQUI: troque este bloco de degradê por <img src="sua-foto-sobre.jpg" alt="Foto de Luana Coin"> mantendo a proporção 1:1 -->
-        <span>foto da creator 1:1</span>
+        <!-- TROQUE AQUI: pra trocar a foto, substitua o arquivo midia/foto-sobre.jpg por outra imagem (mesmo nome) -->
+        <img src="midia/foto-sobre.jpg" alt="Foto de Luana Coin">
       </div>
       <div class="about-text">
         <span class="eyebrow">Sobre mim</span>
