@@ -562,6 +562,12 @@
   }
   .destaque-card{
     display:block;
+    width:100%;
+    text-align:left;
+    border:none;
+    padding:0;
+    font:inherit;
+    color:inherit;
     border-radius:var(--radius);
     box-shadow:var(--shadow-soft-sm);
     background:var(--card);
@@ -927,6 +933,52 @@
     .reveal{ opacity:1; transform:none; transition:none; }
   }
 
+  /* ====== JANELA DO VIDEO (assiste na propria pagina) ====== */
+  .video-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(17,17,17,.78);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:950;
+  }
+  .video-overlay[hidden]{ display:none; }
+  .video-modal{
+    position:relative;
+    width:100%;
+    max-width:380px;
+  }
+  .video-close{
+    position:absolute;
+    top:-46px;
+    right:0;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:#fff;
+    border:none;
+    box-shadow:var(--shadow-soft-sm);
+    font-size:1rem;
+  }
+  .video-frame{
+    position:relative;
+    width:100%;
+    aspect-ratio:9/16;
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:var(--shadow-soft);
+    background:#000;
+  }
+  .video-frame iframe{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:none;
+  }
+
   /* ====== MODAL DE CAPTURA ====== */
   .capture-overlay{
     position:fixed;
@@ -1202,6 +1254,14 @@
   </div>
 </footer>
 
+<!-- ====== JANELA DO VIDEO (abre ao clicar num destaque, toca na propria pagina) ====== -->
+<div class="video-overlay" id="videoOverlay" hidden>
+  <div class="video-modal" role="dialog" aria-modal="true" aria-label="Vídeo">
+    <button class="video-close" id="videoClose" aria-label="Fechar vídeo">✕</button>
+    <div class="video-frame" id="videoFrame"></div>
+  </div>
+</div>
+
 <!-- ====== CARD DE CAPTURA (aparece depois de 7 segundos) ====== -->
 <div class="capture-overlay" id="captureOverlay" hidden>
   <div class="capture-modal" role="dialog" aria-modal="true" aria-labelledby="captureTitle">
@@ -1321,6 +1381,55 @@
     brandTrack.appendChild(el("span", null, nome));
   });
 
+  /* =========================================================================
+     JANELA DO VIDEO
+     Toca o video de destaque na propria pagina (sem sair para o Youtube).
+     Funciona com links de youtube.com/shorts, youtube.com/watch e youtu.be.
+     Se o link nao for reconhecido, abre numa aba nova como reserva.
+  ========================================================================= */
+  var videoOverlay = document.getElementById("videoOverlay");
+  var videoFrame = document.getElementById("videoFrame");
+  var videoClose = document.getElementById("videoClose");
+
+  function extrairIdYoutube(link){
+    if(!link) return null;
+    var padroes = [
+      /youtube\.com\/shorts\/([\w-]{6,})/,
+      /youtu\.be\/([\w-]{6,})/,
+      /[?&]v=([\w-]{6,})/,
+      /youtube\.com\/embed\/([\w-]{6,})/
+    ];
+    for(var i = 0; i < padroes.length; i++){
+      var m = link.match(padroes[i]);
+      if(m) return m[1];
+    }
+    return null;
+  }
+
+  function abrirVideo(link){
+    var id = extrairIdYoutube(link);
+    if(!id){
+      window.open(link, "_blank", "noopener");
+      return;
+    }
+    videoFrame.innerHTML = '<iframe src="https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0" title="Vídeo" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+    videoOverlay.hidden = false;
+    videoClose.focus();
+  }
+
+  function fecharVideo(){
+    videoOverlay.hidden = true;
+    videoFrame.innerHTML = "";
+  }
+
+  videoClose.addEventListener("click", fecharVideo);
+  videoOverlay.addEventListener("click", function(evento){
+    if(evento.target === videoOverlay) fecharVideo();
+  });
+  document.addEventListener("keydown", function(evento){
+    if(evento.key === "Escape" && !videoOverlay.hidden) fecharVideo();
+  });
+
   // Destaques e trabalhos por nicho: os videos vem do banco (tabela "videos"),
   // nao de um array fixo. Assim, quando voce edita ou adiciona um video no
   // admin, ele aparece aqui sozinho, sem precisar publicar o site de novo.
@@ -1337,11 +1446,10 @@
       return;
     }
     videos.slice(0, 3).forEach(function(item, indice){
-      var card = el("a", "destaque-card reveal");
-      card.href = item.link || "#";
-      card.target = "_blank";
-      card.rel = "noopener";
-      card.setAttribute("aria-label", item.titulo + ", abrir vídeo");
+      var card = el("button", "destaque-card");
+      card.type = "button";
+      card.setAttribute("aria-label", item.titulo + ", assistir vídeo");
+      card.addEventListener("click", function(){ abrirVideo(item.link); });
 
       var cover = el("div", "destaque-cover");
       cover.style.background = CAPAS_VIDEO[indice % CAPAS_VIDEO.length];
