@@ -675,46 +675,9 @@
 
   .work-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
     gap:22px;
   }
-  .work-card{
-    border-radius:var(--radius);
-    background:var(--card);
-    box-shadow:var(--shadow-soft-sm);
-    overflow:hidden;
-  }
-  .work-cover{
-    aspect-ratio:4/5;
-    display:flex;
-    align-items:flex-end;
-    padding:12px;
-    position:relative;
-    background:linear-gradient(150deg, #eef0ec, #ffffff);
-  }
-  .work-cover span{
-    position:relative;
-    font-size:.72rem;
-    font-weight:700;
-    color:#fff;
-    background:rgba(17,17,17,.6);
-    padding:5px 10px;
-    border-radius:999px;
-  }
-  .work-info{ padding:16px; }
-  .work-niche{
-    display:inline-block;
-    font-size:.68rem;
-    font-weight:700;
-    text-transform:uppercase;
-    background:var(--lime);
-    padding:3px 10px;
-    border-radius:999px;
-    margin-bottom:10px;
-  }
-  .work-title{ font-size:.95rem; font-weight:800; margin-bottom:4px; }
-  .work-brand{ font-size:.84rem; font-weight:600; color:var(--gray-text); margin-bottom:8px; }
-  .work-desc{ font-size:.86rem; color:var(--gray-text); }
   .vazio-portfolio{
     grid-column:1 / -1;
     text-align:center;
@@ -1545,6 +1508,40 @@
   var todosOs = ["Todos"].concat(nichos);
   var videosCarregados = [];
 
+  // Constroi um card de video (mesmo visual usado nos destaques e nos
+  // trabalhos por nicho): nicho no topo, capa com botao de play, formato,
+  // titulo, legenda e a linha de status.
+  function criarCardVideo(item, indice){
+    var card = el("button", "destaque-card");
+    card.type = "button";
+    card.setAttribute("aria-label", item.titulo + ", assistir vídeo");
+    card.addEventListener("click", function(){ abrirVideo(item.link); });
+
+    if(item.nicho){ card.appendChild(el("span", "destaque-nicho", item.nicho)); }
+
+    var cover = el("div", "destaque-cover");
+    aplicarCapa(cover, item, indice);
+    cover.appendChild(el("span", "frame-mini"));
+    var play = el("span", "play-btn");
+    play.setAttribute("aria-hidden", "true");
+    cover.appendChild(play);
+    card.appendChild(cover);
+
+    var body = el("div", "destaque-body");
+    if(item.formato){ body.appendChild(el("span", "destaque-formato", item.formato)); }
+    body.appendChild(el("h3", "destaque-title", item.titulo));
+    if(item.legenda){ body.appendChild(el("p", "destaque-legenda", item.legenda)); }
+
+    var metaPartes = [];
+    if(item.duracao) metaPartes.push(item.duracao);
+    if(item.formato) metaPartes.push(item.formato);
+    metaPartes.push(item.visivel ? "pronto" : "rascunho");
+    body.appendChild(el("p", "destaque-meta", metaPartes.join(" · ")));
+
+    card.appendChild(body);
+    return card;
+  }
+
   function renderDestaques(videos){
     destaquesGrid.innerHTML = "";
     if(videos.length === 0){
@@ -1552,34 +1549,7 @@
       return;
     }
     videos.slice(0, 3).forEach(function(item, indice){
-      var card = el("button", "destaque-card");
-      card.type = "button";
-      card.setAttribute("aria-label", item.titulo + ", assistir vídeo");
-      card.addEventListener("click", function(){ abrirVideo(item.link); });
-
-      if(item.nicho){ card.appendChild(el("span", "destaque-nicho", item.nicho)); }
-
-      var cover = el("div", "destaque-cover");
-      aplicarCapa(cover, item, indice);
-      cover.appendChild(el("span", "frame-mini"));
-      var play = el("span", "play-btn");
-      play.setAttribute("aria-hidden", "true");
-      cover.appendChild(play);
-      card.appendChild(cover);
-
-      var body = el("div", "destaque-body");
-      if(item.formato){ body.appendChild(el("span", "destaque-formato", item.formato)); }
-      body.appendChild(el("h3", "destaque-title", item.titulo));
-      if(item.legenda){ body.appendChild(el("p", "destaque-legenda", item.legenda)); }
-
-      var metaPartes = [];
-      if(item.duracao) metaPartes.push(item.duracao);
-      if(item.formato) metaPartes.push(item.formato);
-      metaPartes.push(item.visivel ? "pronto" : "rascunho");
-      body.appendChild(el("p", "destaque-meta", metaPartes.join(" · ")));
-
-      card.appendChild(body);
-      destaquesGrid.appendChild(card);
+      destaquesGrid.appendChild(criarCardVideo(item, indice));
     });
   }
 
@@ -1599,20 +1569,7 @@
     }
 
     lista.forEach(function(item, indice){
-      var card = el("div", "work-card");
-      var cover = el("div", "work-cover");
-      aplicarCapa(cover, item, indice);
-      cover.appendChild(el("span", null, item.formato || ""));
-      card.appendChild(cover);
-
-      var info = el("div", "work-info");
-      info.appendChild(el("span", "work-niche", item.nicho));
-      info.appendChild(el("h3", "work-title", item.titulo));
-      info.appendChild(el("p", "work-brand", item.marca || ""));
-      info.appendChild(el("p", "work-desc", item.destaque || item.formato || ""));
-      card.appendChild(info);
-
-      workGrid.appendChild(card);
+      workGrid.appendChild(criarCardVideo(item, indice));
     });
   }
 
