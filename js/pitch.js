@@ -59,7 +59,6 @@ var pitchRespostas = montarRespostasVaziasPitch();
 var pitchFormatoAtivo = "email";
 var pitchVersoes = {};
 var pitchIndiceVersao = {};
-var pitchChats = {};
 
 function montarRespostasVaziasPitch(){
   var respostas = {};
@@ -161,9 +160,9 @@ function montarRascunhoPitch(formato, p, r){
 }
 
 /* ============================================================================
-   CHAT COM O CLAUDE (reaproveita a chave da Anthropic salva na aba Roteiros)
-   Em vez de gerar o texto de uma vez só, conversa de verdade: a criadora pode
-   pedir ajustes ("deixa mais curto", "troca o tom") até o texto ficar bom.
+   ESCRITA COM O CLAUDE (reaproveita a chave da Anthropic salva na aba Roteiros)
+   Os botões mandam as respostas pra IA e o texto pronto cai direto na caixa
+   "O seu texto", virando uma versão nova.
 ============================================================================ */
 var PITCH_INSTRUCAO_FORMATO = {
   email: "Escreva um e-mail de prospecção. Estrutura em parágrafos curtos: 1) saudação e como ela chegou até a marca (pesquisando o produto, citando algo específico que viu no site dela, se ela respondeu essa parte); 2) por que essa marca e por que agora, puxando pro produto que falta pra ela; 3) uma ideia de conteúdo que ela já pensou, explicando rapidinho como isso vira material pra marca usar; 4) os diferenciais dela; 5) o convite pra conversar, com o link do portfólio e a assinatura. Se ela tiver respondido alguma coisa extra, feche com um P.S. curto usando isso.",
@@ -178,25 +177,26 @@ function montarBlocoRespostasIA(formato, r){
   }).join("\n");
 }
 
-function montarMensagemInicialChatPitch(formato, p, r){
+function montarPedidoPitch(formato, p, r, textoAnterior){
   var mostraAssunto = (formato === "email" || formato === "segundo_email");
-  return "Você é uma parceira de escrita que ajuda uma criadora de conteúdo UGC a escrever textos de prospecção pra marcas, em português do Brasil, sem soar robótico. " +
-    "Vamos conversar até o texto ficar bom — a cada pedido meu de ajuste, você reescreve o texto INTEIRO atualizado, nunca só o trecho que mudou.\n\n" +
+  return "Você é uma parceira de escrita que ajuda uma criadora de conteúdo UGC a escrever textos de prospecção pra marcas, em português do Brasil, sem soar robótico.\n\n" +
     PITCH_INSTRUCAO_FORMATO[formato] + "\n" +
     "Marque com colchetes duplos, assim [[desse jeito]], só as partes que mudam de marca pra marca (nome da marca, produto específico, ideia de conteúdo). O resto não vai marcado.\n" +
     "Não invente números, marcas ou fatos que não foram te dados. Resposta marcada com \"-\" significa que eu não respondi; não invente uma resposta pra mim.\n" +
     (mostraAssunto
-      ? "Responda SEMPRE nesse formato, começando com o assunto:\nAssunto: <assunto aqui>\n\n<corpo do texto aqui>"
+      ? "Responda SEMPRE nesse formato, começando com o assunto, e sem mais nada antes ou depois:\nAssunto: <assunto aqui>\n\n<corpo do texto aqui>"
       : "Responda SEMPRE só com o texto (sem \"Assunto:\", sem explicações antes ou depois).") + "\n\n" +
     "Meus dados:\nNome: " + (p.nome || "-") + "\n@: " + (p.arroba || "-") + "\nPortfólio: " + (p.portfolio || "-") + "\nCidade: " + (p.cidade || "-") + "\n\n" +
     "Minhas respostas pra esse formato:\n" + montarBlocoRespostasIA(formato, r) + "\n\n" +
-    "Escreve a primeira versão.";
+    (textoAnterior
+      ? "Já tenho essa versão aqui:\n\n" + textoAnterior + "\n\nMe dá outra versão: mesma ideia, mas com outras palavras."
+      : "Escreve o texto.");
 }
 
-async function chamarChatPitch(mensagens){
+async function chamarIAPitch(mensagens){
   var chaveIA = await buscarChaveIA();
   if(!chaveIA){
-    return { ok: false, mensagem: "Salve sua chave de IA na aba Roteiros (🧠 Chave da IA) pra poder conversar com o Claude." };
+    return { ok: false, mensagem: "Salve sua chave de IA na aba Roteiros (🧠 Chave da IA) pra IA poder escrever o texto." };
   }
 
   var corpoPedido = {
@@ -230,7 +230,7 @@ async function chamarChatPitch(mensagens){
   return { ok: true, texto: texto };
 }
 
-function parseRespostaChatPitch(texto, mostraAssunto){
+function parseRespostaIAPitch(texto, mostraAssunto){
   if(mostraAssunto){
     var m = texto.match(/^Assunto:\s*(.*?)\n+([\s\S]*)$/i);
     if(m) return { assunto: m[1].trim(), corpo: m[2].trim() };
@@ -238,112 +238,42 @@ function parseRespostaChatPitch(texto, mostraAssunto){
   return { assunto: "", corpo: texto.trim() };
 }
 
-/* ---------- estado + modal do chat ---------- */
-function garantirChatPitch(formato){
-  if(!pitchChats[formato]) pitchChats[formato] = { mensagens: [], enviando: false };
-  return pitchChats[formato];
-}
-
-function ultimaMensagemClaudePitch(formato){
-  var estado = pitchChats[formato];
-  if(!estado) return null;
-  for(var i = estado.mensagens.length - 1; i >= 0; i--){
-    if(estado.mensagens[i].papel === "assistant") return estado.mensagens[i].texto;
-  }
-  return null;
-}
-
-function abrirChatPitch(mensagemAutomatica){
+/* ---------- escreve o texto direto na caixa, sem abrir conversa ---------- */
+async function escreverTextoPitch(botao, outraVersao){
   lerCamposPerfilPitch();
   var formato = pitchFormatoAtivo;
-  var rotulo = PITCH_FORMATOS.filter(function(f){ return f.valor === formato; })[0].rotulo;
-  var estado = garantirChatPitch(formato);
+  var mostraAssunto = (formato === "email" || formato === "segundo_email");
 
-  var html = '<p class="form-titulo">Conversar com o Claude · ' + escapa(rotulo) + '</p>' +
-    '<div class="chat-pitch-mensagens" id="chatPitchMensagens"></div>' +
-    '<form id="formChatPitch" style="display:flex; gap:8px;">' +
-      '<textarea id="chatPitchInput" placeholder="Ex: deixa mais curto, ou troca o tom pra mais descontraído" style="flex:1; min-height:44px;"></textarea>' +
-      '<button type="submit" class="btn btn-principal">Enviar</button>' +
-    '</form>' +
-    '<div class="form-acoes" style="margin-top:14px;">' +
-      '<button type="button" class="btn" id="btnChatPitchFechar">Fechar sem usar</button>' +
-      '<button type="button" class="btn btn-principal" id="btnChatPitchUsar" disabled>Usar esse texto</button>' +
-    '</div>';
-
-  abrirModal(html, true);
-  modalBox.style.maxWidth = "640px";
-
-  desenharMensagensChatPitch();
-
-  document.getElementById("formChatPitch").addEventListener("submit", function(e){
-    e.preventDefault();
-    var campo = document.getElementById("chatPitchInput");
-    var texto = campo.value.trim();
-    if(!texto || estado.enviando) return;
-    campo.value = "";
-    enviarMensagemUsuarioChatPitch(texto);
-  });
-  document.getElementById("btnChatPitchFechar").addEventListener("click", fecharModal);
-  document.getElementById("btnChatPitchUsar").addEventListener("click", function(){ usarTextoDoChatPitch(); });
-
-  if(estado.mensagens.length === 0){
-    enviarMensagemUsuarioChatPitch(montarMensagemInicialChatPitch(formato, pitchPerfil, pitchRespostas[formato]));
-  } else if(mensagemAutomatica){
-    enviarMensagemUsuarioChatPitch(mensagemAutomatica);
+  var textoAnterior = null;
+  if(outraVersao){
+    var atual = versaoAtualPitch();
+    textoAnterior = (mostraAssunto && atual.assunto ? "Assunto: " + atual.assunto + "\n\n" : "") + (atual.corpo || "");
   }
-}
 
-function desenharMensagensChatPitch(){
-  var formato = pitchFormatoAtivo;
-  var estado = pitchChats[formato];
-  var area = document.getElementById("chatPitchMensagens");
-  if(!area || !estado) return;
+  var rotuloOriginal = botao.innerHTML;
+  botao.disabled = true;
+  botao.innerHTML = "Escrevendo...";
+  var aviso = document.getElementById("pitchAvisoMudou");
+  if(aviso) aviso.textContent = "";
 
-  var htmlMsgs = estado.mensagens
-    .filter(function(m, i){ return !(i === 0 && m.papel === "user"); }) // esconde a mensagem de contexto inicial (técnica, não é uma "pergunta" de verdade)
-    .map(function(m){ return '<div class="bolha-chat ' + (m.papel === "user" ? "usuario" : "claude") + '">' + escapa(m.texto) + '</div>'; })
-    .join("");
-  if(estado.enviando) htmlMsgs += '<div class="bolha-chat claude carregando">Escrevendo...</div>';
+  var resultado = await chamarIAPitch([
+    { papel: "user", texto: montarPedidoPitch(formato, pitchPerfil, pitchRespostas[formato], textoAnterior) }
+  ]);
 
-  area.innerHTML = htmlMsgs || '<p style="font-size:.8rem; color:#8a8272;">Escrevendo a primeira versão...</p>';
-  area.scrollTop = area.scrollHeight;
-
-  var btnUsar = document.getElementById("btnChatPitchUsar");
-  if(btnUsar) btnUsar.disabled = !ultimaMensagemClaudePitch(formato);
-}
-
-async function enviarMensagemUsuarioChatPitch(texto){
-  var formato = pitchFormatoAtivo;
-  var estado = garantirChatPitch(formato);
-  estado.mensagens.push({ papel: "user", texto: texto });
-  estado.enviando = true;
-  desenharMensagensChatPitch();
-
-  var resultado = await chamarChatPitch(estado.mensagens);
-  estado.enviando = false;
+  botao.disabled = false;
+  botao.innerHTML = rotuloOriginal;
 
   if(!resultado.ok){
-    estado.mensagens.pop(); // desfaz a pergunta que falhou, pra poder tentar de novo
-    desenharMensagensChatPitch();
-    var area = document.getElementById("chatPitchMensagens");
-    if(area) area.innerHTML += faixaAviso(resultado.mensagem, "erro");
+    if(aviso) aviso.textContent = resultado.mensagem;
+    else window.alert(resultado.mensagem);
     return;
   }
 
-  estado.mensagens.push({ papel: "assistant", texto: resultado.texto });
-  desenharMensagensChatPitch();
-}
-
-function usarTextoDoChatPitch(){
-  var formato = pitchFormatoAtivo;
-  var textoClaude = ultimaMensagemClaudePitch(formato);
-  if(!textoClaude) return;
-  var mostraAssunto = (formato === "email" || formato === "segundo_email");
-  var parse = parseRespostaChatPitch(textoClaude, mostraAssunto);
+  // se ela trocou de formato enquanto a IA escrevia, guarda no formato certo mesmo assim
+  var parse = parseRespostaIAPitch(resultado.texto, mostraAssunto);
   pitchVersoes[formato].push({ assunto: parse.assunto, corpo: parse.corpo, origem: "ia" });
   pitchIndiceVersao[formato] = pitchVersoes[formato].length - 1;
-  fecharModal();
-  desenharVersaoAtualPitch();
+  if(pitchFormatoAtivo === formato) desenharVersaoAtualPitch();
 }
 
 /* ============================================================================
@@ -498,9 +428,9 @@ function ligarEventosPitch(){
     });
   });
 
-  document.getElementById("btnPitchCriarModelo").addEventListener("click", function(){ abrirChatPitch(); });
-  document.getElementById("btnPitchEscrever").addEventListener("click", function(){ abrirChatPitch(); });
-  document.getElementById("btnPitchOutraVersao").addEventListener("click", function(){ abrirChatPitch("Me dá outra versão: mesma ideia, mas com outras palavras."); });
+  document.getElementById("btnPitchCriarModelo").addEventListener("click", function(e){ escreverTextoPitch(e.currentTarget, false); });
+  document.getElementById("btnPitchEscrever").addEventListener("click", function(e){ escreverTextoPitch(e.currentTarget, false); });
+  document.getElementById("btnPitchOutraVersao").addEventListener("click", function(e){ escreverTextoPitch(e.currentTarget, true); });
   document.getElementById("btnPitchOriginal").addEventListener("click", function(){ voltarOriginalPitch(); });
   document.getElementById("btnPitchCopiar").addEventListener("click", function(e){ copiarPitch(e.currentTarget); });
   document.getElementById("btnPitchLimpar").addEventListener("click", function(){ limparRespostasPitch(); });
