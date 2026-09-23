@@ -507,16 +507,6 @@
   .barra-progresso{ height:7px; border-radius:99px; background:#eee5d2; overflow:hidden; }
   .barra-progresso > div{ height:100%; background:var(--lime); }
 
-  .secao-checklist{ border:1.5px solid #e6e0d0; border-radius:10px; margin-bottom:10px; overflow:hidden; }
-  .secao-checklist summary{
-    list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center; gap:10px; justify-content:space-between;
-  }
-  .secao-checklist summary::-webkit-details-marker{ display:none; }
-  .secao-checklist .titulo-secao{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:.85rem; }
-  .secao-checklist .progresso-secao{ display:flex; align-items:center; gap:8px; font-size:.7rem; color:#8a8272; min-width:130px; }
-  .secao-checklist .progresso-secao .barra-progresso{ width:70px; }
-  .secao-checklist .corpo-secao{ padding:0 16px 16px; }
-  .secao-checklist .porque{ font-size:.78rem; color:#6b6353; margin-bottom:12px; }
   .item-checklist{ display:flex; gap:10px; padding:8px 0; border-top:1px solid #f1ecdf; }
   .item-checklist:first-child{ border-top:none; }
   .item-checklist input{ margin-top:3px; width:16px; height:16px; }
@@ -636,6 +626,86 @@
   }
   .modo-toggle button.ativo{ background:var(--blue); border-color:var(--blue); color:var(--white); }
 
+  /* ---------- roteiros ---------- */
+  .grade-roteiros{ display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; }
+  .cartao-roteiro{ display:flex; gap:12px; background:var(--white); border:1.5px solid #e6e0d0; border-radius:var(--radius); padding:12px; }
+  .capa-roteiro{
+    width:110px; min-width:110px; aspect-ratio:9/16; border-radius:8px; overflow:hidden;
+    background:#efe9db; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+    text-align:center; padding:8px;
+  }
+  .capa-icone-fonte{ opacity:.35; }
+  .capa-icone-fonte svg{ width:26px; height:26px; }
+  .capa-processando{ background:#fff6de; }
+  .capa-processando svg{ width:20px; height:20px; color:#8a6400; animation:pulsarRelogioRoteiro 1.4s ease-in-out infinite; }
+  .capa-processando .texto-processando{ font-size:.62rem; color:#8a6400; font-weight:600; }
+  @keyframes pulsarRelogioRoteiro{ 0%,100%{ opacity:.4; } 50%{ opacity:1; } }
+  .capa-falhou{ background:#fdeaea; }
+  .capa-falhou svg{ width:20px; height:20px; color:var(--vermelho); }
+  .capa-falhou .texto-falhou{ font-size:.62rem; color:#8f1d20; }
+  .corpo-roteiro{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+  .titulo-roteiro{ font-size:.86rem; font-weight:700; }
+  .meta-roteiro{ font-size:.7rem; color:#8a8272; display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+  .meta-roteiro svg{ width:13px; height:13px; }
+  .tags-roteiro{ display:flex; gap:5px; flex-wrap:wrap; }
+  /* ---------- pitch ---------- */
+  .pitch-grade{ display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; }
+  @media (max-width:980px){ .pitch-grade{ grid-template-columns:1fr; } }
+  .pitch-grade .coluna-formulario{ position:sticky; top:20px; }
+  @media (max-width:980px){ .pitch-grade .coluna-formulario{ position:static; } }
+  .pitch-corpo{
+    min-height:160px;
+    font-size:.88rem;
+    line-height:1.6;
+    white-space:pre-wrap;
+    outline:none;
+  }
+  .pitch-corpo mark{ background:#fff3b0; padding:1px 3px; border-radius:3px; cursor:text; }
+
+  .chat-pitch-mensagens{
+    display:flex; flex-direction:column; gap:10px;
+    max-height:360px; overflow-y:auto;
+    padding:4px 2px; margin-bottom:12px;
+  }
+  .bolha-chat{
+    padding:10px 14px; border-radius:14px; font-size:.84rem; line-height:1.5;
+    white-space:pre-wrap; max-width:88%;
+  }
+  .bolha-chat.usuario{ align-self:flex-end; background:var(--blue); color:var(--white); border-bottom-right-radius:4px; }
+  .bolha-chat.claude{ align-self:flex-start; background:var(--paper-2); border-bottom-left-radius:4px; }
+  .bolha-chat.carregando{ font-style:italic; color:#8a8272; }
+
+  .tags-roteiro .pilula{ font-weight:600; }
+  .previa-roteiro{
+    font-size:.78rem; color:#6b6353; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .acoes-roteiro{ display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; }
+  .etiqueta.meu{ background:#eaf7c9; color:#5c8a00; margin-left:8px; }
+  .etiqueta.outra{ background:rgba(43,111,255,.12); color:var(--blue); margin-left:8px; }
+  .caixa-video-modal{ position:relative; width:100%; max-width:340px; aspect-ratio:9/16; margin:0 auto; background:#000; border-radius:10px; overflow:hidden; }
+  .caixa-video-modal iframe{ width:100%; height:100%; border:none; }
+
+  .roteiro-edicao-grade{ display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:start; }
+  .roteiro-coluna-video{ position:sticky; top:0; }
+  .secao-analise{
+    border:1.5px dashed #cbb896; background:#faf3e6; border-radius:10px;
+    padding:14px 14px 4px; margin:16px 0;
+  }
+  .cabecalho-analise{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    font-size:.82rem; font-weight:700; margin-bottom:10px;
+  }
+
+  @media (max-width:900px){
+    .roteiro-edicao-grade{ grid-template-columns:1fr; }
+    .roteiro-coluna-video{ position:static; }
+  }
+
+  @media (max-width:700px){
+    .cartao-roteiro{ flex-direction:column; }
+    .capa-roteiro{ width:100%; aspect-ratio:16/9; }
+  }
+
   .oculto{ display:none !important; }
 </style>
 </head>
@@ -656,15 +726,17 @@
       Painel Luana Coin
     </div>
     <nav class="menu">
-      <p class="grupo-label">meu site</p>
+      <p class="grupo-label">minha rotina</p>
       <button class="item-menu" data-tab="portfolio"></button>
       <button class="item-menu" data-tab="marcas"></button>
       <button class="item-menu" data-tab="prospeccao"></button>
       <button class="item-menu" data-tab="disparo"></button>
-      <p class="grupo-label">minha rotina</p>
+      <button class="item-menu" data-tab="pitch"></button>
+      <p class="grupo-label">conteudos</p>
       <button class="item-menu" data-tab="calendario"></button>
       <button class="item-menu" data-tab="campanhas"></button>
       <button class="item-menu" data-tab="checklist"></button>
+      <button class="item-menu" data-tab="roteiros"></button>
     </nav>
     <div class="sidebar-rodape">
       <span class="email" id="emailUsuaria"></span>
@@ -724,7 +796,12 @@ var ICONES = {
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
   envelope: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7 10-7"/></svg>',
   copiar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16V4a2 2 0 0 1 2-2h10"/></svg>',
-  expandir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>'
+  expandir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>',
+  roteiros: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
+  relogio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
+  alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2L12 3z" stroke-linejoin="round"/><path d="M12 9v5M12 17h.01"/></svg>',
+  tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 2c.4 2.2 1.9 3.8 4 4.1v3a7 7 0 0 1-4-1.3v6.7a5.9 5.9 0 1 1-5-5.8v3.1a2.9 2.9 0 1 0 2 2.7V2h3z"/></svg>',
+  youtube: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg>'
 };
 
 function icone(nome){ return ICONES[nome] || ""; }
@@ -894,6 +971,7 @@ function abrirModal(htmlConteudo, largo){
 function fecharModal(){
   modalOverlay.hidden = true;
   modalConteudo.innerHTML = "";
+  modalBox.style.maxWidth = "";
 }
 modalFechar.addEventListener("click", fecharModal);
 modalOverlay.addEventListener("click", function(e){ if(e.target === modalOverlay) fecharModal(); });
@@ -907,9 +985,11 @@ var ABAS = {
   marcas: { titulo: "Marcas", icone: "marcas" },
   prospeccao: { titulo: "Prospecção", icone: "prospeccao" },
   disparo: { titulo: "Disparo de E-mails", icone: "disparo" },
+  pitch: { titulo: "Pitch", icone: "envelope" },
   calendario: { titulo: "Calendário", icone: "calendario" },
   campanhas: { titulo: "Campanhas", icone: "campanhas" },
-  checklist: { titulo: "Checklist Portfólio", icone: "checklist" }
+  checklist: { titulo: "Brainstorm", icone: "checklist" },
+  roteiros: { titulo: "Roteiros", icone: "roteiros" }
 };
 
 var botoesMenu = document.querySelectorAll(".item-menu");
@@ -938,9 +1018,11 @@ async function renderizarAba(nome){
     else if(nome === "marcas") await abaMarcas(painel);
     else if(nome === "prospeccao") await abaProspeccao(painel);
     else if(nome === "disparo") await abaDisparo(painel);
+    else if(nome === "pitch") await abaPitch(painel);
     else if(nome === "calendario") await abaCalendario(painel);
     else if(nome === "campanhas") await abaCampanhas(painel);
     else if(nome === "checklist") await abaChecklist(painel);
+    else if(nome === "roteiros") await abaRoteiros(painel);
   }catch(erro){
     console.error(erro);
     painel.innerHTML = faixaAviso("Essa aba encontrou um problema para carregar. Tente clicar em outra aba e voltar aqui.", "erro");
@@ -1489,6 +1571,12 @@ async function abaProspeccao(painel){
   html += '<div class="chips" id="chipsStatusProsp" style="margin-bottom:8px;"></div>';
   html += '<div class="chips" id="chipsNichoProsp" style="margin-bottom:14px;"></div>';
 
+  html += '<div class="barra-acoes" style="margin-bottom:10px;">' +
+    '<span id="textoResumoSelecaoProsp" style="font-size:.82rem; font-weight:600;"></span>' +
+    '<button type="button" class="btn btn-pequeno" id="btnSelecionarVisiveisProsp">Selecionar visíveis</button>' +
+    '<button type="button" class="btn btn-pequeno" id="btnLimparSelecaoProsp">Limpar seleção</button>' +
+  '</div>';
+
   html += '<div class="painel-branco"><div class="tabela-scroll" id="areaTabelaProsp"></div></div>';
 
   painel.innerHTML = html;
@@ -1528,7 +1616,30 @@ async function abaProspeccao(painel){
     inputArquivo.value = "";
   });
 
+  document.getElementById("btnSelecionarVisiveisProsp").addEventListener("click", async function(){
+    var alvo = filtrarProspeccao(todas);
+    if(alvo.length === 0) return;
+    var idsAlvo = alvo.map(function(m){ return m.id; });
+    var r = await buscarSeguro(banco.from("prospeccao").update({ selecionada: true }).in("id", idsAlvo));
+    if(r.ok) irParaAba("prospeccao");
+  });
+  document.getElementById("btnLimparSelecaoProsp").addEventListener("click", async function(){
+    var selecionadas = todas.filter(function(m){ return m.selecionada; });
+    if(selecionadas.length === 0) return;
+    var idsSelecionados = selecionadas.map(function(m){ return m.id; });
+    var r = await buscarSeguro(banco.from("prospeccao").update({ selecionada: false }).in("id", idsSelecionados));
+    if(r.ok) irParaAba("prospeccao");
+  });
+
+  atualizarResumoSelecaoProsp(todas);
   desenharTabelaProspeccao(todas);
+}
+
+function atualizarResumoSelecaoProsp(todas){
+  var span = document.getElementById("textoResumoSelecaoProsp");
+  if(!span) return;
+  var qtd = todas.filter(function(m){ return m.selecionada; }).length;
+  span.textContent = qtd === 1 ? "1 marca selecionada" : qtd + " marcas selecionadas";
 }
 
 function filtrarProspeccao(lista){
@@ -1555,7 +1666,7 @@ function desenharTabelaProspeccao(todas){
     return;
   }
 
-  var tabela = el('<table><thead><tr><th>Marca</th><th>Instagram</th><th>Nicho</th><th>Origem</th><th>Seguidores</th><th>Status</th><th>Data</th><th></th></tr></thead><tbody></tbody></table>');
+  var tabela = el('<table><thead><tr><th></th><th>Marca</th><th>Instagram</th><th>Nicho</th><th>Origem</th><th>Seguidores</th><th>Status</th><th>Data</th><th></th></tr></thead><tbody></tbody></table>');
   var corpo = tabela.querySelector("tbody");
 
   lista.forEach(function(m){
@@ -1569,6 +1680,7 @@ function desenharTabelaProspeccao(todas){
 
     var tr = el(
       '<tr class="clicavel">' +
+        '<td><input type="checkbox" class="check-prosp" ' + (m.selecionada ? "checked" : "") + '></td>' +
         '<td><strong>' + escapa(m.nome) + '</strong></td>' +
         '<td>' + (linkI ? '<a href="' + linkI + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + escapa(m.instagram) + '</a>' : (m.instagram ? escapa(m.instagram) : "-")) + '</td>' +
         '<td><select class="select-status select-nicho" style="background:' + corNichoAtual + '22; color:' + corNichoAtual + '">' + opcoesSelectNicho(m.nicho) + '</select></td>' +
@@ -1579,6 +1691,19 @@ function desenharTabelaProspeccao(todas){
         '<td><div class="acoes-linha">' + (linkW ? '<a class="btn btn-icone" href="' + linkW + '" target="_blank" rel="noopener" title="WhatsApp" onclick="event.stopPropagation()">' + icone("whats") + '</a>' : '') + '</div></td>' +
       '</tr>'
     );
+
+    var checkbox = tr.querySelector(".check-prosp");
+    checkbox.addEventListener("click", function(e){ e.stopPropagation(); });
+    checkbox.addEventListener("change", async function(e){
+      var novoValor = e.target.checked;
+      var r = await buscarSeguro(banco.from("prospeccao").update({ selecionada: novoValor }).eq("id", m.id));
+      if(r.ok){
+        m.selecionada = novoValor;
+      } else {
+        e.target.checked = !novoValor;
+      }
+      atualizarResumoSelecaoProsp(todas);
+    });
 
     var seletorNicho = tr.querySelector(".select-nicho");
     seletorNicho.addEventListener("click", function(e){ e.stopPropagation(); });
@@ -3258,8 +3383,7 @@ function abrirFormCampanha(campanha){
 /* ============================================================================
    ABA 5: CHECKLIST PORTFÓLIO
 ============================================================================ */
-var checklistSubaba = "checklist";
-var marcadosCache = {};
+var checklistSubaba = "referencias";
 
 async function abaChecklist(painel){
   if(!window.Biblioteca){
@@ -3267,24 +3391,14 @@ async function abaChecklist(painel){
     return;
   }
 
-  var res = await buscarSeguro(banco.from("marcados").select("*"));
-  marcadosCache = {};
-  if(res.ok){
-    res.dados.forEach(function(m){ marcadosCache[m.chave] = m.marcado; });
-  }
-
   var subabas = [
-    { chave: "checklist", rotulo: "Checklist do portfólio" },
     { chave: "referencias", rotulo: "Referências de vídeo" },
     { chave: "roteiros", rotulo: "Roteiros" },
     { chave: "nichos", rotulo: "Ideias por nicho" },
     { chave: "revisao", rotulo: "Revisar meu roteiro" }
   ];
 
-  var html = "";
-  if(!res.ok) html += faixaAviso("Não consegui carregar o que você já marcou. Suas marcações desta sessão podem não salvar até isso ser corrigido.", "erro");
-
-  html += '<div class="subtabs">' + subabas.map(function(s){
+  var html = '<div class="subtabs">' + subabas.map(function(s){
     return '<button type="button" class="subtab-btn ' + (checklistSubaba === s.chave ? "ativo" : "") + '" data-sub="' + s.chave + '">' + s.rotulo + '</button>';
   }).join("") + '</div>';
   html += '<div id="areaSubaba"></div>';
@@ -3296,76 +3410,103 @@ async function abaChecklist(painel){
   });
 
   var area = document.getElementById("areaSubaba");
-  if(checklistSubaba === "checklist") desenharSubChecklist(area);
-  else if(checklistSubaba === "referencias") desenharSubReferencias(area);
+  if(checklistSubaba === "referencias") await desenharSubReferencias(area);
   else if(checklistSubaba === "roteiros") desenharSubRoteiros(area);
-  else if(checklistSubaba === "nichos") desenharSubNichos(area);
+  else if(checklistSubaba === "nichos") await desenharSubNichos(area);
   else if(checklistSubaba === "revisao") desenharSubRevisao(area);
 }
 
-function desenharSubChecklist(area){
-  var secoes = window.Biblioteca.CHECKLIST || [];
-  var totalItens = 0, totalMarcados = 0;
-  secoes.forEach(function(s){
-    (s.itens||[]).forEach(function(it, idx){
-      totalItens++;
-      if(marcadosCache[s.id + ":" + idx]) totalMarcados++;
-    });
-  });
-  var pctGeral = totalItens > 0 ? Math.round((totalMarcados/totalItens)*100) : 0;
-
-  var html = '<div class="painel-branco"><div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:.8rem; font-weight:700;"><span>Progresso geral</span><span>' + pctGeral + '%</span></div><div class="barra-progresso"><div style="width:' + pctGeral + '%"></div></div></div>';
-
-  secoes.forEach(function(secao){
-    var itens = secao.itens || [];
-    var marcadosSecao = itens.filter(function(it, idx){ return marcadosCache[secao.id + ":" + idx]; }).length;
-    var pct = itens.length > 0 ? Math.round((marcadosSecao/itens.length)*100) : 0;
-
-    html += '<details class="secao-checklist" data-secao="' + secao.id + '">' +
-      '<summary>' +
-        '<span class="titulo-secao">' + (secao.emoji||"") + ' ' + escapa(secao.nome) + '</span>' +
-        '<span class="progresso-secao"><div class="barra-progresso"><div style="width:' + pct + '%"></div></div>' + marcadosSecao + '/' + itens.length + '</span>' +
-      '</summary>' +
-      '<div class="corpo-secao">' +
-        '<p class="porque">' + escapa(secao.porque) + '</p>' +
-        itens.map(function(it, idx){
-          var chave = secao.id + ":" + idx;
-          var marcado = !!marcadosCache[chave];
-          return '<label class="item-checklist"><input type="checkbox" data-chave-marcado="' + chave + '" ' + (marcado ? "checked" : "") + '><span><span class="t">' + escapa(it.t) + '</span><br><span class="d">' + escapa(it.d) + '</span></span></label>';
-        }).join("") +
-      '</div>' +
-    '</details>';
-  });
-
-  area.innerHTML = html;
-
-  area.querySelectorAll("[data-chave-marcado]").forEach(function(chk){
-    chk.addEventListener("change", async function(){
-      var chave = chk.dataset.chaveMarcado;
-      marcadosCache[chave] = chk.checked;
-      await buscarSeguro(banco.from("marcados").upsert({ chave: chave, marcado: chk.checked, atualizado_em: new Date().toISOString() }));
-      desenharSubChecklist(area);
-    });
-  });
-}
-
 var CORES_CARTAO = ["#2b6fff", "#ff6a2b", "#c3f53a", "#ff3da6"];
+var CATEGORIAS_REFERENCIA = ["React", "Encenação", "Demonstração", "Problema e solução", "Entrevista", "Rotina"];
 
-function desenharSubReferencias(area){
-  var refs = window.Biblioteca.REFERENCIAS || [];
-  var html = '<div class="grade-referencias">';
+async function desenharSubReferencias(area){
+  area.innerHTML = '<p class="vazio-explicacao">Carregando...</p>';
+
+  var resExtras = await buscarSeguro(banco.from("referencias_video").select("*").order("created_at", { ascending: false }));
+  var refsBase = window.Biblioteca.REFERENCIAS || [];
+  var refsExtras = resExtras.ok ? resExtras.dados.map(function(r){
+    return { id: r.id, titulo: r.titulo, emoji: r.emoji || "🎬", estilo: r.categoria, duracao: r.duracao, marca: r.marca, youtube: r.link };
+  }) : [];
+  var refs = refsBase.concat(refsExtras);
+
+  var html = "";
+  if(!resExtras.ok) html += faixaAviso("Não consegui carregar os vídeos que você adicionou. Confira se a tabela existe no seu Supabase (veja o arquivo sql-brainstorm.sql).", "erro");
+  html += '<div class="barra-acoes"><span></span><button type="button" class="btn btn-principal" id="btnNovaReferencia">' + icone("mais") + ' Adicionar vídeo</button></div>';
+  html += '<div class="grade-referencias">';
   refs.forEach(function(r, idx){
     var cor = CORES_CARTAO[idx % CORES_CARTAO.length];
     html += '<button type="button" class="cartao-ref" data-ref="' + idx + '">' +
       '<div class="capa-ref" style="background:' + cor + '33;">' + (r.emoji||"") + '</div>' +
-      '<div class="info-ref"><div class="titulo-ref">' + escapa(r.titulo) + '</div><div class="meta-ref">' + escapa(r.estilo||"") + ' · ' + escapa(r.duracao||"") + (r.marca ? " · " + escapa(r.marca) : "") + '</div></div>' +
+      '<div class="info-ref"><div class="titulo-ref">' + escapa(r.titulo) + '</div><div class="meta-ref">' + escapa(r.estilo||"") + (r.duracao ? ' · ' + escapa(r.duracao) : "") + (r.marca ? " · " + escapa(r.marca) : "") + '</div></div>' +
     '</button>';
   });
   html += '</div>';
   area.innerHTML = html;
 
   area.querySelectorAll("[data-ref]").forEach(function(botao){
-    botao.addEventListener("click", function(){ abrirDetalheReferencia(refs[Number(botao.dataset.ref)]); });
+    var idx = Number(botao.dataset.ref);
+    botao.addEventListener("click", function(){
+      if(idx < refsBase.length) abrirDetalheReferencia(refs[idx]);
+      else abrirDetalheReferenciaExtra(refs[idx]);
+    });
+  });
+
+  document.getElementById("btnNovaReferencia").addEventListener("click", function(){ abrirModalNovaReferencia(); });
+}
+
+function abrirDetalheReferenciaExtra(r){
+  var html = '<p class="form-titulo">' + (r.emoji||"🎬") + ' ' + escapa(r.titulo) + '</p>';
+  html += '<p style="font-size:.8rem; color:#8a8272; margin-bottom:16px;">' + escapa(r.estilo||"") + (r.duracao ? ' · ' + escapa(r.duracao) : "") + (r.marca ? ' · ' + escapa(r.marca) : "") + '</p>';
+  html += '<div class="form-acoes"><button type="button" class="btn btn-perigo" id="btnApagarReferencia">' + icone("lixeira") + ' Apagar</button>' +
+    (r.youtube ? '<a class="btn btn-principal" href="' + escapa(r.youtube) + '" target="_blank" rel="noopener">' + icone("play") + ' Assistir</a>' : '<span></span>') +
+  '</div>';
+  abrirModal(html);
+
+  document.getElementById("btnApagarReferencia").addEventListener("click", async function(){
+    if(!window.confirm('Apagar "' + r.titulo + '"? Isso não pode ser desfeito.')) return;
+    await buscarSeguro(banco.from("referencias_video").delete().eq("id", r.id));
+    fecharModal();
+    irParaAba("checklist");
+  });
+}
+
+function abrirModalNovaReferencia(){
+  var html = '<p class="form-titulo">Adicionar vídeo de referência</p>';
+  html += '<form id="formNovaReferencia">';
+  html += '<div class="campo"><label>Título</label><input id="refTitulo" required></div>';
+  html += '<div class="form-linha">' +
+    '<div class="campo"><label>Categoria</label><select id="refCategoria">' + CATEGORIAS_REFERENCIA.map(function(c){ return '<option value="' + escapa(c) + '">' + escapa(c) + '</option>'; }).join("") + '</select></div>' +
+    '<div class="campo"><label>Duração</label><input id="refDuracao" placeholder="ex: 40s"></div>' +
+  '</div>';
+  html += '<div class="campo"><label>Marca (opcional)</label><input id="refMarca"></div>';
+  html += '<div class="campo"><label>Link do vídeo (opcional)</label><input id="refLink" placeholder="https://"></div>';
+  html += '<div class="form-acoes"><button type="button" class="btn" id="btnCancelarReferencia">Cancelar</button><button type="submit" class="btn btn-principal">Adicionar</button></div>';
+  html += '<p class="aviso erro oculto" id="refErro"></p>';
+  html += '</form>';
+  abrirModal(html);
+
+  document.getElementById("btnCancelarReferencia").addEventListener("click", fecharModal);
+  document.getElementById("formNovaReferencia").addEventListener("submit", async function(e){
+    e.preventDefault();
+    var titulo = document.getElementById("refTitulo").value.trim();
+    if(!titulo) return;
+    var dados = {
+      titulo: titulo,
+      categoria: document.getElementById("refCategoria").value,
+      duracao: document.getElementById("refDuracao").value.trim() || null,
+      marca: document.getElementById("refMarca").value.trim() || null,
+      link: document.getElementById("refLink").value.trim() || null
+    };
+    var res = await buscarSeguro(banco.from("referencias_video").insert(dados));
+    if(!res.ok){
+      var erroEl = document.getElementById("refErro");
+      erroEl.textContent = "Não consegui salvar: " + res.mensagem;
+      erroEl.classList.remove("oculto");
+      return;
+    }
+    fecharModal();
+    checklistSubaba = "referencias";
+    irParaAba("checklist");
   });
 }
 
@@ -3399,17 +3540,82 @@ function desenharSubRoteiros(area){
   area.innerHTML = html;
 }
 
-function desenharSubNichos(area){
+async function desenharSubNichos(area){
+  area.innerHTML = '<p class="vazio-explicacao">Carregando...</p>';
+
   var nichos = window.Biblioteca.NICHOS || [];
+  var resExtras = await buscarSeguro(banco.from("ideias_nicho").select("*").order("created_at", { ascending: false }));
+  var extrasPorNicho = {};
+  if(resExtras.ok){
+    resExtras.dados.forEach(function(i){
+      if(!extrasPorNicho[i.nicho]) extrasPorNicho[i.nicho] = [];
+      extrasPorNicho[i.nicho].push(i);
+    });
+  }
+
   var html = "";
+  if(!resExtras.ok) html += faixaAviso("Não consegui carregar as ideias que você adicionou. Confira se a tabela existe no seu Supabase (veja o arquivo sql-brainstorm.sql).", "erro");
+  html += '<div class="barra-acoes"><span></span><button type="button" class="btn btn-principal" id="btnNovaIdeia">' + icone("mais") + ' Nova ideia</button></div>';
+
   nichos.forEach(function(n){
     html += '<div class="nicho-bloco"><h3>' + (n.emoji||"") + ' ' + escapa(n.nome) + '</h3>';
     (n.ideias||[]).forEach(function(i){
       html += '<div class="ideia-card"><div class="t">' + escapa(i.t) + '</div><div class="gancho">"' + escapa(i.gancho) + '"</div></div>';
     });
+    (extrasPorNicho[n.nome] || []).forEach(function(i){
+      html += '<div class="ideia-card" style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">' +
+        '<div><div class="t">' + escapa(i.titulo) + '</div>' + (i.descricao ? '<div class="gancho">"' + escapa(i.descricao) + '"</div>' : "") + '</div>' +
+        '<button type="button" class="btn btn-pequeno btn-perigo" data-apagar-ideia="' + i.id + '">' + icone("lixeira") + '</button>' +
+      '</div>';
+    });
     html += '</div>';
   });
+
   area.innerHTML = html;
+
+  document.getElementById("btnNovaIdeia").addEventListener("click", function(){ abrirModalNovaIdeia(); });
+  area.querySelectorAll("[data-apagar-ideia]").forEach(function(botao){
+    botao.addEventListener("click", async function(){
+      if(!window.confirm("Apagar essa ideia? Isso não pode ser desfeito.")) return;
+      await buscarSeguro(banco.from("ideias_nicho").delete().eq("id", botao.dataset.apagarIdeia));
+      irParaAba("checklist");
+    });
+  });
+}
+
+function abrirModalNovaIdeia(){
+  var nichos = (window.Biblioteca.NICHOS || []).map(function(n){ return n.nome; });
+  var html = '<p class="form-titulo">Nova ideia</p>';
+  html += '<form id="formNovaIdeia">';
+  html += '<div class="campo"><label>Nome da ideia</label><input id="ideiaTitulo" required></div>';
+  html += '<div class="campo"><label>Descrição breve</label><textarea id="ideiaDescricao" placeholder="O gancho ou a ideia em uma frase"></textarea></div>';
+  html += '<div class="campo"><label>Nicho</label><select id="ideiaNicho">' + nichos.map(function(n){ return '<option value="' + escapa(n) + '">' + escapa(n) + '</option>'; }).join("") + '</select></div>';
+  html += '<div class="form-acoes"><button type="button" class="btn" id="btnCancelarIdeia">Cancelar</button><button type="submit" class="btn btn-principal">Adicionar</button></div>';
+  html += '<p class="aviso erro oculto" id="ideiaErro"></p>';
+  html += '</form>';
+  abrirModal(html);
+
+  document.getElementById("btnCancelarIdeia").addEventListener("click", fecharModal);
+  document.getElementById("formNovaIdeia").addEventListener("submit", async function(e){
+    e.preventDefault();
+    var titulo = document.getElementById("ideiaTitulo").value.trim();
+    if(!titulo) return;
+    var dados = {
+      titulo: titulo,
+      descricao: document.getElementById("ideiaDescricao").value.trim() || null,
+      nicho: document.getElementById("ideiaNicho").value
+    };
+    var res = await buscarSeguro(banco.from("ideias_nicho").insert(dados));
+    if(!res.ok){
+      var erroEl = document.getElementById("ideiaErro");
+      erroEl.textContent = "Não consegui salvar: " + res.mensagem;
+      erroEl.classList.remove("oculto");
+      return;
+    }
+    fecharModal();
+    checklistSubaba = "nichos";
+    irParaAba("checklist");
+  });
 }
 
 function desenharSubRevisao(area){
@@ -3493,5 +3699,7 @@ async function iniciar(){
 
 iniciar();
 </script>
+<script src="../js/roteiros.js"></script>
+<script src="../js/pitch.js"></script>
 </body>
 </html>
