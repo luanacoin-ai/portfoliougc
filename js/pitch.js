@@ -228,7 +228,13 @@ async function chamarIAPitch(mensagens){
   if(!resposta.ok) return { ok: false, mensagem: mensagemErroIA(dados, resposta.status) };
 
   var texto = textoDaRespostaIA(dados);
-  if(!texto) return { ok: false, mensagem: "A IA não respondeu nada. Tenta de novo." };
+  if(!texto){
+    console.warn("Resposta da IA sem texto:", dados);
+    var motivo = dados && dados.stop_reason;
+    if(motivo === "refusal") return { ok: false, mensagem: "A IA se recusou a escrever esse texto. Tenta mudar um pouco as respostas e manda de novo." };
+    if(motivo === "max_tokens") return { ok: false, mensagem: "A IA passou do limite de tamanho antes de terminar. Tenta de novo." };
+    return { ok: false, mensagem: "A IA não respondeu nada (motivo: " + (motivo || "desconhecido") + "). Tenta de novo." };
+  }
   return { ok: true, texto: texto };
 }
 
