@@ -60,6 +60,7 @@ var pitchRespostas = montarRespostasVaziasPitch();
 var pitchFormatoAtivo = "email";
 var pitchVersoes = {};
 var pitchIndiceVersao = {};
+var pitchBotaoAtivo = "btnPitchEscrever";
 
 function montarRespostasVaziasPitch(){
   var respostas = {};
@@ -329,9 +330,9 @@ async function abaPitch(painel){
   html += '<div class="chips" id="pitchFormatos" style="margin-bottom:12px;"></div>';
   html += '<p id="pitchStatusVersao" style="font-size:.72rem; color:#8a8272; margin-bottom:12px;"></p>';
   html += '<div class="form-acoes" style="justify-content:flex-start; gap:8px; margin-top:0; margin-bottom:12px;">' +
-    '<button type="button" class="btn btn-principal" id="btnPitchEscrever">Escrever pra mim</button>' +
-    '<button type="button" class="btn btn-pequeno" id="btnPitchOutraVersao">Outra versão</button>' +
-    '<button type="button" class="btn btn-pequeno" id="btnPitchOriginal">Voltar ao original</button>' +
+    '<button type="button" class="btn botao-acao-pitch" id="btnPitchEscrever">Escrever pra mim</button>' +
+    '<button type="button" class="btn botao-acao-pitch" id="btnPitchOutraVersao">Outra versão</button>' +
+    '<button type="button" class="btn botao-acao-pitch" id="btnPitchOriginal">Voltar ao original</button>' +
   '</div>';
   html += '<div class="campo" id="pitchCampoAssunto"><label>Assunto</label><input id="pitchAssunto" placeholder="Assunto do e-mail"></div>';
   html += '<div class="painel-branco" style="background:var(--paper); border-style:dashed; margin-bottom:0;"><div id="pitchCorpo" class="pitch-corpo" contenteditable="true" spellcheck="false"></div></div>';
@@ -425,6 +426,14 @@ function lerCamposPerfilPitch(){
   salvarLocalPitch();
 }
 
+/* O último botão clicado (Escrever / Outra versão / Voltar ao original) fica verde. */
+function marcarBotaoAcaoPitch(idAtivo){
+  pitchBotaoAtivo = idAtivo;
+  document.querySelectorAll(".botao-acao-pitch").forEach(function(botao){
+    botao.classList.toggle("btn-principal", botao.id === idAtivo);
+  });
+}
+
 function ligarEventosPitch(){
   ["pitchNome", "pitchArroba", "pitchPortfolio", "pitchCidade"].forEach(function(id){
     var campo = document.getElementById(id);
@@ -437,9 +446,10 @@ function ligarEventosPitch(){
   });
 
   document.getElementById("btnPitchCriarModelo").addEventListener("click", function(e){ escreverTextoPitch(e.currentTarget, false); });
-  document.getElementById("btnPitchEscrever").addEventListener("click", function(e){ escreverTextoPitch(e.currentTarget, false); });
-  document.getElementById("btnPitchOutraVersao").addEventListener("click", function(e){ escreverTextoPitch(e.currentTarget, true); });
-  document.getElementById("btnPitchOriginal").addEventListener("click", function(){ voltarOriginalPitch(); });
+  document.getElementById("btnPitchEscrever").addEventListener("click", function(e){ marcarBotaoAcaoPitch(e.currentTarget.id); escreverTextoPitch(e.currentTarget, false); });
+  document.getElementById("btnPitchOutraVersao").addEventListener("click", function(e){ marcarBotaoAcaoPitch(e.currentTarget.id); escreverTextoPitch(e.currentTarget, true); });
+  document.getElementById("btnPitchOriginal").addEventListener("click", function(e){ marcarBotaoAcaoPitch(e.currentTarget.id); voltarOriginalPitch(); });
+  marcarBotaoAcaoPitch(pitchBotaoAtivo);
   document.getElementById("btnPitchCopiar").addEventListener("click", function(e){ copiarPitch(e.currentTarget); });
   document.getElementById("btnPitchLimpar").addEventListener("click", function(){ limparRespostasPitch(); });
 
