@@ -8,6 +8,7 @@
    Este arquivo é carregado DEPOIS do script principal e do roteiros.js, então
    pode usar tudo que já existe lá: banco, buscarSeguro, escapa, el, icone,
    faixaAviso, irParaAba, mesclarObjetos, buscarChaveIA, mensagemErroIA,
+   textoDaRespostaIA,
    ANTHROPIC_API_URL, ANTHROPIC_MODEL.
 ============================================================================ */
 "use strict";
@@ -201,7 +202,8 @@ async function chamarIAPitch(mensagens){
 
   var corpoPedido = {
     model: ANTHROPIC_MODEL,
-    max_tokens: 1200,
+    max_tokens: 16000,
+    output_config: { effort: "low" },
     messages: mensagens.map(function(m){ return { role: m.papel, content: m.texto }; })
   };
 
@@ -225,7 +227,7 @@ async function chamarIAPitch(mensagens){
   try{ dados = await resposta.json(); }catch(erroJson){}
   if(!resposta.ok) return { ok: false, mensagem: mensagemErroIA(dados, resposta.status) };
 
-  var texto = dados && dados.content && dados.content[0] && dados.content[0].text;
+  var texto = textoDaRespostaIA(dados);
   if(!texto) return { ok: false, mensagem: "A IA não respondeu nada. Tenta de novo." };
   return { ok: true, texto: texto };
 }

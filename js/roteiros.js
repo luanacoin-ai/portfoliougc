@@ -271,6 +271,17 @@ function mensagemErroIA(corpo, statusHttp){
   return "Não consegui analisar esse roteiro com a IA agora" + (msg ? " (" + msg + ")" : "") + ".";
 }
 
+/* O modelo sempre "pensa" antes de responder, então a resposta vem com um
+   bloco de raciocínio (vazio) antes do texto. Junta só os blocos de texto. */
+function textoDaRespostaIA(dados){
+  if(!dados || !dados.content) return "";
+  return dados.content
+    .filter(function(bloco){ return bloco.type === "text"; })
+    .map(function(bloco){ return bloco.text; })
+    .join("")
+    .trim();
+}
+
 async function analisarRoteiroComIA(transcricao, chaveIA){
   var esquema = {
     type: "object",
@@ -297,7 +308,7 @@ async function analisarRoteiroComIA(transcricao, chaveIA){
 
   var corpoPedido = {
     model: ANTHROPIC_MODEL,
-    max_tokens: 2048,
+    max_tokens: 16000,
     messages: [{ role: "user", content: instrucao }],
     output_config: { format: { type: "json_schema", schema: esquema } }
   };
@@ -325,7 +336,7 @@ async function analisarRoteiroComIA(transcricao, chaveIA){
     return { ok: false, mensagem: mensagemErroIA(dados, resposta.status) };
   }
 
-  var textoResposta = dados && dados.content && dados.content[0] && dados.content[0].text;
+  var textoResposta = textoDaRespostaIA(dados);
   var analise;
   try{
     analise = JSON.parse(textoResposta);
