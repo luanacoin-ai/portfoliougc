@@ -598,6 +598,13 @@
     justify-content:center;
     background:linear-gradient(160deg, #eef0ec, #ffffff);
   }
+  .destaque-capa-img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
   .destaque-cover .frame-mini{
     position:absolute;
     inset:10px;
@@ -1468,13 +1475,36 @@
   // capa do card. Se o link nao for do Youtube, usa o degrade de reserva.
   function aplicarCapa(coverEl, item, indice){
     var id = extrairIdYoutube(item.link);
-    if(id){
-      coverEl.style.backgroundImage = "url('https://img.youtube.com/vi/" + id + "/hqdefault.jpg')";
-      coverEl.style.backgroundSize = "cover";
-      coverEl.style.backgroundPosition = "center";
-    } else {
+    if(!id){
       coverEl.style.background = CAPAS_VIDEO[indice % CAPAS_VIDEO.length];
+      return;
     }
+    // Tenta a miniatura em alta resolucao primeiro (1280x720). Nem todo
+    // video do Youtube tem essa versao: quando nao tem, o Youtube devolve
+    // uma imagem cinza de 120x90 (sem dar erro de verdade), entao a
+    // checagem e pelo tamanho da imagem que chegou, nao so pelo "error".
+    var img = el("img", "destaque-capa-img");
+    img.alt = "";
+    img.loading = "lazy";
+
+    function usarReserva(){
+      if(img.dataset.tentativa === "media"){
+        coverEl.style.background = CAPAS_VIDEO[indice % CAPAS_VIDEO.length];
+        img.remove();
+        return;
+      }
+      img.dataset.tentativa = "media";
+      img.src = "https://img.youtube.com/vi/" + id + "/hqdefault.jpg";
+    }
+
+    img.addEventListener("load", function(){
+      if(img.dataset.tentativa !== "media" && img.naturalWidth <= 120){
+        usarReserva();
+      }
+    });
+    img.addEventListener("error", usarReserva);
+    img.src = "https://img.youtube.com/vi/" + id + "/maxresdefault.jpg";
+    coverEl.insertBefore(img, coverEl.firstChild);
   }
 
   function abrirVideo(link){
