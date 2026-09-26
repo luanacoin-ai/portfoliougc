@@ -92,6 +92,13 @@ create table if not exists public.calendario (
   data date not null,
   status text not null default 'a_fazer'
     check (status in ('a_fazer', 'feito')),
+  formato text,                -- Reels, Carrossel, Stories...
+  etapa text,                  -- etapa do funil (Identificação, Curiosidade...)
+  ideia text,                  -- ideia de conteúdo
+  legenda text,
+  gravado boolean not null default false,
+  editado boolean not null default false,
+  postado boolean not null default false,
   criado_em timestamptz not null default now()
 );
 

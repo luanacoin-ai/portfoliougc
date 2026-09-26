@@ -2959,7 +2959,7 @@ function desenharCalendario(listaCal, listaCamp){
 
     itens.slice(0, 3).forEach(function(it){
       var classeTipo = "tipo-" + (it.ehPrazo ? "prazo" : it.tipo);
-      html += '<button type="button" class="cal-item ' + classeTipo + (it.feito ? " feito" : "") + '" data-item-data="' + dataISO + '">' + escapa(it.titulo) + '</button>';
+      html += '<button type="button" class="cal-item ' + classeTipo + (it.feito ? " feito" : "") + '" data-item-data="' + dataISO + '"' + (it.ehPrazo ? '' : ' data-cal-id="' + it.dado.id + '"') + ' title="' + escapa(it.titulo) + '">' + escapa(it.titulo) + '</button>';
     });
     if(itens.length > 3){
       html += '<button type="button" class="cal-mais" data-item-data="' + dataISO + '">+' + (itens.length - 3) + ' mais</button>';
@@ -2984,6 +2984,8 @@ function desenharCalendario(listaCal, listaCamp){
   area.querySelectorAll(".cal-item, .cal-mais").forEach(function(botao){
     botao.addEventListener("click", function(e){
       e.stopPropagation();
+      var item = botao.dataset.calId && listaCal.find(function(c){ return String(c.id) === botao.dataset.calId; });
+      if(item) return abrirFormCalendario(item, null);
       abrirDetalheDia(botao.dataset.itemData, listaCal, listaCamp);
     });
   });
@@ -3047,23 +3049,45 @@ function desenharAtrasados(listaCal){
   });
 }
 
+// Cada ideia passa por 3 passos: gravar, editar e postar. O "tipo" (cor e
+// filtro do calendário) é o próximo passo que falta; com os 3 marcados, fica feito.
+var PASSOS_CALENDARIO = [
+  { campo: "gravado", tipo: "gravar", rotulo: "Gravar" },
+  { campo: "editado", tipo: "editar", rotulo: "Editar" },
+  { campo: "postado", tipo: "postar", rotulo: "Postar" }
+];
+var ETAPAS_FUNIL = ["🪞 Identificação", "🤔 Curiosidade", "🏆 Autoridade", "✨ Desejo", "👉 Ação", "Livre"];
+var FORMATOS_CONTEUDO = ["Reels", "Carrossel", "Post", "Stories", "Reels/Carrossel", "Carrossel/Post", "Stories/Post"];
+
 function abrirFormCalendario(item, dataPreenchida){
   var editando = !!item;
-  var opcoesTipo = TIPOS_CALENDARIO.map(function(t){
-    var sel = editando && item.tipo === t.valor ? "selected" : "";
-    return '<option value="' + t.valor + '" ' + sel + '>' + t.rotulo + '</option>';
+  var v = function(campo){ return editando ? escapa(item[campo] || "") : ""; };
+  // itens antigos só tinham "Já feito": nesse caso os 3 passos aparecem marcados
+  var passoMarcado = function(p){ return editando && (item[p.campo] || item.status === "feito"); };
+
+  var opcoesEtapa = '<option value="">—</option>' + ETAPAS_FUNIL.map(function(e){
+    return '<option ' + (editando && item.etapa === e ? "selected" : "") + '>' + escapa(e) + '</option>';
+  }).join("");
+  var opcoesFormato = FORMATOS_CONTEUDO.map(function(f){ return '<option value="' + escapa(f) + '">'; }).join("");
+  var checksPassos = PASSOS_CALENDARIO.map(function(p){
+    return '<div class="campo-check"><input type="checkbox" id="fcPasso_' + p.campo + '" ' + (passoMarcado(p) ? "checked" : "") + '><label for="fcPasso_' + p.campo + '" style="margin:0;">' + p.rotulo + '</label></div>';
   }).join("");
 
   abrirModal(
     '<p class="form-titulo">' + (editando ? "Editar item" : "Adicionar ao calendário") + '</p>' +
     '<form id="formCal">' +
-      '<div class="campo"><label>Título</label><input required id="fcTitulo" value="' + (editando ? escapa(item.titulo) : "") + '"></div>' +
+      '<div class="campo"><label>Título</label><input required id="fcTitulo" value="' + v("titulo") + '"></div>' +
       '<div class="form-linha">' +
-        '<div class="campo"><label>Tipo</label><select id="fcTipo">' + opcoesTipo + '</select></div>' +
-        '<div class="campo"><label>Data</label><input type="date" required id="fcData" value="' + (editando ? item.data : (dataPreenchida || "")) + '"></div>' +
+        '<div class="campo"><label>Formato</label><input id="fcFormato" list="fcFormatos" value="' + v("formato") + '"><datalist id="fcFormatos">' + opcoesFormato + '</datalist></div>' +
+        '<div class="campo"><label>Etapa</label><select id="fcEtapa">' + opcoesEtapa + '</select></div>' +
       '</div>' +
-      '<div class="campo"><label>Marca (opcional)</label><input id="fcMarca" value="' + (editando ? escapa(item.marca || "") : "") + '"></div>' +
-      '<div class="campo campo-check"><input type="checkbox" id="fcFeito" ' + (editando && item.status === "feito" ? "checked" : "") + '><label for="fcFeito">Já feito</label></div>' +
+      '<div class="campo"><label>Ideia de conteúdo</label><textarea id="fcIdeia">' + v("ideia") + '</textarea></div>' +
+      '<div class="campo"><label>Legenda</label><textarea id="fcLegenda" style="min-height:110px;">' + v("legenda") + '</textarea></div>' +
+      '<div class="campo"><label>Passos</label><div style="display:flex; gap:18px; flex-wrap:wrap;">' + checksPassos + '</div></div>' +
+      '<div class="form-linha">' +
+        '<div class="campo"><label>Data</label><input type="date" required id="fcData" value="' + (editando ? item.data : (dataPreenchida || "")) + '"></div>' +
+        '<div class="campo"><label>Marca (opcional)</label><input id="fcMarca" value="' + v("marca") + '"></div>' +
+      '</div>' +
       '<div class="form-acoes">' +
         (editando ? '<button type="button" class="btn btn-perigo" id="btnApagarCal">Apagar</button>' : '<span></span>') +
         '<button type="submit" class="btn btn-principal">Salvar</button>' +
@@ -3084,11 +3108,17 @@ function abrirFormCalendario(item, dataPreenchida){
     e.preventDefault();
     var dados = {
       titulo: document.getElementById("fcTitulo").value.trim(),
-      tipo: document.getElementById("fcTipo").value,
       data: document.getElementById("fcData").value,
       marca: document.getElementById("fcMarca").value.trim(),
-      status: document.getElementById("fcFeito").checked ? "feito" : "a_fazer"
+      formato: document.getElementById("fcFormato").value.trim(),
+      etapa: document.getElementById("fcEtapa").value,
+      ideia: document.getElementById("fcIdeia").value.trim(),
+      legenda: document.getElementById("fcLegenda").value.trim()
     };
+    PASSOS_CALENDARIO.forEach(function(p){ dados[p.campo] = document.getElementById("fcPasso_" + p.campo).checked; });
+    var proximoPasso = PASSOS_CALENDARIO.find(function(p){ return !dados[p.campo]; });
+    dados.tipo = proximoPasso ? proximoPasso.tipo : "postar";
+    dados.status = proximoPasso ? "a_fazer" : "feito";
     var res = editando
       ? await buscarSeguro(banco.from("calendario").update(dados).eq("id", item.id))
       : await buscarSeguro(banco.from("calendario").insert(dados));
