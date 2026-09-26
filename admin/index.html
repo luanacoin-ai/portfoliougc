@@ -3049,12 +3049,13 @@ function desenharAtrasados(listaCal){
   });
 }
 
-// Cada ideia passa por 3 passos: gravar, editar e postar. O "tipo" (cor e
-// filtro do calendário) é o próximo passo que falta; com os 3 marcados, fica feito.
+// Passo em que a ideia está. Vira o "tipo" do item, que é o que os filtros
+// Gravar / Editar / Postar mostram. "Feito" guarda como postar + status feito.
 var PASSOS_CALENDARIO = [
-  { campo: "gravado", tipo: "gravar", rotulo: "Gravar" },
-  { campo: "editado", tipo: "editar", rotulo: "Editar" },
-  { campo: "postado", tipo: "postar", rotulo: "Postar" }
+  { valor: "gravar", rotulo: "🎥 Gravar" },
+  { valor: "editar", rotulo: "✂️ Editar" },
+  { valor: "postar", rotulo: "📲 Postar" },
+  { valor: "feito", rotulo: "✅ Feito" }
 ];
 var ETAPAS_FUNIL = ["🪞 Identificação", "🤔 Curiosidade", "🏆 Autoridade", "✨ Desejo", "👉 Ação", "Livre"];
 var FORMATOS_CONTEUDO = ["Reels", "Carrossel", "Post", "Stories", "Reels/Carrossel", "Carrossel/Post", "Stories/Post"];
@@ -3062,15 +3063,14 @@ var FORMATOS_CONTEUDO = ["Reels", "Carrossel", "Post", "Stories", "Reels/Carross
 function abrirFormCalendario(item, dataPreenchida){
   var editando = !!item;
   var v = function(campo){ return editando ? escapa(item[campo] || "") : ""; };
-  // itens antigos só tinham "Já feito": nesse caso os 3 passos aparecem marcados
-  var passoMarcado = function(p){ return editando && (item[p.campo] || item.status === "feito"); };
+  var passoAtual = !editando ? "gravar" : (item.status === "feito" ? "feito" : item.tipo);
 
   var opcoesEtapa = '<option value="">—</option>' + ETAPAS_FUNIL.map(function(e){
     return '<option ' + (editando && item.etapa === e ? "selected" : "") + '>' + escapa(e) + '</option>';
   }).join("");
   var opcoesFormato = FORMATOS_CONTEUDO.map(function(f){ return '<option value="' + escapa(f) + '">'; }).join("");
-  var checksPassos = PASSOS_CALENDARIO.map(function(p){
-    return '<div class="campo-check"><input type="checkbox" id="fcPasso_' + p.campo + '" ' + (passoMarcado(p) ? "checked" : "") + '><label for="fcPasso_' + p.campo + '" style="margin:0;">' + p.rotulo + '</label></div>';
+  var opcoesPasso = PASSOS_CALENDARIO.map(function(p){
+    return '<option value="' + p.valor + '" ' + (passoAtual === p.valor ? "selected" : "") + '>' + p.rotulo + '</option>';
   }).join("");
 
   abrirModal(
@@ -3083,11 +3083,11 @@ function abrirFormCalendario(item, dataPreenchida){
       '</div>' +
       '<div class="campo"><label>Ideia de conteúdo</label><textarea id="fcIdeia">' + v("ideia") + '</textarea></div>' +
       '<div class="campo"><label>Legenda</label><textarea id="fcLegenda" style="min-height:110px;">' + v("legenda") + '</textarea></div>' +
-      '<div class="campo"><label>Passos</label><div style="display:flex; gap:18px; flex-wrap:wrap;">' + checksPassos + '</div></div>' +
       '<div class="form-linha">' +
+        '<div class="campo"><label>Passo</label><select id="fcPasso">' + opcoesPasso + '</select></div>' +
         '<div class="campo"><label>Data</label><input type="date" required id="fcData" value="' + (editando ? item.data : (dataPreenchida || "")) + '"></div>' +
-        '<div class="campo"><label>Marca (opcional)</label><input id="fcMarca" value="' + v("marca") + '"></div>' +
       '</div>' +
+      '<div class="campo"><label>Marca (opcional)</label><input id="fcMarca" value="' + v("marca") + '"></div>' +
       '<div class="form-acoes">' +
         (editando ? '<button type="button" class="btn btn-perigo" id="btnApagarCal">Apagar</button>' : '<span></span>') +
         '<button type="submit" class="btn btn-principal">Salvar</button>' +
@@ -3115,10 +3115,9 @@ function abrirFormCalendario(item, dataPreenchida){
       ideia: document.getElementById("fcIdeia").value.trim(),
       legenda: document.getElementById("fcLegenda").value.trim()
     };
-    PASSOS_CALENDARIO.forEach(function(p){ dados[p.campo] = document.getElementById("fcPasso_" + p.campo).checked; });
-    var proximoPasso = PASSOS_CALENDARIO.find(function(p){ return !dados[p.campo]; });
-    dados.tipo = proximoPasso ? proximoPasso.tipo : "postar";
-    dados.status = proximoPasso ? "a_fazer" : "feito";
+    var passo = document.getElementById("fcPasso").value;
+    dados.tipo = passo === "feito" ? "postar" : passo;
+    dados.status = passo === "feito" ? "feito" : "a_fazer";
     var res = editando
       ? await buscarSeguro(banco.from("calendario").update(dados).eq("id", item.id))
       : await buscarSeguro(banco.from("calendario").insert(dados));
