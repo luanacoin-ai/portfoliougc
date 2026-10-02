@@ -2331,7 +2331,29 @@ async function enviarTesteDisparo(botao){
     areaResultado.innerHTML = faixaAviso("Não consegui mandar o teste: " + res.mensagem, "erro");
     return;
   }
+
+  // A função responde "ok" mesmo quando o Resend recusa o e-mail; quem diz se
+  // o envio deu certo é o resultado daquele destinatário.
+  var envio = res.dados && res.dados.resultados && res.dados.resultados[0];
+  if(!envio || envio.status !== "ok"){
+    areaResultado.innerHTML = faixaAviso(mensagemFalhaTesteDisparo(envio), "erro");
+    return;
+  }
   areaResultado.innerHTML = faixaAviso("Teste mandado para " + EMAIL_ADMIN_DISPARO + ". Confira sua caixa de entrada (e o spam) e abra pelo celular também.", "");
+}
+
+function mensagemFalhaTesteDisparo(envio){
+  if(envio && envio.status === "pulado"){
+    return "O teste NÃO foi enviado: " + EMAIL_ADMIN_DISPARO + " está na lista de descadastro, então o disparo pula esse e-mail.";
+  }
+  var motivo = envio && envio.erro ? envio.erro : "";
+  if(!motivo){
+    return "O teste NÃO foi enviado: o Resend não confirmou o envio. Tenta de novo.";
+  }
+  if(/own email address|testing emails|verify a domain|domain is not verified|not verified/i.test(motivo)){
+    return "O teste NÃO foi enviado. O Resend só deixa mandar teste pro e-mail com que a conta dele foi criada, e enquanto o domínio luanacoin.com não estiver verificado lá, esse é o único jeito. Isso acontece quando o e-mail da conta do Resend não é " + EMAIL_ADMIN_DISPARO + ". Resposta do Resend: " + motivo;
+  }
+  return "O teste NÃO foi enviado. O Resend respondeu: " + motivo;
 }
 
 function confirmarEnviarDisparo(destinatariosFinal, assunto, htmlFinal, rotuloOrigem){
