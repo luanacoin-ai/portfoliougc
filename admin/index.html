@@ -2350,9 +2350,6 @@ function mensagemFalhaTesteDisparo(envio){
   if(!motivo){
     return "O teste NÃO foi enviado: o Resend não confirmou o envio. Tenta de novo.";
   }
-  if(/own email address|testing emails|verify a domain|domain is not verified|not verified/i.test(motivo)){
-    return "O teste NÃO foi enviado. O Resend só deixa mandar teste pro e-mail com que a conta dele foi criada, e enquanto o domínio luanacoin.com não estiver verificado lá, esse é o único jeito. Isso acontece quando o e-mail da conta do Resend não é " + EMAIL_ADMIN_DISPARO + ". Resposta do Resend: " + motivo;
-  }
   return "O teste NÃO foi enviado. O Resend respondeu: " + motivo;
 }
 
