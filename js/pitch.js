@@ -42,9 +42,9 @@ var PITCH_CAMPOS_FORMATO = {
     { id: "quandoMandouPrimeiro", numero: "03", titulo: "Quando você mandou o primeiro", placeholder: "semana passada", ajuda: "Opcional.", opcional: true }
   ],
   influencer: [
-    { id: "quemVoce", numero: "01", titulo: "Quem você é, em uma linha", placeholder: "criadora de conteúdo UGC especializada em casa e decoração", ajuda: "O que aparece primeiro no seu perfil." },
-    { id: "numeros", numero: "02", titulo: "Seus números", placeholder: "+300 marcas atendidas, +500 vídeos entregues", ajuda: "O que prova que você entrega." },
-    { id: "tipoDeMarca", numero: "03", titulo: "Que tipo de marca você quer atrair", placeholder: "marcas de casa e decoração", ajuda: "Opcional. Ajuda a bio a filtrar quem te chama.", opcional: true }
+    { id: "diferencial", numero: "01", titulo: "Seu diferencial, em uma linha", placeholder: "+ de 500 conteúdos criados só no último ano", ajuda: "É a primeira linha, a que decide se leem o resto. Um número forte ou o seu nicho." },
+    { id: "apresentacao", numero: "02", titulo: "Sua apresentação", placeholder: "criadora de conteúdo há 2 anos, mais de 300 marcas e 500 vídeos, emito nota fiscal", ajuda: "Quem você é, com os números de verdade." },
+    { id: "conexao", numero: "03", titulo: "Sua conexão com essa marca", placeholder: "sou cliente de vocês há anos e já tenho ideias de como usar o produto", ajuda: "Por que você pra essa campanha. Se você ama o produto, isso vale mais que número." }
   ]
 };
 
@@ -52,7 +52,7 @@ var PITCH_INTRO_FORMATO = {
   email: "Cinco perguntas. Responde do jeito que você falaria, do resto eu cuido.",
   dm: "A DM não vende: ela só pede o canal pra você mandar a proposta depois. Duas perguntas já bastam.",
   segundo_email: "Esse e-mail não insiste na proposta: ele reabre a conversa e pede outro canal de contato.",
-  influencer: "Três perguntas curtas, pra virar uma bio de uma linha do jeito que aparece num perfil de plataforma."
+  influencer: "Três perguntas, e elas viram as quatro linhas da candidatura: diferencial, apresentação, conexão e o convite."
 };
 
 var pitchPerfil = { nome: "Luana Coin", arroba: "luanacoin", portfolio: "https://luanacoin.com", cidade: "" };
@@ -102,6 +102,11 @@ function valorOuPlaceholder(valor, placeholder){
   return valor && valor.trim() ? valor.trim() : placeholder;
 }
 
+// Tira espaços e pontuação do fim, pra poder fechar a frase com um ponto só.
+function tirarPontoFinalPitch(texto){
+  return String(texto).trim().replace(/[\s.!?]+$/, "");
+}
+
 function montarRascunhoPitch(formato, p, r){
   var nome = valorOuPlaceholder(p.nome, "[[seu nome]]");
   var arroba = p.arroba && p.arroba.trim() ? "@" + p.arroba.trim().replace(/^@/, "") : "[[seu @]]";
@@ -134,11 +139,26 @@ function montarRascunhoPitch(formato, p, r){
   }
 
   if(formato === "influencer"){
-    var quemVoceInfl = valorOuPlaceholder(r.quemVoce, "[[quem você é, em uma linha]]");
-    var numeros = valorOuPlaceholder(r.numeros, "[[seus números]]");
-    var tipoDeMarca = valorOuPlaceholder(r.tipoDeMarca, "[[o tipo de marca que você quer atrair]]");
+    // As quatro linhas da candidatura: diferencial, apresentação, conexão e convite.
+    var diferencial = r.diferencial && r.diferencial.trim()
+      ? tirarPontoFinalPitch(r.diferencial) + "."
+      : "[[+ de XX conteúdos criados só no último ano.]]";
+
+    var apresentacao = r.apresentacao && r.apresentacao.trim()
+      ? "Sou " + tirarPontoFinalPitch(r.apresentacao.trim().replace(/^sou\s+/i, "")) + "."
+      : "Sou criadora de conteúdo UGC, [[com mais de X marcas trabalhadas]] e [[especialista no nicho de casa e decoração]].";
+
+    var conexao = "Adoraria fazer parte desse trabalho e construir algo incrível juntos! Animada pra iniciarmos.";
+    if(r.conexao && r.conexao.trim()){
+      var conexaoLimpa = tirarPontoFinalPitch(r.conexao);
+      conexao = conexaoLimpa.charAt(0).toUpperCase() + conexaoLimpa.slice(1) + ". " + conexao;
+    }
+
     return { assunto: "", corpo:
-      nome + " (" + arroba + ") — " + quemVoceInfl + ". " + numeros + ". Adoraria criar pra " + tipoDeMarca + ". Portfólio: " + portfolio
+      diferencial + " ✨\n\n" +
+      "Oie, equipe! Cheguei 🎬 " + apresentacao + "\n\n" +
+      conexao + "\n\n" +
+      "Deixo aqui meu portfólio com alguns dos meus vídeos favoritos:\n" + portfolio
     };
   }
 
@@ -170,7 +190,7 @@ var PITCH_INSTRUCAO_FORMATO = {
   email: "Escreva um e-mail de prospecção. Estrutura em parágrafos curtos: 1) saudação e como ela chegou até a marca (pesquisando o produto, citando algo específico que viu no site dela, se ela respondeu essa parte); 2) por que essa marca e por que agora, puxando pro produto que falta pra ela; 3) uma ideia de conteúdo que ela já pensou, explicando rapidinho como isso vira material pra marca usar; 4) os diferenciais dela; 5) o convite pra conversar, com o link do portfólio e a assinatura. Se ela tiver respondido alguma coisa extra, feche com um P.S. curto usando isso.",
   dm: "Escreva uma DM curta pro Instagram, de no máximo 4 frases. O único objetivo dela é conseguir um canal melhor (geralmente e-mail) pra mandar a proposta depois — não venda nem explique demais aqui.",
   segundo_email: "Escreva um e-mail de follow-up (segundo contato), educado e curto, sem soar chato ou insistente. Ele lembra rapidinho do primeiro contato e pede um segundo canal, sem repetir a proposta inteira.",
-  influencer: "Escreva uma bio curta, de no máximo 3 frases, pro perfil dela numa plataforma de influenciadoras/UGC. Direto ao ponto, sem saudação nem despedida."
+  influencer: "Escreva uma candidatura curta pra uma campanha numa plataforma de influenciadoras/UGC, em exatamente 4 blocos curtos separados por uma linha em branco: 1) o diferencial dela em uma linha, que é a que decide se leem o resto, usando a resposta de diferencial (pode fechar com um emoji); 2) a apresentação, começando com \"Oie, equipe!\" e dizendo quem ela é, com os números de verdade que ela deu; 3) a conexão dela com essa marca, por que ela pra essa campanha, fechando com a vontade de fazer parte; 4) o convite pra ver o portfólio, com o link numa linha própria."
 };
 
 function montarBlocoRespostasIA(formato, r){
