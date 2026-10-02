@@ -28,6 +28,11 @@ create table if not exists public.referencias_video (
 
 create index if not exists referencias_video_created_at_idx on public.referencias_video (created_at desc);
 
+-- Resumo gerado pela IA (gancho, por que funciona, diferencial, erro comum e
+-- os blocos de tempo do roteiro) e a transcrição usada pra gerar ele.
+alter table public.referencias_video add column if not exists analise jsonb;
+alter table public.referencias_video add column if not exists transcricao text;
+
 
 -- ============================================================================
 -- TABELA: ideias_nicho
@@ -59,44 +64,52 @@ alter table public.ideias_nicho enable row level security;
 drop policy if exists "referencias_video_select_somente_logada" on public.referencias_video;
 create policy "referencias_video_select_somente_logada"
   on public.referencias_video for select
-  using ( auth.role() = 'authenticated' );
+  to authenticated
+  using ( true );
 
 drop policy if exists "referencias_video_insert_somente_logada" on public.referencias_video;
 create policy "referencias_video_insert_somente_logada"
   on public.referencias_video for insert
-  with check ( auth.role() = 'authenticated' );
+  to authenticated
+  with check ( true );
 
 drop policy if exists "referencias_video_update_somente_logada" on public.referencias_video;
 create policy "referencias_video_update_somente_logada"
   on public.referencias_video for update
-  using ( auth.role() = 'authenticated' );
+  to authenticated
+  using ( true );
 
 drop policy if exists "referencias_video_delete_somente_logada" on public.referencias_video;
 create policy "referencias_video_delete_somente_logada"
   on public.referencias_video for delete
-  using ( auth.role() = 'authenticated' );
+  to authenticated
+  using ( true );
 
 
 -- ---------- ideias_nicho ----------
 drop policy if exists "ideias_nicho_select_somente_logada" on public.ideias_nicho;
 create policy "ideias_nicho_select_somente_logada"
   on public.ideias_nicho for select
-  using ( auth.role() = 'authenticated' );
+  to authenticated
+  using ( true );
 
 drop policy if exists "ideias_nicho_insert_somente_logada" on public.ideias_nicho;
 create policy "ideias_nicho_insert_somente_logada"
   on public.ideias_nicho for insert
-  with check ( auth.role() = 'authenticated' );
+  to authenticated
+  with check ( true );
 
 drop policy if exists "ideias_nicho_update_somente_logada" on public.ideias_nicho;
 create policy "ideias_nicho_update_somente_logada"
   on public.ideias_nicho for update
-  using ( auth.role() = 'authenticated' );
+  to authenticated
+  using ( true );
 
 drop policy if exists "ideias_nicho_delete_somente_logada" on public.ideias_nicho;
 create policy "ideias_nicho_delete_somente_logada"
   on public.ideias_nicho for delete
-  using ( auth.role() = 'authenticated' );
+  to authenticated
+  using ( true );
 
 
 -- ============================================================================

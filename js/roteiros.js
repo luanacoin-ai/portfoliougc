@@ -203,8 +203,8 @@ function mensagemErroSupadata(corpo, statusHttp){
   return "Não consegui transcrever esse vídeo agora" + (detalhes ? " (" + detalhes + ")" : "") + ". Tenta de novo em alguns minutos.";
 }
 
-async function chamarTranscricaoSupadata(url, chave){
-  var alvo = SUPADATA_BASE_URL + "/transcript?url=" + encodeURIComponent(url) + "&mode=auto&text=true&lang=pt";
+async function chamarTranscricaoSupadata(url, chave, comTempos){
+  var alvo = SUPADATA_BASE_URL + "/transcript?url=" + encodeURIComponent(url) + "&mode=auto&text=" + (comTempos ? "false" : "true") + "&lang=pt";
   var resposta;
   try{
     resposta = await fetch(alvo, { headers: { "x-api-key": chave } });
@@ -351,7 +351,7 @@ async function analisarRoteiroComIA(transcricao, chaveIA){
    consulta o job a cada 5 segundos até terminar ou passar de 6 minutos.
    Chama aoAtualizar(segundosPassados) uma vez por segundo, pra tela mostrar
    o andamento. */
-function transcreverComEspera(url, chave, aoAtualizar){
+function transcreverComEspera(url, chave, aoAtualizar, comTempos){
   return new Promise(function(resolve){
     var resolvido = false;
     var inicio = Date.now();
@@ -378,7 +378,7 @@ function transcreverComEspera(url, chave, aoAtualizar){
 
     async function passo(){
       if(resolvido) return;
-      var resultado = ultimoJobId ? await consultarJobSupadata(ultimoJobId, chave) : await chamarTranscricaoSupadata(url, chave);
+      var resultado = ultimoJobId ? await consultarJobSupadata(ultimoJobId, chave) : await chamarTranscricaoSupadata(url, chave, comTempos);
       if(resolvido) return;
       if(!resultado.ok){ resolverUmaVez(resultado); return; }
       if(resultado.tipo === "job"){ ultimoJobId = resultado.jobId; setTimeout(passo, 5000); return; }

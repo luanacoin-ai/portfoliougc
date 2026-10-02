@@ -3441,7 +3441,7 @@ async function desenharSubReferencias(area){
   var resExtras = await buscarSeguro(banco.from("referencias_video").select("*").order("created_at", { ascending: false }));
   var refsBase = window.Biblioteca.REFERENCIAS || [];
   var refsExtras = resExtras.ok ? resExtras.dados.map(function(r){
-    return { id: r.id, titulo: r.titulo, emoji: r.emoji || "🎬", estilo: r.categoria, duracao: r.duracao, marca: r.marca, youtube: r.link };
+    return referenciaExtraParaCartao(r);
   }) : [];
   var refs = refsBase.concat(refsExtras);
 
@@ -3470,13 +3470,58 @@ async function desenharSubReferencias(area){
   document.getElementById("btnNovaReferencia").addEventListener("click", function(){ abrirModalNovaReferencia(); });
 }
 
-function abrirDetalheReferenciaExtra(r){
-  var html = '<p class="form-titulo">' + (r.emoji||"🎬") + ' ' + escapa(r.titulo) + '</p>';
+function referenciaExtraParaCartao(r){
+  return { id: r.id, titulo: r.titulo, emoji: r.emoji || "🎬", estilo: r.categoria, duracao: r.duracao, marca: r.marca, youtube: r.link, analise: r.analise || null };
+}
+
+/* Converte o resumo que a IA devolveu pro mesmo formato das referências da
+   biblioteca. O texto vem de fora, então tudo passa por escapa(). */
+function resumoDaAnaliseReferencia(analise){
+  return {
+    gancho: analise.gancho,
+    porque: analise.por_que_funciona,
+    diferencial: analise.diferencial,
+    erro: analise.erro_comum,
+    roteiro: (analise.roteiro || []).map(function(b){
+      return {
+        t: b.tempo,
+        o: '<b>' + escapa(b.titulo) + '</b> ' + escapa(b.explicacao) + (b.fala ? ' <em>"' + escapa(b.fala) + '"</em>' : "")
+      };
+    })
+  };
+}
+
+function htmlResumoReferencia(r){
+  var html = "";
+  if(r.gancho) html += '<p style="font-size:.85rem; font-style:italic; margin-bottom:12px;">' + escapa(r.gancho) + '</p>';
+  if(r.porque) html += '<p style="font-size:.8rem; margin-bottom:8px;"><strong>Por que funciona:</strong> ' + escapa(r.porque) + '</p>';
+  if(r.diferencial) html += '<p style="font-size:.8rem; margin-bottom:8px;"><strong>Diferencial:</strong> ' + escapa(r.diferencial) + '</p>';
+  if(r.erro) html += '<p style="font-size:.8rem; margin-bottom:16px;"><strong>Erro comum:</strong> ' + escapa(r.erro) + '</p>';
+  (r.roteiro||[]).forEach(function(bloco){
+    html += '<div class="bloco-tempo"><div class="t">' + escapa(bloco.t) + '</div><div>' + bloco.o + '</div></div>';
+  });
+  return html;
+}
+
+function abrirDetalheReferenciaExtra(r, gerarAgora){
+  var html = '<p class="form-titulo">' + escapa(r.emoji||"🎬") + ' ' + escapa(r.titulo) + '</p>';
   html += '<p style="font-size:.8rem; color:#8a8272; margin-bottom:16px;">' + escapa(r.estilo||"") + (r.duracao ? ' · ' + escapa(r.duracao) : "") + (r.marca ? ' · ' + escapa(r.marca) : "") + '</p>';
+
+  if(r.analise){
+    html += htmlResumoReferencia(resumoDaAnaliseReferencia(r.analise));
+  }else{
+    html += '<div id="resumoRef-' + escapa(r.id) + '">' +
+      '<p style="font-size:.85rem; margin-bottom:12px;">Esse vídeo ainda não tem resumo. ' + (r.youtube ? 'Eu transcrevo o vídeo pelo link e a IA monta o resumo.' : 'Como ele não tem link, cole abaixo a fala do vídeo pra IA montar o resumo.') + '</p>' +
+      '<div class="campo' + (r.youtube ? ' oculto' : '') + '" id="refTextoManualCampo"><label>Fala ou legenda do vídeo</label><textarea id="refTextoManual" style="min-height:120px;" placeholder="Cole aqui o que a pessoa fala no vídeo"></textarea></div>' +
+      '<p class="aviso oculto" id="refStatusResumo"></p>' +
+      '<button type="button" class="btn btn-principal" id="btnGerarResumo">✨ Gerar resumo</button>' +
+    '</div>';
+  }
+
   html += '<div class="form-acoes"><button type="button" class="btn btn-perigo" id="btnApagarReferencia">' + icone("lixeira") + ' Apagar</button>' +
     (r.youtube ? '<a class="btn btn-principal" href="' + escapa(r.youtube) + '" target="_blank" rel="noopener">' + icone("play") + ' Assistir</a>' : '<span></span>') +
   '</div>';
-  abrirModal(html);
+  abrirModal(html, !!r.analise);
 
   document.getElementById("btnApagarReferencia").addEventListener("click", async function(){
     if(!window.confirm('Apagar "' + r.titulo + '"? Isso não pode ser desfeito.')) return;
@@ -3484,6 +3529,178 @@ function abrirDetalheReferenciaExtra(r){
     fecharModal();
     irParaAba("checklist");
   });
+
+  var btnGerar = document.getElementById("btnGerarResumo");
+  if(btnGerar){
+    btnGerar.addEventListener("click", function(){ gerarResumoReferencia(r); });
+    if(gerarAgora && r.youtube) gerarResumoReferencia(r);
+  }
+}
+
+/* Transcreve o vídeo pelo link (ou usa o texto colado), pede o resumo pra IA
+   e salva no banco. Se a pessoa fechar o modal no meio, continua rodando e
+   salva do mesmo jeito. */
+async function gerarResumoReferencia(r){
+  var caixa = document.getElementById("resumoRef-" + r.id);
+  function naTela(){ return caixa && document.body.contains(caixa); }
+  function status(texto, erro){
+    if(!naTela()) return;
+    var el = document.getElementById("refStatusResumo");
+    el.textContent = texto;
+    el.classList.toggle("erro", !!erro);
+    el.classList.remove("oculto");
+  }
+  function liberar(mostrarCampoTexto){
+    if(!naTela()) return;
+    document.getElementById("btnGerarResumo").disabled = false;
+    if(mostrarCampoTexto) document.getElementById("refTextoManualCampo").classList.remove("oculto");
+  }
+
+  var campoTexto = document.getElementById("refTextoManual");
+  var textoManual = campoTexto ? campoTexto.value.trim() : "";
+  document.getElementById("btnGerarResumo").disabled = true;
+
+  var chaveIA = await buscarChaveIA();
+  if(!chaveIA){
+    status("Falta a chave da IA. Cadastre ela na aba Roteiros e tente de novo.", true);
+    liberar(false);
+    return;
+  }
+
+  var transcricao = textoManual;
+  var duracaoDetectada = null;
+  if(!transcricao){
+    if(!r.youtube){
+      status("Cole a fala do vídeo no campo acima pra eu gerar o resumo.", true);
+      liberar(true);
+      return;
+    }
+    var chaveSupadata = await buscarChaveSupadata();
+    if(!chaveSupadata){
+      status("Falta a chave da Supadata pra transcrever o vídeo. Cadastre ela na aba Roteiros, ou cole a fala do vídeo no campo acima.", true);
+      liberar(true);
+      return;
+    }
+    var resultado = await transcreverComEspera(r.youtube, chaveSupadata, function(seg){
+      status("Transcrevendo o vídeo... " + seg + "s");
+    }, true);
+    if(!resultado.ok || resultado.tipo !== "pronto"){
+      var motivo = resultado.ok ? "Não achei fala nesse vídeo." : resultado.mensagem;
+      status(motivo + " Se quiser, cole a fala ou a legenda do vídeo no campo acima e clique em Gerar resumo de novo.", true);
+      liberar(true);
+      return;
+    }
+    transcricao = resultado.texto;
+    if(resultado.segmentos && resultado.segmentos.length){
+      transcricao = resultado.segmentos.map(function(t){
+        return "[" + Math.round((t.offset || 0) / 1000) + "s] " + (t.text || "");
+      }).join("\n");
+      var ultimo = resultado.segmentos[resultado.segmentos.length - 1];
+      duracaoDetectada = Math.round(((ultimo.offset || 0) + (ultimo.duration || 0)) / 1000);
+    }
+  }
+
+  status("Analisando com a IA... isso leva uns segundos.");
+  var analise = await analisarReferenciaComIA(r, transcricao, chaveIA);
+  if(!analise.ok){
+    status(analise.mensagem, true);
+    liberar(false);
+    return;
+  }
+
+  var dados = { analise: analise.analise, transcricao: transcricao };
+  if(analise.analise.emoji) dados.emoji = analise.analise.emoji;
+  if(!r.duracao && duracaoDetectada) dados.duracao = duracaoDetectada + "s";
+  var res = await buscarSeguro(banco.from("referencias_video").update(dados).eq("id", r.id).select());
+  if(!res.ok || !res.dados[0]){
+    status("Gerei o resumo, mas não consegui salvar (" + (res.mensagem || "nenhuma linha atualizada") + "). Confira se você rodou o sql-brainstorm.sql de novo no Supabase.", true);
+    liberar(false);
+    return;
+  }
+
+  if(abaAtual === "checklist" && checklistSubaba === "referencias") irParaAba("checklist");
+  if(naTela()) abrirDetalheReferenciaExtra(referenciaExtraParaCartao(res.dados[0]));
+}
+
+async function analisarReferenciaComIA(r, transcricao, chaveIA){
+  var esquema = {
+    type: "object",
+    properties: {
+      emoji: { type: "string" },
+      gancho: { type: "string" },
+      por_que_funciona: { type: "string" },
+      diferencial: { type: "string" },
+      erro_comum: { type: "string" },
+      roteiro: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            tempo: { type: "string" },
+            titulo: { type: "string" },
+            explicacao: { type: "string" },
+            fala: { type: "string" }
+          },
+          required: ["tempo", "titulo", "explicacao", "fala"],
+          additionalProperties: false
+        }
+      }
+    },
+    required: ["emoji", "gancho", "por_que_funciona", "diferencial", "erro_comum", "roteiro"],
+    additionalProperties: false
+  };
+
+  var instrucao = "Você analisa vídeos de referência pra uma creator de UGC (conteúdo pra marcas) aprender a estrutura e usar nos próprios roteiros. " +
+    "Escreva em português do Brasil, tom direto e de conversa, sem jargão de marketing e sem travessão.\n\n" +
+    "Dados do vídeo:\n" +
+    "Título que ela deu: " + r.titulo + "\n" +
+    "Categoria: " + (r.estilo || "não informada") + "\n" +
+    (r.marca ? "Marca: " + r.marca + "\n" : "") +
+    (r.duracao ? "Duração: " + r.duracao + "\n" : "") +
+    "\nDevolva:\n" +
+    "\"emoji\": um único emoji que represente o vídeo.\n" +
+    "\"gancho\": a frase de abertura do vídeo, entre aspas, tirada da transcrição.\n" +
+    "\"por_que_funciona\": 2 ou 3 frases explicando por que esse vídeo prende e convence, citando trechos da fala quando ajudar.\n" +
+    "\"diferencial\": 1 ou 2 frases sobre o que esse vídeo faz que a maioria não faz.\n" +
+    "\"erro_comum\": 1 ou 2 frases sobre o erro que quem copia esse formato costuma cometer.\n" +
+    "\"roteiro\": de 4 a 7 blocos em ordem, cobrindo o vídeo inteiro. Em cada um: \"tempo\" no formato \"0 a 5s\" (use as marcações [Ns] da transcrição quando existirem, senão estime pelo tamanho da fala); " +
+    "\"titulo\" uma instrução curta no imperativo terminando com ponto, ex: \"Se coloque no mesmo problema de quem assiste.\"; " +
+    "\"explicacao\" uma frase dizendo o que fazer nesse trecho e por quê; " +
+    "\"fala\" um trecho literal curto da transcrição que exemplifica, sem aspas, ou vazio se não houver.\n\n" +
+    "Transcrição:\n" + transcricao;
+
+  var corpoPedido = {
+    model: ANTHROPIC_MODEL,
+    max_tokens: 16000,
+    messages: [{ role: "user", content: instrucao }],
+    output_config: { format: { type: "json_schema", schema: esquema } }
+  };
+
+  var resposta;
+  try{
+    resposta = await fetch(ANTHROPIC_API_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": chaveIA,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify(corpoPedido)
+    });
+  }catch(erro){
+    return { ok: false, mensagem: "Não consegui falar com a IA. Confira sua internet e tenta de novo." };
+  }
+
+  var dados = null;
+  try{ dados = await resposta.json(); }catch(erroJson){}
+  if(!resposta.ok) return { ok: false, mensagem: mensagemErroIA(dados, resposta.status) };
+
+  try{
+    return { ok: true, analise: JSON.parse(textoDaRespostaIA(dados)) };
+  }catch(erroParse){
+    return { ok: false, mensagem: "A IA respondeu num formato que não consegui ler. Tenta de novo." };
+  }
 }
 
 function abrirModalNovaReferencia(){
@@ -3513,30 +3730,25 @@ function abrirModalNovaReferencia(){
       marca: document.getElementById("refMarca").value.trim() || null,
       link: document.getElementById("refLink").value.trim() || null
     };
-    var res = await buscarSeguro(banco.from("referencias_video").insert(dados));
+    var res = await buscarSeguro(banco.from("referencias_video").insert(dados).select());
     if(!res.ok){
       var erroEl = document.getElementById("refErro");
       erroEl.textContent = "Não consegui salvar: " + res.mensagem;
       erroEl.classList.remove("oculto");
       return;
     }
-    fecharModal();
     checklistSubaba = "referencias";
     irParaAba("checklist");
+    if(res.dados[0]) abrirDetalheReferenciaExtra(referenciaExtraParaCartao(res.dados[0]), true);
+    else fecharModal();
   });
 }
 
 function abrirDetalheReferencia(r){
   var html = '<p class="form-titulo">' + (r.emoji||"") + ' ' + escapa(r.titulo) + '</p>';
-  html += '<p style="font-size:.85rem; font-style:italic; margin-bottom:12px;">' + escapa(r.gancho) + '</p>';
-  html += '<p style="font-size:.8rem; margin-bottom:8px;"><strong>Por que funciona:</strong> ' + escapa(r.porque) + '</p>';
-  html += '<p style="font-size:.8rem; margin-bottom:8px;"><strong>Diferencial:</strong> ' + escapa(r.diferencial) + '</p>';
-  html += '<p style="font-size:.8rem; margin-bottom:16px;"><strong>Erro comum:</strong> ' + escapa(r.erro) + '</p>';
-  (r.roteiro||[]).forEach(function(bloco){
-    html += '<div class="bloco-tempo"><div class="t">' + escapa(bloco.t) + '</div><div>' + bloco.o + '</div></div>';
-  });
+  html += htmlResumoReferencia(r);
   if(r.youtube){
-    html += '<div class="form-acoes"><span></span><a class="btn btn-principal" href="' + r.youtube + '" target="_blank" rel="noopener">' + icone("play") + ' Assistir</a></div>';
+    html += '<div class="form-acoes"><span></span><a class="btn btn-principal" href="' + escapa(r.youtube) + '" target="_blank" rel="noopener">' + icone("play") + ' Assistir</a></div>';
   }
   abrirModal(html, true);
 }
@@ -3715,7 +3927,7 @@ async function iniciar(){
 
 iniciar();
 </script>
-<script src="../js/roteiros.js?v=20260924b"></script>
+<script src="../js/roteiros.js?v=20261001a"></script>
 <script src="../js/pitch.js?v=20260924b"></script>
 </body>
 </html>
