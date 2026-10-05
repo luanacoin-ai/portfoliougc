@@ -94,5 +94,42 @@ create policy "email_optout_delete_somente_logada"
 
 
 -- ============================================================================
+-- DISPAROS PROGRAMADOS (data e hora)
+-- ============================================================================
+-- Seguro de rodar mais de uma vez, e não apaga nada do que você já tem.
+-- Cole só este trecho no SQL Editor se você já tinha rodado o resto antes.
+-- ============================================================================
+
+-- Quando o e-mail está programado pra sair (a hora exata que você escolheu).
+alter table public.email_envios add column if not exists agendado_para timestamptz;
+
+-- A tabela só aceitava os status "ok" e "erro". Agora aceita também
+-- "agendado" (programado, ainda não saiu) e "cancelado" (você desistiu).
+-- Primeiro apaga a regra antiga, seja qual for o nome dela, e depois cria a nova.
+do $$
+declare regra record;
+begin
+  for regra in
+    select conname from pg_constraint
+    where conrelid = 'public.email_envios'::regclass
+      and contype = 'c'
+      and pg_get_constraintdef(oid) ilike '%status%'
+  loop
+    execute format('alter table public.email_envios drop constraint %I', regra.conname);
+  end loop;
+end $$;
+
+alter table public.email_envios
+  add constraint email_envios_status_check
+  check (status in ('ok', 'erro', 'agendado', 'cancelado'));
+
+-- Pra poder trocar "agendado" por "cancelado" quando você cancela um disparo.
+drop policy if exists "email_envios_update_somente_logada" on public.email_envios;
+create policy "email_envios_update_somente_logada"
+  on public.email_envios for update
+  using ( auth.role() = 'authenticated' );
+
+
+-- ============================================================================
 -- FIM DO SCRIPT
 -- ============================================================================

@@ -585,6 +585,20 @@
   .cartao-borda .rotulo{ font-size:.74rem; color:#8a8272; margin-top:2px; }
   .cartao-borda .sub{ font-size:.7rem; color:#8a8272; margin-top:4px; }
 
+  .item-programado{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    background:#eef2ff;
+    border-radius:8px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    font-size:.8rem;
+  }
+  .item-programado .detalhe{ color:#6b6353; font-size:.74rem; margin-top:2px; }
+
   .disparo-grade{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
   @media (max-width:980px){ .disparo-grade{ grid-template-columns:1fr; } }
   .disparo-grade .coluna-preview{ position:sticky; top:20px; }
@@ -2069,9 +2083,59 @@ function debounce(fn, ms){
   };
 }
 
-function dataDeHojeISO(){
-  var d = new Date();
+function dataLocalISO(d){
   return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+
+function dataDeHojeISO(){
+  return dataLocalISO(new Date());
+}
+
+/* ---------- disparo programado: data, hora e status ---------- */
+var MIN_PROGRAMAR_MS = 5 * 60 * 1000;                       // pelo menos 5 minutos à frente
+var MAX_PROGRAMAR_MS = 30 * 24 * 60 * 60 * 1000 - 60 * 60 * 1000; // o Resend aceita até 30 dias; sobra 1h de folga
+
+// Texto no formato que o campo de data e hora do navegador usa: AAAA-MM-DDTHH:MM (hora local)
+function valorDataHoraLocal(d){
+  return dataLocalISO(d) + "T" + String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+}
+
+function textoDataHoraPorExtenso(d){
+  return d.toLocaleDateString("pt-BR") + " às " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+// Confere o que foi escolhido no campo de data e hora. Devolve { ok, mensagem } ou { ok, iso }.
+function validarDataHoraProgramada(valor, agoraMs){
+  if(!valor) return { ok: false, mensagem: "Escolha a data e a hora do envio." };
+  var quando = new Date(valor);
+  if(isNaN(quando.getTime())) return { ok: false, mensagem: "Essa data e hora não são válidas." };
+  var diferenca = quando.getTime() - agoraMs;
+  if(diferenca < MIN_PROGRAMAR_MS) return { ok: false, mensagem: "O horário precisa ser daqui a pelo menos 5 minutos." };
+  if(diferenca > MAX_PROGRAMAR_MS) return { ok: false, mensagem: "Dá pra programar até 30 dias à frente (é o limite do Resend)." };
+  return { ok: true, iso: quando.toISOString() };
+}
+
+// O banco guarda "agendado" até o fim. Quando a hora já passou, o Resend já mandou,
+// então pra tela isso conta como enviado.
+function statusEfetivoEnvio(linha, agoraMs){
+  if(linha.status === "agendado" && linha.agendado_para && new Date(linha.agendado_para).getTime() <= agoraMs) return "ok";
+  return linha.status;
+}
+
+// Junta as linhas de um mesmo disparo programado (mesmo assunto e mesma hora).
+function agruparProgramadosDisparo(linhas){
+  var grupos = {};
+  var ordem = [];
+  linhas.forEach(function(l){
+    var chave = l.assunto + "||" + l.agendado_para;
+    if(!grupos[chave]){
+      grupos[chave] = { assunto: l.assunto, agendadoPara: l.agendado_para, ids: [], emails: [] };
+      ordem.push(chave);
+    }
+    grupos[chave].ids.push(l.id);
+    grupos[chave].emails.push(l.email);
+  });
+  return ordem.map(function(chave){ return grupos[chave]; });
 }
 
 function formatarDataHora(timestampTexto){
@@ -2135,7 +2199,8 @@ function marcasParaOrigemDisparo(origem, todasMarcas){
 
 async function buscarEmailsJaEnviadosParaAssunto(assunto){
   if(!assunto || !assunto.trim()) return {};
-  var res = await buscarSeguro(banco.from("email_envios").select("email").eq("assunto", assunto.trim()).eq("status", "ok"));
+  // Quem já está programado pra esse assunto também conta (senão dava pra programar duas vezes).
+  var res = await buscarSeguro(banco.from("email_envios").select("email").eq("assunto", assunto.trim()).in("status", ["ok", "agendado"]));
   var mapa = {};
   (res.dados || []).forEach(function(l){ mapa[String(l.email).toLowerCase().trim()] = true; });
   return mapa;
@@ -2353,25 +2418,41 @@ function mensagemFalhaTesteDisparo(envio){
   return "O teste NÃO foi enviado. O Resend respondeu: " + motivo;
 }
 
-function confirmarEnviarDisparo(destinatariosFinal, assunto, htmlFinal, rotuloOrigem){
+// Pergunta pra função no Supabase se ela já sabe programar. Uma função de antes
+// deste recurso mandaria o e-mail NA HORA e ignoraria o horário, então sem esta
+// confirmação nada é programado.
+async function funcaoSuportaProgramacao(){
+  var r = await chamarFuncaoEnviarEmails({ acao: "versao" });
+  return !!(r.ok && r.dados && r.dados.agendamento === true);
+}
+
+function confirmarEnviarDisparo(destinatariosFinal, assunto, htmlFinal, rotuloOrigem, agendarPara){
+  var quando = agendarPara ? textoDataHoraPorExtenso(new Date(agendarPara)) : null;
+  var corpoModal = quando
+    ? '<p style="font-size:.85rem; margin-bottom:10px;">Vai programar o envio para <strong>' + destinatariosFinal.length + ' marca(s)</strong>, da lista "' + escapa(rotuloOrigem) + '", para <strong>' + escapa(quando) + '</strong>.</p>' +
+      '<p style="font-size:.8rem; color:#6b6353; margin-bottom:18px;">O e-mail sai nessa hora mesmo com o admin fechado. Até lá você pode cancelar na lista "Disparos programados".</p>'
+    : '<p style="font-size:.85rem; margin-bottom:18px;">Vai enviar para <strong>' + destinatariosFinal.length + ' marca(s)</strong>, da lista "' + escapa(rotuloOrigem) + '". Essa ação não pode ser desfeita.</p>';
   abrirModal(
-    '<p class="form-titulo">Confirmar disparo</p>' +
-    '<p style="font-size:.85rem; margin-bottom:18px;">Vai enviar para <strong>' + destinatariosFinal.length + ' marca(s)</strong>, da lista "' + escapa(rotuloOrigem) + '". Essa ação não pode ser desfeita.</p>' +
-    '<div class="form-acoes"><button class="btn" id="btnCancelarDisparo">Cancelar</button><button class="btn btn-principal" id="btnConfirmarDisparo">Disparar</button></div>'
+    '<p class="form-titulo">' + (quando ? "Confirmar programação" : "Confirmar disparo") + '</p>' +
+    corpoModal +
+    '<div class="form-acoes"><button class="btn" id="btnCancelarDisparo">' + (quando ? "Voltar" : "Cancelar") + '</button><button class="btn btn-principal" id="btnConfirmarDisparo">' + (quando ? "Programar" : "Disparar") + '</button></div>'
   );
   document.getElementById("btnCancelarDisparo").addEventListener("click", fecharModal);
   document.getElementById("btnConfirmarDisparo").addEventListener("click", function(){
     fecharModal();
-    iniciarDisparoReal(destinatariosFinal, assunto, htmlFinal, rotuloOrigem);
+    iniciarDisparoReal(destinatariosFinal, assunto, htmlFinal, rotuloOrigem, agendarPara);
   });
 }
 
-async function iniciarDisparoReal(destinatariosFinal, assunto, htmlFinal, rotuloOrigem){
+async function iniciarDisparoReal(destinatariosFinal, assunto, htmlFinal, rotuloOrigem, agendarPara){
   var TAMANHO_LOTE = 100;
   var total = destinatariosFinal.length;
-  var enviadosTotal = 0, falhasTotal = 0, puladosTotal = 0, cotaEsgotada = false;
+  var enviadosTotal = 0, agendadosTotal = 0, falhasTotal = 0, puladosTotal = 0, cotaEsgotada = false;
   var resultadosTotais = [];
   var mensagemErroLote = null;
+
+  var avisoProgramados = document.getElementById("resultadoProgramadosDisparo");
+  if(avisoProgramados) avisoProgramados.innerHTML = "";
 
   var areaProgresso = document.getElementById("areaProgressoDisparo");
   areaProgresso.classList.remove("oculto");
@@ -2382,12 +2463,15 @@ async function iniciarDisparoReal(destinatariosFinal, assunto, htmlFinal, rotulo
   for(var i = 0; i < total; i += TAMANHO_LOTE){
     if(cotaEsgotada) break;
     var lote = destinatariosFinal.slice(i, i + TAMANHO_LOTE).map(function(m){ return { email: m.email, nome: m.nome }; });
-    var res = await chamarFuncaoEnviarEmails({ destinatarios: lote, assunto: assunto, html: htmlFinal });
+    var pedido = { destinatarios: lote, assunto: assunto, html: htmlFinal };
+    if(agendarPara) pedido.agendar_para = agendarPara;
+    var res = await chamarFuncaoEnviarEmails(pedido);
     if(!res.ok){
       mensagemErroLote = res.mensagem;
       break;
     }
     enviadosTotal += res.dados.enviados;
+    agendadosTotal += res.dados.agendados || 0;
     falhasTotal += res.dados.falhas;
     puladosTotal += res.dados.pulados;
     if(res.dados.cotaEsgotada) cotaEsgotada = true;
@@ -2397,7 +2481,18 @@ async function iniciarDisparoReal(destinatariosFinal, assunto, htmlFinal, rotulo
     var pct = Math.round((feitos / total) * 100);
     barraPreench.style.width = pct + "%";
     textoProgresso.textContent = feitos + " de " + total;
+
+    // A função parou no meio por um motivo grave: não manda os próximos lotes.
+    if(res.dados.erroGeral){
+      mensagemErroLote = res.dados.erroGeral;
+      break;
+    }
   }
+
+  var primeiroErro = null;
+  resultadosTotais.forEach(function(r){
+    if(!primeiroErro && r.status === "erro" && r.erro) primeiroErro = r.erro;
+  });
 
   var idsOk = {};
   resultadosTotais.forEach(function(r){ if(r.status === "ok") idsOk[r.email] = true; });
@@ -2409,27 +2504,38 @@ async function iniciarDisparoReal(destinatariosFinal, assunto, htmlFinal, rotulo
   }
 
   mostrarResumoFinalDisparo({
-    enviados: enviadosTotal, falhas: falhasTotal, pulados: puladosTotal,
+    enviados: enviadosTotal, agendados: agendadosTotal, agendarPara: agendarPara,
+    falhas: falhasTotal, pulados: puladosTotal,
     cotaEsgotada: cotaEsgotada, origemUsada: rotuloOrigem, origemChave: origemDisparoAtual,
-    erroGeral: mensagemErroLote
+    erroGeral: mensagemErroLote, primeiroErro: primeiroErro
   });
 
   atualizarCartoesDisparo();
   atualizarHistoricoDisparo();
+  atualizarProgramadosDisparo();
 }
 
 function mostrarResumoFinalDisparo(info){
   var area = document.getElementById("resultadoDisparoArea");
   var html = '<div class="painel-branco">';
-  html += '<p class="painel-titulo">Resultado do disparo</p>';
-  html += '<p style="font-size:.85rem; margin-bottom:6px;">Enviados: <strong>' + info.enviados + '</strong> · Falhas: <strong>' + info.falhas + '</strong> · Pulados: <strong>' + info.pulados + '</strong></p>';
+  html += '<p class="painel-titulo">' + (info.agendarPara ? "Resultado da programação" : "Resultado do disparo") + '</p>';
+  if(info.agendarPara){
+    html += '<p style="font-size:.85rem; margin-bottom:6px;">Programados para <strong>' + escapa(textoDataHoraPorExtenso(new Date(info.agendarPara))) + '</strong>: <strong>' + info.agendados + '</strong> · Falhas: <strong>' + info.falhas + '</strong> · Pulados: <strong>' + info.pulados + '</strong></p>';
+    if(info.agendados > 0){
+      html += '<p style="font-size:.76rem; color:#8a8272; margin-bottom:6px;">Eles aparecem na lista "Disparos programados" abaixo, onde dá pra cancelar até a hora de sair.</p>';
+    }
+  } else {
+    html += '<p style="font-size:.85rem; margin-bottom:6px;">Enviados: <strong>' + info.enviados + '</strong> · Falhas: <strong>' + info.falhas + '</strong> · Pulados: <strong>' + info.pulados + '</strong></p>';
+  }
   if(info.erroGeral){
     html += faixaAviso("O disparo parou por um erro: " + info.erroGeral, "erro");
+  } else if(info.falhas > 0 && info.primeiroErro){
+    html += faixaAviso("Motivo da primeira falha: " + info.primeiroErro, "erro");
   }
   if(info.cotaEsgotada){
     html += faixaAviso("A cota diária do Resend acabou no meio do disparo. Volte amanhã, cole o mesmo assunto e o mesmo texto, deixe marcada a caixinha \"pular quem já recebeu este assunto\" e dispare de novo: só vai mandar pra quem ainda não recebeu.", "erro");
   }
-  if(info.origemChave === "selecionadas" && (info.enviados > 0 || info.falhas > 0)){
+  if(info.origemChave === "selecionadas" && (info.enviados > 0 || info.agendados > 0 || info.falhas > 0)){
     html += '<div class="form-acoes" style="margin-top:10px;">' +
       '<span style="font-size:.8rem;">Quer limpar a seleção dessas marcas agora?</span>' +
       '<span><button class="btn btn-pequeno" id="btnNaoLimparSelecaoDisparo">Não</button> <button class="btn btn-pequeno btn-principal" id="btnLimparSelecaoDisparo">Sim, limpar</button></span>' +
@@ -2508,12 +2614,42 @@ function renderizarFilaRascunhoDisparo(){
 }
 
 /* ---------- cartões e capa (números ao vivo) ---------- */
+
+// Um disparo programado só vira "enviado" de verdade na hora marcada, quando o
+// admin pode estar fechado. Por isso, sempre que a aba abre, as marcas cujo
+// horário já passou ganham a data do último envio, pros números ficarem certos.
+async function sincronizarProgramadosVencidosDisparo(envios){
+  var agora = Date.now();
+  var diaPorEmail = {};
+  envios.forEach(function(l){
+    if(l.status !== "agendado" || !l.agendado_para || new Date(l.agendado_para).getTime() > agora) return;
+    var chave = String(l.email || "").toLowerCase().trim();
+    var dia = dataLocalISO(new Date(l.agendado_para));
+    if(!diaPorEmail[chave] || dia > diaPorEmail[chave]) diaPorEmail[chave] = dia;
+  });
+
+  var idsPorDia = {};
+  cacheMarcasDisparo.forEach(function(m){
+    var dia = diaPorEmail[String(m.email || "").toLowerCase().trim()];
+    if(!dia) return;
+    if(m.ultimo_envio_email && m.ultimo_envio_email >= dia) return;
+    if(!idsPorDia[dia]) idsPorDia[dia] = [];
+    idsPorDia[dia].push(m.id);
+    m.ultimo_envio_email = dia;
+  });
+
+  for(var dia in idsPorDia){
+    await buscarSeguro(banco.from("marcas").update({ ultimo_envio_email: dia }).in("id", idsPorDia[dia]));
+  }
+}
+
 async function atualizarCartoesDisparo(){
   var resMarcas = await buscarSeguro(banco.from("marcas").select("*").order("criado_em", { ascending: false }));
-  var resEnvios = await buscarSeguro(banco.from("email_envios").select("email, status"));
+  var resEnvios = await buscarSeguro(banco.from("email_envios").select("*"));
   var resOptout = await buscarSeguro(banco.from("email_optout").select("email"));
 
   if(resMarcas.ok) cacheMarcasDisparo = resMarcas.dados;
+  if(resMarcas.ok && resEnvios.ok) await sincronizarProgramadosVencidosDisparo(resEnvios.dados);
 
   var comEmail = cacheMarcasDisparo.filter(function(m){ return temEmailValido(m.email); });
   var aEnviar = comEmail.filter(function(m){ return !m.ultimo_envio_email; });
@@ -2538,7 +2674,8 @@ async function atualizarCartoesDisparo(){
     }).join("");
   }
 
-  var totalEnviadosGeral = resEnvios.ok ? resEnvios.dados.filter(function(l){ return l.status === "ok"; }).length : null;
+  var agoraCartoes = Date.now();
+  var totalEnviadosGeral = resEnvios.ok ? resEnvios.dados.filter(function(l){ return statusEfetivoEnvio(l, agoraCartoes) === "ok"; }).length : null;
   var numeroCapa = document.getElementById("numeroCapaDisparo");
   if(numeroCapa) numeroCapa.textContent = totalEnviadosGeral === null ? "-" : totalEnviadosGeral;
 
@@ -2551,6 +2688,84 @@ async function atualizarCartoesDisparo(){
       ? faixaAviso("Não encontrei a(s) tabela(s) " + faltando.join(", ") + " no Supabase. Cole o arquivo disparo.sql no SQL Editor pra criar. Enquanto isso, os números dessas partes ficam como traço.", "erro")
       : "";
   }
+}
+
+/* ---------- disparos programados (os que ainda não saíram) ---------- */
+async function atualizarProgramadosDisparo(){
+  var area = document.getElementById("areaProgramadosDisparo");
+  if(!area) return;
+
+  var res = await buscarSeguro(
+    banco.from("email_envios").select("*").eq("status", "agendado").gt("agendado_para", new Date().toISOString()).order("agendado_para", { ascending: true })
+  );
+  if(!res.ok){
+    area.innerHTML = faixaAviso("Pra programar disparos, cole o trecho \"DISPAROS PROGRAMADOS\" do arquivo disparo.sql no SQL Editor do Supabase.", "");
+    return;
+  }
+
+  var grupos = agruparProgramadosDisparo(res.dados);
+  if(grupos.length === 0){
+    area.innerHTML = '<div class="vazio-explicacao">Nenhum disparo programado. Quando você programar um, ele aparece aqui até a hora de sair.</div>';
+    return;
+  }
+
+  area.innerHTML = "";
+  grupos.forEach(function(g){
+    var quando = textoDataHoraPorExtenso(new Date(g.agendadoPara));
+    var linha = el(
+      '<div class="item-programado">' +
+        '<div><strong>' + escapa(g.assunto) + '</strong>' +
+          '<div class="detalhe">Sai em ' + escapa(quando) + ' · ' + g.ids.length + ' marca(s)</div></div>' +
+        '<button type="button" class="btn btn-pequeno btn-perigo">Cancelar</button>' +
+      '</div>'
+    );
+    linha.querySelector("button").addEventListener("click", function(){ confirmarCancelarProgramadoDisparo(g); });
+    area.appendChild(linha);
+  });
+}
+
+function confirmarCancelarProgramadoDisparo(grupo){
+  var quando = textoDataHoraPorExtenso(new Date(grupo.agendadoPara));
+  abrirModal(
+    '<p class="form-titulo">Cancelar disparo programado</p>' +
+    '<p style="font-size:.85rem; margin-bottom:18px;">Cancelar o disparo "<strong>' + escapa(grupo.assunto) + '</strong>", programado para <strong>' + escapa(quando) + '</strong>? Os ' + grupo.ids.length + ' e-mail(s) não vão sair.</p>' +
+    '<div class="form-acoes"><button class="btn" id="btnVoltarCancelarProgramado">Voltar</button><button class="btn btn-perigo" id="btnConfirmarCancelarProgramado">Cancelar disparo</button></div>'
+  );
+  document.getElementById("btnVoltarCancelarProgramado").addEventListener("click", fecharModal);
+  document.getElementById("btnConfirmarCancelarProgramado").addEventListener("click", function(){
+    fecharModal();
+    cancelarProgramadoDisparo(grupo);
+  });
+}
+
+async function cancelarProgramadoDisparo(grupo){
+  var area = document.getElementById("resultadoProgramadosDisparo");
+  if(area) area.innerHTML = faixaAviso("Cancelando...", "");
+
+  var cancelados = 0, falhas = 0, primeiroErro = null;
+  for(var i = 0; i < grupo.ids.length; i += 100){
+    var lote = grupo.ids.slice(i, i + 100);
+    var res = await chamarFuncaoEnviarEmails({ acao: "cancelar", ids: lote });
+    if(!res.ok){
+      falhas += lote.length;
+      if(!primeiroErro) primeiroErro = res.mensagem;
+      continue;
+    }
+    cancelados += res.dados.cancelados || 0;
+    falhas += res.dados.falhas || 0;
+    (res.dados.resultados || []).forEach(function(r){
+      if(!primeiroErro && r.status === "erro" && r.erro) primeiroErro = r.erro;
+    });
+  }
+
+  if(area){
+    area.innerHTML = falhas === 0
+      ? faixaAviso("Disparo cancelado: " + cancelados + " e-mail(s) não vão sair.", "")
+      : faixaAviso("Cancelados: " + cancelados + " · Falhas: " + falhas + (primeiroErro ? ". Motivo: " + primeiroErro : ""), "erro");
+  }
+  atualizarProgramadosDisparo();
+  atualizarHistoricoDisparo();
+  atualizarCartoesDisparo();
 }
 
 /* ---------- histórico ---------- */
@@ -2582,14 +2797,23 @@ function desenharHistoricoDisparo(){
 
   var tabela = el('<table><thead><tr><th>E-mail</th><th>Assunto</th><th>Quando</th><th>Status</th></tr></thead><tbody></tbody></table>');
   var corpo = tabela.querySelector("tbody");
+  var ESTILO_STATUS = {
+    ok: { rotulo: "Enviado", cor: "#7ea600" },
+    erro: { rotulo: "Erro", cor: "#e5484d" },
+    agendado: { rotulo: "Agendado", cor: "#2b6fff" },
+    cancelado: { rotulo: "Cancelado", cor: "#8a8a8a" }
+  };
+  var agoraHistorico = Date.now();
   lista.slice(0, 300).forEach(function(l){
-    var cor = l.status === "ok" ? "#7ea600" : "#e5484d";
+    var estilo = ESTILO_STATUS[statusEfetivoEnvio(l, agoraHistorico)] || { rotulo: l.status, cor: "#8a8a8a" };
+    // Num envio programado, "Quando" é a hora marcada pra sair (ou em que saiu).
+    var quando = l.agendado_para || l.criado_em;
     var tr = el(
       '<tr' + (l.erro ? ' title="' + escapa(l.erro) + '"' : '') + '>' +
         '<td>' + escapa(l.email) + '</td>' +
         '<td>' + escapa(l.assunto) + '</td>' +
-        '<td>' + formatarDataHora(l.criado_em) + '</td>' +
-        '<td><span class="pilula" style="background:' + cor + '22; color:' + cor + '">' + (l.status === "ok" ? "Enviado" : "Erro") + '</span></td>' +
+        '<td>' + formatarDataHora(quando) + '</td>' +
+        '<td><span class="pilula" style="background:' + estilo.cor + '22; color:' + estilo.cor + '">' + escapa(estilo.rotulo) + '</span></td>' +
       '</tr>'
     );
     corpo.appendChild(tr);
@@ -2621,6 +2845,12 @@ async function abaDisparo(painel){
   html += '<div class="grade-cartoes" id="cartoesDisparo"></div>';
 
   html += '<div id="areaPrincipalDisparo"></div>';
+
+  html += '<div class="painel-branco" id="painelProgramadosDisparo">' +
+    '<p class="painel-titulo">Disparos programados</p>' +
+    '<div id="resultadoProgramadosDisparo"></div>' +
+    '<div id="areaProgramadosDisparo"></div>' +
+  '</div>';
 
   html += '<div class="painel-branco">' +
     '<p class="painel-titulo">Descadastro manual</p>' +
@@ -2683,6 +2913,7 @@ async function abaDisparo(painel){
 
   atualizarCartoesDisparo();
   atualizarHistoricoDisparo();
+  atualizarProgramadosDisparo();
 }
 
 function montarFormularioDisparo(areaPrincipal){
@@ -2724,6 +2955,14 @@ function montarFormularioDisparo(areaPrincipal){
   html += '<div class="campo"><label>HTML do e-mail</label><textarea id="dpCorpoHtml" style="min-height:220px; font-family:monospace; font-size:.78rem;" placeholder="Cole aqui o HTML pronto do seu e-mail..."></textarea></div>';
   html += '<p style="font-size:.74rem; color:#8a8272;">O que você colar aqui é exatamente o que sai, sem nada acrescentado por cima. Mantenha o aviso de SAIR no seu HTML.</p>';
   html += '</div>';
+
+  html += '<div id="blocoProgramarDisparo" class="' + (modoRascunhoDisparo ? "oculto" : "") + '" style="margin-top:14px;">' +
+    '<div class="campo-check"><input type="checkbox" id="dpProgramar"><label for="dpProgramar">Programar o envio pra uma data e hora</label></div>' +
+    '<div id="campoDataHoraDisparo" class="oculto" style="margin-top:8px;">' +
+      '<div class="campo"><label for="dpDataHora">Enviar em</label><input type="datetime-local" id="dpDataHora"></div>' +
+      '<p style="font-size:.74rem; color:#8a8272;">Vale a hora do seu computador. Dá pra programar até 30 dias à frente. O e-mail sai mesmo com o admin fechado, e você pode cancelar enquanto não chegar a hora.</p>' +
+    '</div>' +
+  '</div>';
 
   html += '<div id="resultadoTesteDisparo"></div>';
   html += '<div class="form-acoes" style="margin-top:14px;">' +
@@ -2799,11 +3038,32 @@ function montarFormularioDisparo(areaPrincipal){
   document.getElementById("dpLinkBotao").addEventListener("input", atualizarPreviaDisparoDebounced);
   document.getElementById("dpCorpoHtml").addEventListener("input", atualizarPreviaDisparoDebounced);
 
+  // ---- programar o envio (data e hora) ----
+  document.getElementById("dpProgramar").addEventListener("change", function(e){
+    document.getElementById("campoDataHoraDisparo").classList.toggle("oculto", !e.target.checked);
+    if(e.target.checked){
+      var entrada = document.getElementById("dpDataHora");
+      var agora = new Date();
+      entrada.min = valorDataHoraLocal(new Date(agora.getTime() + MIN_PROGRAMAR_MS));
+      entrada.max = valorDataHoraLocal(new Date(agora.getTime() + MAX_PROGRAMAR_MS));
+      if(!entrada.value){
+        // sugestão: amanhã às 9h
+        var sugestao = new Date(agora.getTime());
+        sugestao.setDate(sugestao.getDate() + 1);
+        sugestao.setHours(9, 0, 0, 0);
+        entrada.value = valorDataHoraLocal(sugestao);
+      }
+    }
+    atualizarRotuloBotaoDisparar();
+  });
+
   // ---- modo rascunho ----
   document.getElementById("dpModoRascunho").addEventListener("change", function(e){
     modoRascunhoDisparo = e.target.checked;
     document.getElementById("areaFilaRascunhoDisparo").classList.toggle("oculto", !modoRascunhoDisparo);
-    document.getElementById("btnDispararDisparo").textContent = modoRascunhoDisparo ? "Montar fila" : "Disparar";
+    // programar precisa do Resend; no modo rascunho (sem Resend) isso não existe
+    document.getElementById("blocoProgramarDisparo").classList.toggle("oculto", modoRascunhoDisparo);
+    atualizarRotuloBotaoDisparar();
     renderizarFilaRascunhoDisparo();
   });
 
@@ -2835,6 +3095,16 @@ function montarFormularioDisparo(areaPrincipal){
       return;
     }
 
+    var agendarPara = null;
+    if(programandoDisparo()){
+      var checagemData = validarDataHoraProgramada(document.getElementById("dpDataHora").value, Date.now());
+      if(!checagemData.ok){
+        document.getElementById("resultadoDisparoArea").innerHTML = faixaAviso(checagemData.mensagem, "erro");
+        return;
+      }
+      agendarPara = checagemData.iso;
+    }
+
     var base = marcasParaOrigemDisparo(origemDisparoAtual, cacheMarcasDisparo);
     var destinatariosFinal = deduplicarPorEmail(base);
     var rotuloOrigem = (opcoesOrigemDisparo(cacheMarcasDisparo).find(function(o){ return o.valor === origemDisparoAtual; }) || {}).rotulo || origemDisparoAtual;
@@ -2860,14 +3130,36 @@ function montarFormularioDisparo(areaPrincipal){
       if(modoRascunhoDisparo){
         montarFilaRascunhoDisparo(destinatariosFinal, dados.assunto, dados.corpoTextoBruto, document.getElementById("dpTextoBotao") ? document.getElementById("dpTextoBotao").value : "", document.getElementById("dpLinkBotao") ? document.getElementById("dpLinkBotao").value : "");
       } else {
-        confirmarEnviarDisparo(destinatariosFinal, dados.assunto, dados.htmlFinal, rotuloOrigem);
+        if(agendarPara){
+          // Trava: só programa se a função no Supabase já souber programar.
+          // A versão antiga mandaria tudo NA HORA, ignorando o horário.
+          var funcaoPronta = await funcaoSuportaProgramacao();
+          if(!funcaoPronta){
+            document.getElementById("resultadoDisparoArea").innerHTML = faixaAviso("Não programei nada. Não consegui confirmar que a função enviar-emails no Supabase já está atualizada pra programar disparos (a versão antiga mandaria na hora). Atualize a função com o código novo e tente de novo.", "erro");
+            return;
+          }
+        }
+        confirmarEnviarDisparo(destinatariosFinal, dados.assunto, dados.htmlFinal, rotuloOrigem, agendarPara);
       }
     })();
   });
 
   atualizarContadorDestinatariosDisparo();
   atualizarPreviaDisparo();
+  atualizarRotuloBotaoDisparar();
   if(modoRascunhoDisparo) renderizarFilaRascunhoDisparo();
+}
+
+// Está marcada a caixinha de programar (e não está no modo rascunho)?
+function programandoDisparo(){
+  var caixa = document.getElementById("dpProgramar");
+  return !modoRascunhoDisparo && !!(caixa && caixa.checked);
+}
+
+function atualizarRotuloBotaoDisparar(){
+  var botao = document.getElementById("btnDispararDisparo");
+  if(!botao) return;
+  botao.textContent = modoRascunhoDisparo ? "Montar fila" : (programandoDisparo() ? "Programar disparo" : "Disparar");
 }
 
 /* ============================================================================
