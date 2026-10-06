@@ -1539,13 +1539,63 @@ function valoresUnicos(lista, campo){
   return resultado;
 }
 
+/* Seleção das marcas na Prospecção.
+   O jeito certo é guardar no Supabase (coluna "selecionada", arquivo
+   sql-prospeccao-selecao.sql). Se essa coluna ainda não existe, a seleção fica
+   guardada só neste navegador, pra continuar funcionando e não sumir. */
+var SELECAO_PROSP_CHAVE = "selecaoProspeccaoNoNavegador";
+var selecaoProspSoNoNavegador = false;
+var selecaoProspMemoria = new Set();
+
+function carregarSelecaoProspDoNavegador(){
+  selecaoProspMemoria = new Set();
+  try{
+    var salvo = JSON.parse(localStorage.getItem(SELECAO_PROSP_CHAVE) || "[]");
+    if(Array.isArray(salvo)) salvo.forEach(function(id){ selecaoProspMemoria.add(id); });
+  }catch(erro){}
+}
+
+function gravarSelecaoProspNoNavegador(){
+  try{ localStorage.setItem(SELECAO_PROSP_CHAVE, JSON.stringify(Array.from(selecaoProspMemoria))); }catch(erro){}
+}
+
+// Marca ou desmarca várias marcas de uma vez. Devolve { ok, mensagem }.
+async function salvarSelecaoProsp(ids, valor){
+  if(selecaoProspSoNoNavegador){
+    ids.forEach(function(id){ if(valor) selecaoProspMemoria.add(id); else selecaoProspMemoria.delete(id); });
+    gravarSelecaoProspNoNavegador();
+    return { ok: true };
+  }
+  return await buscarSeguro(banco.from("prospeccao").update({ selecionada: valor }).in("id", ids));
+}
+
+function mostrarAvisoSelecaoProsp(texto){
+  var area = document.getElementById("avisoSelecaoProsp");
+  if(!area) return;
+  area.innerHTML = texto ? faixaAviso(texto, "erro") : "";
+}
+
 async function abaProspeccao(painel){
-  var res = await buscarSeguro(banco.from("prospeccao").select("*").order("criado_em", { ascending: false }));
+  // "id" no fim: marcas importadas juntas têm o mesmo horário de criação, e sem
+  // um segundo critério a ordem delas embaralhava a cada vez que a tela recarregava.
+  var res = await buscarSeguro(
+    banco.from("prospeccao").select("*")
+      .order("criado_em", { ascending: false })
+      .order("id", { ascending: true })
+  );
 
   var html = "";
   if(!res.ok) html += faixaAviso("Não consegui carregar a tabela de prospecção. Confira se ela existe no seu Supabase (veja o arquivo banco.sql).", "erro");
 
   var todas = res.dados;
+
+  // Se a tabela não tem a coluna "selecionada", usa a seleção guardada no navegador.
+  selecaoProspSoNoNavegador = todas.length > 0 && !("selecionada" in todas[0]);
+  if(selecaoProspSoNoNavegador){
+    carregarSelecaoProspDoNavegador();
+    todas.forEach(function(m){ m.selecionada = selecaoProspMemoria.has(m.id); });
+    html += faixaAviso("A seleção está sendo guardada só neste navegador, porque falta uma coluna no Supabase. Pra guardar de vez, rode o arquivo sql-prospeccao-selecao.sql no SQL Editor do Supabase.");
+  }
 
   // ---- contador no topo: total + quantas em cada status ----
   html += '<div class="grade-cartoes">';
@@ -1577,6 +1627,7 @@ async function abaProspeccao(painel){
     '<button type="button" class="btn btn-pequeno" id="btnSelecionarVisiveisProsp">Selecionar visíveis</button>' +
     '<button type="button" class="btn btn-pequeno" id="btnLimparSelecaoProsp">Limpar seleção</button>' +
   '</div>';
+  html += '<div id="avisoSelecaoProsp"></div>';
 
   html += '<div class="painel-branco"><div class="tabela-scroll" id="areaTabelaProsp"></div></div>';
 
@@ -1621,15 +1672,17 @@ async function abaProspeccao(painel){
     var alvo = filtrarProspeccao(todas);
     if(alvo.length === 0) return;
     var idsAlvo = alvo.map(function(m){ return m.id; });
-    var r = await buscarSeguro(banco.from("prospeccao").update({ selecionada: true }).in("id", idsAlvo));
+    var r = await salvarSelecaoProsp(idsAlvo, true);
     if(r.ok) irParaAba("prospeccao");
+    else mostrarAvisoSelecaoProsp("Não consegui selecionar as marcas: " + r.mensagem);
   });
   document.getElementById("btnLimparSelecaoProsp").addEventListener("click", async function(){
     var selecionadas = todas.filter(function(m){ return m.selecionada; });
     if(selecionadas.length === 0) return;
     var idsSelecionados = selecionadas.map(function(m){ return m.id; });
-    var r = await buscarSeguro(banco.from("prospeccao").update({ selecionada: false }).in("id", idsSelecionados));
+    var r = await salvarSelecaoProsp(idsSelecionados, false);
     if(r.ok) irParaAba("prospeccao");
+    else mostrarAvisoSelecaoProsp("Não consegui limpar a seleção: " + r.mensagem);
   });
 
   atualizarResumoSelecaoProsp(todas);
@@ -1695,13 +1748,23 @@ function desenharTabelaProspeccao(todas){
 
     var checkbox = tr.querySelector(".check-prosp");
     checkbox.addEventListener("click", function(e){ e.stopPropagation(); });
+    // A célula inteira da caixinha seleciona (em vez de abrir a edição da marca),
+    // pra não errar o clique quando a caixinha é pequena.
+    var celulaCheckbox = checkbox.parentNode;
+    celulaCheckbox.style.cursor = "pointer";
+    celulaCheckbox.addEventListener("click", function(e){
+      e.stopPropagation();
+      if(e.target !== checkbox) checkbox.click();
+    });
     checkbox.addEventListener("change", async function(e){
       var novoValor = e.target.checked;
-      var r = await buscarSeguro(banco.from("prospeccao").update({ selecionada: novoValor }).eq("id", m.id));
+      var r = await salvarSelecaoProsp([m.id], novoValor);
       if(r.ok){
         m.selecionada = novoValor;
+        mostrarAvisoSelecaoProsp("");
       } else {
         e.target.checked = !novoValor;
+        mostrarAvisoSelecaoProsp("Não consegui salvar a seleção de " + m.nome + ": " + r.mensagem);
       }
       atualizarResumoSelecaoProsp(todas);
     });
