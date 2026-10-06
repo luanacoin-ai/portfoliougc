@@ -1626,6 +1626,7 @@ async function abaProspeccao(painel){
     '<span id="textoResumoSelecaoProsp" style="font-size:.82rem; font-weight:600;"></span>' +
     '<button type="button" class="btn btn-pequeno" id="btnSelecionarVisiveisProsp">Selecionar visíveis</button>' +
     '<button type="button" class="btn btn-pequeno" id="btnLimparSelecaoProsp">Limpar seleção</button>' +
+    '<button type="button" class="btn btn-pequeno btn-perigo" id="btnExcluirSelecionadasProsp">' + icone("lixeira") + ' Excluir selecionadas</button>' +
   '</div>';
   html += '<div id="avisoSelecaoProsp"></div>';
 
@@ -1683,6 +1684,15 @@ async function abaProspeccao(painel){
     var r = await salvarSelecaoProsp(idsSelecionados, false);
     if(r.ok) irParaAba("prospeccao");
     else mostrarAvisoSelecaoProsp("Não consegui limpar a seleção: " + r.mensagem);
+  });
+  document.getElementById("btnExcluirSelecionadasProsp").addEventListener("click", function(){
+    var selecionadas = todas.filter(function(m){ return m.selecionada; });
+    if(selecionadas.length === 0){
+      mostrarAvisoSelecaoProsp("Nenhuma marca selecionada. Marque as caixinhas das marcas que quer excluir.");
+      return;
+    }
+    mostrarAvisoSelecaoProsp("");
+    confirmarExcluirSelecionadasProsp(selecionadas, filtrarProspeccao(todas));
   });
 
   atualizarResumoSelecaoProsp(todas);
@@ -1789,6 +1799,64 @@ function desenharTabelaProspeccao(todas){
 
   area.innerHTML = "";
   area.appendChild(tabela);
+}
+
+// Apaga de uma vez todas as marcas selecionadas na Prospecção, depois de pedir confirmação.
+// "visiveis" = as marcas que o filtro atual está mostrando (pra avisar se alguma
+// selecionada está escondida pelo filtro e vai ser apagada junto).
+function confirmarExcluirSelecionadasProsp(selecionadas, visiveis){
+  var qtd = selecionadas.length;
+  var idsVisiveis = {};
+  visiveis.forEach(function(m){ idsVisiveis[m.id] = true; });
+  var escondidas = selecionadas.filter(function(m){ return !idsVisiveis[m.id]; }).length;
+
+  var LIMITE_NOMES = 10;
+  var nomes = selecionadas.slice(0, LIMITE_NOMES).map(function(m){ return "<li>" + escapa(m.nome) + "</li>"; }).join("");
+  if(qtd > LIMITE_NOMES) nomes += "<li>e mais " + (qtd - LIMITE_NOMES) + "</li>";
+
+  var textoQtd = qtd === 1 ? "1 marca" : qtd + " marcas";
+  abrirModal(
+    '<p class="form-titulo">Excluir ' + textoQtd + '</p>' +
+    '<p style="font-size:.85rem; margin-bottom:10px;">Tem certeza que quer excluir ' + (qtd === 1 ? "esta marca" : "estas marcas") + ' da Prospecção? Essa ação não pode ser desfeita.</p>' +
+    '<ul style="font-size:.85rem; font-weight:600; margin:0 0 12px 18px;">' + nomes + '</ul>' +
+    (escondidas > 0
+      ? '<p class="aviso">' + (escondidas === 1 ? "1 delas está escondida" : escondidas + " delas estão escondidas") + ' pelo filtro que está ligado agora e também será excluída.</p>'
+      : '') +
+    '<div class="form-acoes"><button type="button" class="btn" id="btnCancelarExcluirProsp">Cancelar</button><button type="button" class="btn btn-perigo" id="btnConfirmarExcluirProsp">Excluir ' + textoQtd + '</button></div>' +
+    '<p class="aviso erro oculto" id="erroExcluirProsp"></p>'
+  );
+
+  document.getElementById("btnCancelarExcluirProsp").addEventListener("click", fecharModal);
+  document.getElementById("btnConfirmarExcluirProsp").addEventListener("click", async function(e){
+    var botao = e.currentTarget;
+    var areaErro = document.getElementById("erroExcluirProsp");
+    botao.disabled = true;
+    areaErro.classList.add("oculto");
+
+    var ids = selecionadas.map(function(m){ return m.id; });
+    // ".select('id')" devolve as linhas que foram mesmo apagadas, pra eu poder conferir.
+    var r = await buscarSeguro(banco.from("prospeccao").delete().in("id", ids).select("id"));
+
+    if(!r.ok){
+      areaErro.textContent = "Não consegui excluir: " + r.mensagem;
+      areaErro.classList.remove("oculto");
+      botao.disabled = false;
+      return;
+    }
+
+    // tira as apagadas da seleção guardada no navegador, se for esse o caso
+    if(selecaoProspSoNoNavegador){
+      r.dados.forEach(function(linha){ selecaoProspMemoria.delete(linha.id); });
+      gravarSelecaoProspNoNavegador();
+    }
+    fecharModal();
+    await renderizarAba("prospeccao");
+    if(r.dados.length === 0){
+      mostrarAvisoSelecaoProsp("Não consegui excluir: o Supabase não deixou apagar. Confira a permissão de apagar da tabela prospeccao (veja o arquivo banco.sql).");
+    } else if(r.dados.length < ids.length){
+      mostrarAvisoSelecaoProsp("Só consegui excluir " + r.dados.length + " de " + ids.length + " marcas. As outras continuam na lista.");
+    }
+  });
 }
 
 function abrirFormProspeccao(marca){
