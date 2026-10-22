@@ -293,13 +293,22 @@ function igPreencherAnaliseVisao(dados){
   var somaNovos = igSomaPontos(novos);
   var somaAlcance = igSomaPontos(alcance);
 
-  if(subSeg) subSeg.innerHTML = igVariacao(novos.length ? somaNovos : null, "em " + novos.length + " dias");
+  // O Instagram só informa os novos seguidores por dia de contas com mais de 100 seguidores.
+  var poucosSeguidores = typeof dados.seguidores === "number" && dados.seguidores < 100;
+  var avisoSemNovos = poucosSeguidores
+    ? "O Instagram só informa os novos seguidores por dia quando a conta passa de 100 seguidores (você tem " + igFormatarNumero(dados.seguidores) + "). Quando chegar lá, este gráfico aparece sozinho."
+    : "O Instagram não informou os novos seguidores por dia nesse período.";
+
+  if(subSeg) subSeg.innerHTML = novos.length ? igVariacao(somaNovos, "em " + novos.length + " dias") : '<span class="neutro">' + (poucosSeguidores ? "disponível acima de 100" : "sem dados") + '</span>';
   if(numAlc) numAlc.textContent = alcance.length ? igFormatarNumero(somaAlcance) : "-";
   if(subAlc) subAlc.textContent = alcance.length ? "soma dos últimos " + alcance.length + " dias" : "sem dados";
 
-  graficos.innerHTML =
-    igCartaoTrilha("Crescimento do perfil", "novos seguidores por dia · " + novos.length + " dias · passe o mouse",
-      novos.length ? (somaNovos > 0 ? "+" : "") + igFormatarNumero(somaNovos) : "-", "seguidores", novos, true) +
+  var cartaoNovos = novos.length
+    ? igCartaoTrilha("Crescimento do perfil", "novos seguidores por dia · " + novos.length + " dias · passe o mouse",
+        (somaNovos > 0 ? "+" : "") + igFormatarNumero(somaNovos), "seguidores", novos, true)
+    : '<div class="painel-branco ig-visao-card"><p class="ig-card-titulo">Crescimento do perfil <span>novos seguidores por dia</span></p>' +
+        '<p class="ig-grande">- <small>seguidores</small></p><p class="vazio-explicacao">' + escapa(avisoSemNovos) + '</p></div>';
+  graficos.innerHTML = cartaoNovos +
     igCartaoTrilha("Alcance", "contas alcançadas por dia · " + alcance.length + " dias · passe o mouse",
       alcance.length ? igFormatarNumero(somaAlcance) : "-", "contas", alcance, false);
 }
