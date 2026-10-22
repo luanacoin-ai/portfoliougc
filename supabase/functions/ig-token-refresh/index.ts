@@ -51,7 +51,10 @@ Deno.serve(async (req: Request) => {
     if (error) console.error("não consegui gravar ig_token_status (rodou o instagram.sql?)", error.message);
   };
 
-  const token = Deno.env.get("IG_ACCESS_TOKEN") ?? "";
+  // trim: um espaço ou quebra de linha colado junto com o token, no segredo, passa
+  // despercebido nas outras funções (que mandam o token num cabeçalho), mas aqui
+  // faria o token parecer "diferente" do que o Instagram devolve.
+  const token = (Deno.env.get("IG_ACCESS_TOKEN") ?? "").trim();
   if (!token) {
     await anotar({ last_ok: false, last_error: "O segredo IG_ACCESS_TOKEN não está configurado." });
     return respostaJSON({ ok: false, erro: "IG_ACCESS_TOKEN não configurado." }, 500);
@@ -73,8 +76,10 @@ Deno.serve(async (req: Request) => {
     const expiraEm = segundos > 0 ? new Date(Date.now() + segundos * 1000).toISOString() : null;
     // Normalmente o Instagram devolve o MESMO token, só com a validade estendida.
     // Se um dia vier um token diferente, o segredo precisa ser trocado à mão.
-    const aviso = dados?.access_token && dados.access_token !== token
-      ? "O Instagram devolveu um token diferente do que está nos segredos. Gere um token novo no Meta e atualize o segredo IG_ACCESS_TOKEN."
+    const devolvido = String(dados?.access_token ?? "");
+    const aviso = devolvido && devolvido !== token
+      ? "O Instagram devolveu um token diferente do que está nos segredos. Gere um token novo no Meta e atualize o segredo IG_ACCESS_TOKEN." +
+        " (conferência: o segredo tem " + token.length + " caracteres e o devolvido tem " + devolvido.length + " caracteres)"
       : null;
 
     await anotar({

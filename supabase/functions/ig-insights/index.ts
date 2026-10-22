@@ -75,7 +75,8 @@ async function renovarToken() {
     return !error;
   };
 
-  const token = Deno.env.get("IG_ACCESS_TOKEN") ?? "";
+  // trim: ver o comentário em ig-token-refresh (espaço colado junto com o token no segredo)
+  const token = (Deno.env.get("IG_ACCESS_TOKEN") ?? "").trim();
   try {
     const r = await fetch(
       "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=" + encodeURIComponent(token),
@@ -89,8 +90,10 @@ async function renovarToken() {
     const segundos = Number(dados?.expires_in) || 0;
     const expiraEm = segundos > 0 ? new Date(Date.now() + segundos * 1000).toISOString() : null;
     // Normalmente o Instagram devolve o MESMO token, só com a validade estendida.
-    const aviso = dados?.access_token && dados.access_token !== token
-      ? "O Instagram devolveu um token diferente do que está nos segredos. Gere um token novo no Meta e atualize o segredo IG_ACCESS_TOKEN."
+    const devolvido = String(dados?.access_token ?? "");
+    const aviso = devolvido && devolvido !== token
+      ? "O Instagram devolveu um token diferente do que está nos segredos. Gere um token novo no Meta e atualize o segredo IG_ACCESS_TOKEN." +
+        " (conferência: o segredo tem " + token.length + " caracteres e o devolvido tem " + devolvido.length + " caracteres)"
       : null;
     const guardou = await anotar({
       expires_at: expiraEm,

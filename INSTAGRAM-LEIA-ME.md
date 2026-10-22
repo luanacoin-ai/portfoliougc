@@ -204,6 +204,7 @@ Observação: a política descreve a prática da Luana, mas não substitui a opi
 | Tudo fica "Na fila" e nada sai | O freio está pausado ou o `instagram.sql` não foi rodado por inteiro. Veja o aviso vermelho na aba (botão "Destravar") e rode o Passo 1 de novo |
 | O botão chega sem botão (só texto com link) | O Instagram recusou o botão anexado e o sistema usou o plano B (pílula ou texto). O motivo aparece em "Últimos envios" |
 | O token venceu | Gere um token novo no Meta (Passo 2) e atualize o segredo `IG_ACCESS_TOKEN` |
+| "A última renovação falhou: o Instagram devolveu um token diferente do que está nos segredos" | Se o aviso mostra dois tamanhos diferentes, o Instagram de fato trocou o token: gere um token novo no Meta (Passo 2) e atualize o segredo `IG_ACCESS_TOKEN`. Se for um token colado com espaço ou quebra de linha, republicar `ig-token-refresh` e `ig-insights` resolve (elas já ignoram espaços nas pontas) |
 
 Pra ver o que as funções registraram: Supabase > **Edge Functions** > escolha a função > aba **Logs**.
 
