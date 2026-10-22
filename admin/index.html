@@ -87,15 +87,30 @@
     font-size:.75rem; font-weight:700;
   }
   nav.menu{ flex:1; overflow-y:auto; padding:10px 10px; }
-  .grupo-label{
-    font-size:.68rem;
+  /* Categoria do menu: clica pra abrir/fechar as abas dela */
+  .grupo-menu{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:10px 10px;
+    margin:0 0 2px;
+    border:none;
+    background:none;
+    border-radius:8px;
+    font-size:.74rem;
     text-transform:uppercase;
     letter-spacing:.05em;
-    color:#9a9282;
-    font-weight:600;
-    margin:14px 10px 6px;
+    color:#6b6353;
+    font-weight:700;
+    text-align:left;
   }
-  .grupo-label:first-child{ margin-top:2px; }
+  .grupo-menu:hover{ background:#f2ece0; }
+  .grupo-menu svg{ width:16px; height:16px; flex-shrink:0; transition:transform .15s ease; }
+  .grupo-menu[aria-expanded="true"] svg{ transform:rotate(180deg); }
+  .grupo-itens{ margin-bottom:8px; }
+  .grupo-itens[hidden]{ display:none; }
   .item-menu{
     width:100%;
     display:flex;
@@ -727,17 +742,27 @@
       Painel Luana Coin
     </div>
     <nav class="menu">
-      <p class="grupo-label">minha rotina</p>
-      <button class="item-menu" data-tab="portfolio"></button>
-      <button class="item-menu" data-tab="marcas"></button>
-      <button class="item-menu" data-tab="prospeccao"></button>
-      <button class="item-menu" data-tab="disparo"></button>
-      <button class="item-menu" data-tab="pitch"></button>
-      <p class="grupo-label">conteudos</p>
-      <button class="item-menu" data-tab="calendario"></button>
-      <button class="item-menu" data-tab="campanhas"></button>
-      <button class="item-menu" data-tab="checklist"></button>
-      <button class="item-menu" data-tab="roteiros"></button>
+      <button type="button" class="grupo-menu" aria-expanded="false" aria-controls="itensRotina">
+        <span>Minha rotina</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="grupo-itens" id="itensRotina" hidden>
+        <button class="item-menu" data-tab="portfolio"></button>
+        <button class="item-menu" data-tab="marcas"></button>
+        <button class="item-menu" data-tab="prospeccao"></button>
+        <button class="item-menu" data-tab="disparo"></button>
+        <button class="item-menu" data-tab="pitch"></button>
+      </div>
+      <button type="button" class="grupo-menu" aria-expanded="false" aria-controls="itensConteudos">
+        <span>Conteúdos</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="grupo-itens" id="itensConteudos" hidden>
+        <button class="item-menu" data-tab="calendario"></button>
+        <button class="item-menu" data-tab="campanhas"></button>
+        <button class="item-menu" data-tab="checklist"></button>
+        <button class="item-menu" data-tab="roteiros"></button>
+      </div>
     </nav>
     <div class="sidebar-rodape">
       <span class="email" id="emailUsuaria"></span>
@@ -1003,9 +1028,33 @@ botoesMenu.forEach(function(botao){
   });
 });
 
+// Categorias do menu (Minha rotina / Conteúdos): clicar abre ou fecha as abas dela.
+function definirGrupoMenuAberto(cabecalho, aberto){
+  var itens = document.getElementById(cabecalho.getAttribute("aria-controls"));
+  cabecalho.setAttribute("aria-expanded", aberto ? "true" : "false");
+  if(itens) itens.hidden = !aberto;
+}
+document.querySelectorAll(".grupo-menu").forEach(function(cabecalho){
+  cabecalho.addEventListener("click", function(){
+    definirGrupoMenuAberto(cabecalho, cabecalho.getAttribute("aria-expanded") !== "true");
+  });
+});
+// Abre a categoria onde está a aba, pra você sempre ver em qual aba está.
+function abrirGrupoMenuDaAba(nome){
+  var botao = document.querySelector('.item-menu[data-tab="' + nome + '"]');
+  var itens = botao && botao.closest(".grupo-itens");
+  var cabecalho = itens && document.querySelector('.grupo-menu[aria-controls="' + itens.id + '"]');
+  if(cabecalho) definirGrupoMenuAberto(cabecalho, true);
+}
+
 var abaAtual = "portfolio";
+abrirGrupoMenuDaAba(abaAtual);
 function irParaAba(nome){
+  // só abre a categoria quando a aba muda: se você fechou a categoria de propósito,
+  // recarregar a mesma aba (depois de salvar algo) não reabre.
+  var mudouDeAba = abaAtual !== nome;
   abaAtual = nome;
+  if(mudouDeAba) abrirGrupoMenuDaAba(nome);
   botoesMenu.forEach(function(b){ b.classList.toggle("ativo", b.dataset.tab === nome); });
   document.getElementById("tituloAba").textContent = ABAS[nome].titulo;
   renderizarAba(nome);
