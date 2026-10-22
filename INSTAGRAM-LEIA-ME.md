@@ -55,7 +55,7 @@ Sobre testar: enquanto o app estiver em **modo de desenvolvimento**, o Instagram
 
 ## Passo 3: os segredos das funções (no Supabase)
 
-No Supabase: **Edge Functions > Secrets** (ou "Manage secrets"). Crie cada um destes, com o nome EXATAMENTE igual:
+No Supabase: **Edge Functions > Secrets** (link direto: https://supabase.com/dashboard/project/rhbudbirkumhxwxujmst/functions/secrets). Crie cada um destes, com o nome EXATAMENTE igual:
 
 | Nome | O que colocar |
 |---|---|
@@ -74,7 +74,7 @@ A chave de serviço do banco (`SUPABASE_SERVICE_ROLE_KEY`) o Supabase já coloca
 
 ## Passo 4: publicar as 5 funções
 
-No Supabase: **Edge Functions > Deploy a new function > Via Editor**. Pra cada função: dê o nome EXATAMENTE como abaixo, cole o código do arquivo correspondente (abra o arquivo, Ctrl+A, Ctrl+C, cole no editor do Supabase) e clique em **Deploy**.
+No Supabase: **Edge Functions** (link direto: https://supabase.com/dashboard/project/rhbudbirkumhxwxujmst/functions) **> Deploy a new function > Via Editor**. Pra cada função: dê o nome EXATAMENTE como abaixo, cole o código do arquivo correspondente (abra o arquivo, Ctrl+A, Ctrl+C, cole no editor do Supabase) e clique em **Deploy**.
 
 | Nome da função | Arquivo com o código | Verify JWT |
 |---|---|---|
@@ -105,17 +105,19 @@ Pra conferir: rode `select jobname, schedule, active from cron.job;` e veja os d
 
 ---
 
-## Passo 6: cadastrar o webhook no Meta
+## Passo 6: ligar o webhook no Meta (são DUAS coisas)
 
-No app do Meta, na página da API do Instagram, procure a configuração de **Webhooks**:
+No app do Meta (o seu se chama **ClaudeDM**): **Casos de uso > Gerenciar mensagens e conteúdo no Instagram > Personalizar > Configuração da API com login do Instagram**. Nessa página ficam o token, o ID da conta e os webhooks.
 
+**6a) Cadastrar o endereço do webhook** (seção "Configurar webhooks"):
 - **URL de retorno de chamada (Callback URL):** `https://rhbudbirkumhxwxujmst.supabase.co/functions/v1/instagram-webhook`
 - **Token de verificação:** o mesmo `VERIFY_TOKEN` do Passo 3.
-- Clique em verificar e salvar. Deve dar certo na hora (se der erro, confira se a função está publicada e com o Verify JWT desligado).
-- **Assine os campos** (todos os três):
-  - `comments`
-  - `messages`
-  - `messaging_postbacks`  (é este que faz os botões da conversa funcionarem)
+- Clique em verificar e salvar. Só funciona se a função `instagram-webhook` já estiver publicada (Passo 4). Se der erro, confira o Verify JWT desligado e o `VERIFY_TOKEN`.
+- **Assine os campos** (todos os três): `comments`, `messages` e `messaging_postbacks` (é este último que faz os botões da conversa funcionarem).
+
+**6b) Ligar a assinatura da SUA conta** (este passo é esquecido com frequência e deixa tudo mudo): na mesma página, na parte onde você gera o token, ao lado da sua conta do Instagram, ligue a chave **"Assinar webhooks" (Subscribe to webhooks)**. Sem isso, o app pode estar publicado e configurado e mesmo assim nenhum comentário chega.
+
+**Como saber se ficou certo:** abra no painel **Conteúdos > Instagram > Métricas**. O cartão **"Conexão com o Instagram"** mostra "Tudo certo" quando o Instagram está avisando o sistema sobre comentários, mensagens e toques nos botões. Se faltar algum, o cartão fica vermelho e diz qual.
 
 ---
 
@@ -174,6 +176,7 @@ Observação: a política descreve a prática da Luana, mas não substitui a opi
 |---|---|
 | A aba Instagram mostra "Não consegui carregar as automações" | Você rodou o `instagram.sql` (Passo 1)? |
 | "Conecte seu Instagram pra ver as métricas" | A função `ig-insights` está publicada e o `IG_ACCESS_TOKEN` está nos segredos? |
+| O cartão "Conexão com o Instagram" (aba Métricas) está vermelho | Falta ligar a assinatura de webhooks da conta e/ou assinar os 3 campos (Passo 6) |
 | O Meta não aceita o webhook | A função `instagram-webhook` está publicada, com Verify JWT desligado, e o `VERIFY_TOKEN` é o mesmo nos dois lugares? |
 | Comentei e não aconteceu nada | Os 3 campos (`comments`, `messages`, `messaging_postbacks`) estão assinados? A conta que comentou tem papel no app (testador)? A automação está ligada? Veja "Últimos envios" |
 | "Pulado: já recebeu uma DM nas últimas 24h" | É a regra de 1 por dia. Ponha o ID da conta de teste em `TEST_IG_ACCOUNTS` |

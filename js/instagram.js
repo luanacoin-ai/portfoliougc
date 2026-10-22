@@ -182,6 +182,7 @@ async function igRenderMetricas(area){
       (motivo ? '<p style="font-size:.76rem; color:#8a8272;">' + escapa(motivo) + '</p>' : '') +
     '</div>';
   } else {
+    html += igCartaoConexao(ig);
     html += '<div class="ig-metricas-grade">' +
       '<div class="painel-branco"><p class="painel-titulo">Novos seguidores por dia</p>' + igGraficoBarras(ig.novos_seguidores, "") + '</div>' +
       '<div class="painel-branco"><p class="painel-titulo">Alcance por dia</p>' + igGraficoBarras(ig.alcance, "rosa") + '</div>' +
@@ -196,6 +197,33 @@ async function igRenderMetricas(area){
   '</div>';
 
   area.innerHTML = html;
+}
+
+// Mostra se o Instagram está mesmo avisando o sistema sobre comentários e mensagens.
+// Sem a "assinatura de webhooks" da conta, o app pode estar publicado e mesmo assim
+// nenhum comentário chega, e o sistema fica em silêncio.
+function igCartaoConexao(ig){
+  var precisa = [
+    { campo: "comments", rotulo: "comentários" },
+    { campo: "messages", rotulo: "mensagens" },
+    { campo: "messaging_postbacks", rotulo: "toques nos botões" }
+  ];
+  var wh = ig.webhooks || {};
+  var titulo = "Conexão com o Instagram";
+  var linhaConta = ig.username ? 'Conta ligada: <strong>@' + escapa(ig.username) + '</strong>. ' : "";
+
+  if(!wh.consultou){
+    return '<div class="painel-branco"><p class="painel-titulo">' + titulo + '</p>' +
+      '<p style="font-size:.82rem;">' + linhaConta + 'Não consegui conferir se o Instagram está avisando o sistema' + (wh.erro ? " (" + escapa(wh.erro) + ")" : "") + '. Se você publicou a função ig-insights agora, tente recarregar.</p></div>';
+  }
+  var faltando = precisa.filter(function(p){ return (wh.campos || []).indexOf(p.campo) === -1; });
+  if(faltando.length === 0){
+    return '<div class="painel-branco"><p class="painel-titulo">' + titulo + '</p>' +
+      '<p style="font-size:.82rem;">' + linhaConta + '<span class="pilula ig-pilula-ok">Tudo certo</span> O Instagram está avisando o sistema sobre comentários, mensagens e toques nos botões.</p></div>';
+  }
+  return '<div class="aviso erro"><strong>' + titulo + ':</strong> ' + linhaConta +
+    'O Instagram <strong>não está avisando</strong> o sistema sobre: ' + faltando.map(function(p){ return escapa(p.rotulo); }).join(", ") + '. ' +
+    'Sem isso, ninguém recebe DM. Ligue a assinatura de webhooks da sua conta no app do Meta e cadastre os campos <code>comments</code>, <code>messages</code> e <code>messaging_postbacks</code> (INSTAGRAM-LEIA-ME.md, Passo 6).</div>';
 }
 
 function igCartaoMetrica(numero, rotulo){

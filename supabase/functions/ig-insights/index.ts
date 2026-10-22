@@ -86,6 +86,18 @@ Deno.serve(async (req: Request) => {
     return resposta({ conectado: false, motivo: "O Instagram recusou a conexão: " + perfil.erro });
   }
 
+  // O Instagram só avisa o sistema de comentários e mensagens se a conta estiver
+  // "assinada" nos webhooks. Conferimos aqui quais avisos estão ligados.
+  const assinatura = await lerGraph("/me/subscribed_apps");
+  const camposAssinados: string[] = [];
+  if (assinatura.ok) {
+    for (const app of (assinatura.dados?.data ?? [])) {
+      for (const campo of (app?.subscribed_fields ?? [])) {
+        if (!camposAssinados.includes(campo)) camposAssinados.push(String(campo));
+      }
+    }
+  }
+
   const agora = Math.floor(Date.now() / 1000);
   const desde = agora - DIAS * 24 * 3600;
   const avisos: string[] = [];
@@ -106,6 +118,7 @@ Deno.serve(async (req: Request) => {
     midias: perfil.dados.media_count ?? null,
     novos_seguidores: novos.ok ? serieDia(novos.dados) : [],
     alcance: alcance.ok ? serieDia(alcance.dados) : [],
+    webhooks: { consultou: assinatura.ok, campos: camposAssinados, erro: assinatura.ok ? null : assinatura.erro },
     avisos,
   });
 });
