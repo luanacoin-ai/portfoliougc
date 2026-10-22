@@ -907,16 +907,70 @@
   @keyframes igPiscar{ 0%,100%{ opacity:1; } 50%{ opacity:.3; } }
   .ig-pill.neutro::before{ display:none; }
 
-  .ig-visao-grade{ display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:start; }
-  @media (max-width:900px){ .ig-visao-grade{ grid-template-columns:1fr; } }
-  .ig-contagem{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
-  .ig-caixa{ background:#F3E9DA; border-radius:12px; padding:12px 6px; text-align:center; }
-  .ig-caixa b{ display:block; font-size:1.9rem; line-height:1.1; font-variant-numeric:tabular-nums; }
-  .ig-caixa small{ display:block; font-size:.66rem; color:#725A50; text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
-  .ig-contagem.ok .ig-caixa{ background:#E3E8D3; }
-  .ig-contagem.atencao .ig-caixa{ background:#F6E4BD; }
-  .ig-contagem.perigo .ig-caixa{ background:#F8E1DC; color:#8A2A1E; }
-  .ig-token-card #btnRenovarToken{ margin-top:4px; }
+  /* o token: detalhes que abrem ao clicar no selinho do topo */
+  .ig-pills{ position:relative; }
+  .ig-popover{
+    position:absolute; right:0; top:calc(100% + 8px); width:min(390px, 92vw); z-index:30;
+    background:var(--card); border:1.5px solid #E6D8C4; border-radius:16px; padding:16px 18px;
+    box-shadow:0 18px 40px -22px rgba(74,46,38,.45);
+  }
+  .ig-pill.aviso-token::after{
+    content:"!"; display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px;
+    border-radius:50%; background:var(--terracota); color:var(--sobre-terracota); font-size:.64rem; font-weight:600;
+  }
+
+  /* visão geral: números, gráficos em trilha, saúde do envio e o que as pessoas querem */
+  .ig-kpis{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+  .ig-kpi{ background:var(--card); border:1.5px solid #E6D8C4; border-radius:16px; padding:16px 18px; }
+  .ig-kpi.destaque{ border-color:var(--terracota); background:#FBEFE8; }
+  .ig-kpi-rotulo{ font-size:.66rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#725A50; margin-bottom:6px; }
+  .ig-kpi-numero{ font-family:var(--ff-titulo); font-size:2rem; font-weight:600; line-height:1.1; }
+  .ig-kpi.destaque .ig-kpi-numero{ color:var(--terracota-escura); }
+  .ig-kpi-sub{ font-size:.74rem; color:#725A50; margin-top:6px; display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+  .ig-kpi-sub .sobe, .ig-kpi-sub .desce{ display:inline-flex; align-items:center; gap:2px; font-weight:600; }
+  .ig-kpi-sub .sobe{ color:#4F5E38; }
+  .ig-kpi-sub .desce{ color:#8A2A1E; }
+  .ig-kpi-sub svg{ width:11px; height:11px; }
+  .ig-duas{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+  .ig-visao-card{ margin-bottom:0; border-radius:16px; }
+  .ig-card-titulo{ font-size:.84rem; font-weight:600; margin-bottom:8px; }
+  .ig-card-titulo span{ font-weight:400; font-size:.72rem; color:#725A50; margin-left:4px; }
+  .ig-grande{ font-family:var(--ff-titulo); font-size:1.8rem; font-weight:600; line-height:1.1; margin-bottom:12px; }
+  .ig-grande small{ font-family:var(--ff); font-size:.9rem; font-weight:400; color:#725A50; }
+  .ig-card-rodape{ font-size:.72rem; color:#725A50; margin-top:10px; }
+  .ig-trilha{ display:flex; align-items:stretch; gap:5px; height:130px; }
+  .ig-trilha-col{ position:relative; flex:1; min-width:0; background:#EFE3D0; border-radius:7px; display:flex; align-items:flex-end; }
+  .ig-trilha-col i{ display:block; width:100%; background:var(--terracota); border-radius:7px; transition:background .15s; }
+  .ig-trilha-col:hover i{ background:var(--terracota-escura); }
+  .ig-trilha-col .dica{
+    display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+    background:var(--cafe); color:var(--card); font-size:.68rem; padding:3px 8px; border-radius:6px; white-space:nowrap; z-index:5; pointer-events:none;
+  }
+  .ig-trilha-col:hover .dica{ display:block; }
+  .ig-trilha-eixo{ display:flex; justify-content:space-between; font-size:.66rem; color:#725A50; margin-top:6px; }
+  .ig-saude-barra{ display:flex; height:12px; border-radius:99px; overflow:hidden; background:#EFE3D0; margin:6px 0 12px; }
+  .ig-saude-barra i{ display:block; height:100%; }
+  .ig-saude-barra .ok, .ig-legenda .ok::before{ background:var(--salvia); }
+  .ig-saude-barra .erro, .ig-legenda .erro::before{ background:var(--vermelho); }
+  .ig-saude-barra .pulado, .ig-legenda .pulado::before{ background:#CDBFAA; }
+  .ig-saude-barra .fila, .ig-legenda .fila::before{ background:var(--caramelo); }
+  .ig-legenda{ display:flex; gap:16px; flex-wrap:wrap; font-size:.76rem; }
+  .ig-legenda span::before{ content:""; display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; }
+  .ig-motivos{ margin-top:12px; border-top:1px solid #F2E8D8; padding-top:6px; }
+  .ig-motivo{ display:flex; justify-content:space-between; gap:12px; padding:5px 0; font-size:.72rem; color:#725A50; }
+  .ig-motivo b{ color:var(--cafe); }
+  .ig-querem-linha{ display:grid; grid-template-columns:minmax(0,150px) 1fr 42px; gap:10px; align-items:center; padding:6px 0; font-size:.8rem; }
+  .ig-querem-linha .nome{ font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ig-querem-linha b{ text-align:right; }
+  .ig-querem-barra{ height:10px; background:#EFE3D0; border-radius:99px; overflow:hidden; }
+  .ig-querem-barra i{ display:block; height:100%; background:var(--terracota); border-radius:99px; }
+  @media (max-width:900px){
+    .ig-kpis{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .ig-duas{ grid-template-columns:1fr; }
+    .ig-topo{ position:relative; }
+    .ig-pills{ position:static; }
+    .ig-popover{ left:0; right:0; width:auto; }
+  }
   .ig-checklist{ list-style:none; margin:0 0 10px; padding:0; }
   .ig-checklist li{ display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid #F2E8D8; font-size:.82rem; }
   .ig-checklist li:first-child{ border-top:none; }
@@ -4736,7 +4790,7 @@ iniciar();
 </script>
 <script src="../js/roteiros.js?v=20261001a"></script>
 <script src="../js/pitch.js?v=20260924b"></script>
-<script src="../js/instagram.js?v=20261022c"></script>
-<script src="../js/instagram-analises.js?v=20261022c"></script>
+<script src="../js/instagram.js?v=20261022d"></script>
+<script src="../js/instagram-analises.js?v=20261022d"></script>
 </body>
 </html>

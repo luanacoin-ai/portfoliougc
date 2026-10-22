@@ -1,5 +1,5 @@
 /* ============================================================================
-   ABA INSTAGRAM, PARTE 2: o topo com a contagem regressiva do token, e as telas
+   ABA INSTAGRAM, PARTE 2: o topo (contagem regressiva do token e entregas), e as telas
    Visão geral, Análises, Marcas, Propostas e Sorteio.
    (Automações e Leads ficam no instagram.js.)
 
@@ -39,9 +39,10 @@ function igDoisDigitos(n){ return ("0" + n).slice(-2); }
 
 function igHtmlPillToken(){
   if(!igEstadoToken || !igEstadoToken.expires_at){
-    return '<button type="button" class="ig-pill neutro" data-ir-visao title="Ainda não sei quando o token vence. Clique pra descobrir.">Token: ver validade</button>';
+    return '<button type="button" class="ig-pill neutro" data-ig-pop title="Ainda não sei quando o token vence. Clique pra descobrir.">Token: ver validade</button>';
   }
-  return '<button type="button" class="ig-pill" data-ig-relogio="pill" data-ir-visao title="Contagem regressiva até o token do Instagram vencer. Clique pra ver os detalhes."></button>';
+  var aviso = igEstadoToken.last_ok === false ? " aviso-token" : "";
+  return '<button type="button" class="ig-pill' + aviso + '" data-ig-relogio="pill" data-ig-pop title="Contagem regressiva até o token do Instagram vencer. Clique pra ver os detalhes."></button>';
 }
 
 // Chamada a cada segundo: escreve a contagem em todo lugar da tela que a mostra.
@@ -86,39 +87,61 @@ async function igCarregarPills(){
   if(!area) return;                                   // trocou de aba enquanto carregava
   igEstadoToken = r[0].ok && r[0].dados.length > 0 ? r[0].dados[0] : null;
   area.innerHTML = igHtmlPillToken() +
-    '<span class="ig-pill neutro" title="DMs enviadas nas últimas 24 horas">' + (r[1] === null ? "-" : igFormatarNumero(r[1])) + ' entregas <small>24h</small></span>';
-  area.querySelectorAll("[data-ir-visao]").forEach(function(b){
-    b.addEventListener("click", function(){ igSubabaAtual = "visao"; irParaAba("instagram"); });
+    '<span class="ig-pill neutro" title="DMs enviadas nas últimas 24 horas">' + (r[1] === null ? "-" : igFormatarNumero(r[1])) + ' entregas <small>24h</small></span>' +
+    '<div class="ig-popover oculto" id="igPopToken"></div>';
+  area.querySelectorAll("[data-ig-pop]").forEach(function(b){
+    b.addEventListener("click", function(){ igAbrirPopToken(); });
   });
+  igLigarFechamentoPop();
   igIniciarRelogioToken();
 }
 
 /* ============================================================================
    VISÃO GERAL
 ============================================================================ */
-function igHtmlCartaoToken(status){
-  var titulo = '<p class="painel-titulo">Token do Instagram</p>';
+function igHtmlDetalheToken(status){
   var botao = '<button type="button" class="btn" id="btnRenovarToken">Renovar agora</button>';
   var explicacao = '<p class="ig-ajuda">O token é a "chave" que deixa o sistema falar com o seu Instagram. Ele vale cerca de 60 dias, e um robô renova sozinho toda semana. Se ele vencer, as automações param. "Renovar agora" pede ao Instagram mais 60 dias.</p>';
   var erro = status && status.last_ok === false && status.last_error
-    ? '<p class="aviso erro" style="margin-top:10px;">A última renovação falhou: ' + escapa(status.last_error) + '</p>' : "";
-
+    ? '<p class="aviso erro" style="margin:10px 0 0;">A última renovação falhou: ' + escapa(status.last_error) + '</p>' : "";
+  var corpo;
   if(!status || !status.expires_at){
-    return '<div class="painel-branco ig-token-card">' + titulo +
-      '<p style="font-size:.84rem; margin-bottom:10px;">Ainda não sei quando o seu token vence. Clique em "Renovar agora": eu peço ao Instagram pra renovar e anoto a validade nova, e a contagem regressiva começa a andar.</p>' +
-      botao + '<div id="igResultadoToken"></div>' + erro + explicacao + '</div>';
+    corpo = '<p style="font-size:.84rem; margin-bottom:10px;">Ainda não sei quando o seu token vence. Clique em "Renovar agora": eu peço ao Instagram pra renovar e anoto a validade nova, e a contagem regressiva começa a andar.</p>';
+  } else {
+    var p = igPartesDaContagem(status.expires_at);
+    corpo = '<p style="font-size:.84rem; margin:0 0 2px;">' + (p.vencido ? '<strong>Venceu em ' : 'Vence em <strong>') + escapa(formatarDataHora(status.expires_at)) + '</strong></p>' +
+      '<p class="ig-ajuda" style="margin:0 0 12px;">' + (status.last_refreshed_at ? "Última renovação: " + escapa(formatarDataHora(status.last_refreshed_at)) + " (" + escapa(igHa(status.last_refreshed_at)) + ")." : "Ainda não foi renovado pelo painel.") + '</p>';
   }
-  var p = igPartesDaContagem(status.expires_at);
-  return '<div class="painel-branco ig-token-card">' + titulo +
-    '<div class="ig-contagem ' + p.nivel + '" data-ig-relogio="caixas">' +
-      '<div class="ig-caixa"><b data-un="d">' + p.d + '</b><small>dias</small></div>' +
-      '<div class="ig-caixa"><b data-un="h">' + igDoisDigitos(p.h) + '</b><small>horas</small></div>' +
-      '<div class="ig-caixa"><b data-un="m">' + igDoisDigitos(p.m) + '</b><small>min</small></div>' +
-      '<div class="ig-caixa"><b data-un="s">' + igDoisDigitos(p.s) + '</b><small>seg</small></div>' +
-    '</div>' +
-    '<p style="font-size:.82rem; margin:10px 0 2px;">' + (p.vencido ? '<strong>Venceu em ' : 'Vence em <strong>') + escapa(formatarDataHora(status.expires_at)) + '</strong></p>' +
-    '<p class="ig-ajuda" style="margin:0 0 12px;">' + (status.last_refreshed_at ? "Última renovação: " + escapa(formatarDataHora(status.last_refreshed_at)) + " (" + escapa(igHa(status.last_refreshed_at)) + ")." : "Ainda não foi renovado pelo painel.") + '</p>' +
-    botao + '<div id="igResultadoToken"></div>' + erro + explicacao + '</div>';
+  return '<p class="painel-titulo">Token do Instagram</p>' + corpo + botao + '<div id="igResultadoToken"></div>' + erro + explicacao;
+}
+
+// Abre e fecha o quadrinho com os detalhes do token (clique no selinho do topo).
+function igAbrirPopToken(forcar){
+  var pop = document.getElementById("igPopToken");
+  if(!pop) return;
+  var abrir = typeof forcar === "boolean" ? forcar : pop.classList.contains("oculto");
+  if(!abrir){ pop.classList.add("oculto"); return; }
+  pop.innerHTML = igHtmlDetalheToken(igEstadoToken);
+  pop.classList.remove("oculto");
+  var botao = document.getElementById("btnRenovarToken");
+  if(botao) botao.addEventListener("click", igRenovarToken);
+}
+
+var igPopTokenLigado = false;
+function igLigarFechamentoPop(){
+  if(igPopTokenLigado) return;
+  igPopTokenLigado = true;
+  document.addEventListener("click", function(e){
+    var pop = document.getElementById("igPopToken");
+    if(!pop || pop.classList.contains("oculto")) return;
+    if(e.target.closest("#igPopToken") || e.target.closest("[data-ig-pop]")) return;
+    pop.classList.add("oculto");
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Escape") return;
+    var pop = document.getElementById("igPopToken");
+    if(pop) pop.classList.add("oculto");
+  });
 }
 
 async function igRenovarToken(){
@@ -180,19 +203,193 @@ async function igAssinarWebhooks(){
   irParaAba("instagram");
 }
 
+/* ============================================================================
+   VISÃO GERAL: os números, dois gráficos, a saúde do envio e o que as pessoas querem
+   (o token fica só no selinho do topo, ao lado das entregas)
+============================================================================ */
+var IG_DIAS_VISAO = 15;                       // janela dos números e dos gráficos
+var IG_DIAS_SEMANA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+var IG_SETA_SOBE = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10V2M2.5 5.5L6 2l3.5 3.5"/></svg>';
+var IG_SETA_DESCE = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v8M2.5 6.5L6 10l3.5-3.5"/></svg>';
+
+function igSomaPontos(pontos){
+  return (pontos || []).reduce(function(total, p){ return total + (p.valor || 0); }, 0);
+}
+
+// "+1.153 em 15 dias" com a setinha (verde sobe, vermelho desce).
+function igVariacao(n, texto){
+  if(n === null || n === undefined || isNaN(n)) return '<span class="neutro">sem dados</span>';
+  if(n > 0) return '<span class="sobe">' + IG_SETA_SOBE + "+" + igFormatarNumero(n) + '</span> ' + texto;
+  if(n < 0) return '<span class="desce">' + IG_SETA_DESCE + igFormatarNumero(n) + '</span> ' + texto;
+  return '<span class="neutro">0</span> ' + texto;
+}
+
+function igCartaoKpi(rotulo, numeroHtml, subHtml, destaque, idNumero, idSub){
+  return '<div class="ig-kpi' + (destaque ? " destaque" : "") + '">' +
+    '<p class="ig-kpi-rotulo">' + rotulo + '</p>' +
+    '<p class="ig-kpi-numero"' + (idNumero ? ' id="' + idNumero + '"' : "") + '>' + numeroHtml + '</p>' +
+    '<p class="ig-kpi-sub"' + (idSub ? ' id="' + idSub + '"' : "") + '>' + subHtml + '</p></div>';
+}
+
+// Barras com "trilha": cada dia tem uma coluna clarinha e a parte cheia mostra o valor.
+function igGraficoTrilha(pontos, comSinal){
+  if(!pontos || pontos.length === 0) return '<p class="vazio-explicacao">Sem dados nesses dias.</p>';
+  var maior = 1;
+  pontos.forEach(function(p){ if(p.valor > maior) maior = p.valor; });
+  var html = '<div class="ig-trilha">';
+  pontos.forEach(function(p){
+    var altura = p.valor > 0 ? Math.max(4, Math.round(p.valor / maior * 100)) : 0;
+    html += '<div class="ig-trilha-col"><span class="dica">' + igDataCurta(p.dia) + ": " + (comSinal && p.valor > 0 ? "+" : "") + igFormatarNumero(p.valor) + '</span>' +
+      '<i style="height:' + altura + '%"></i></div>';
+  });
+  return html + '</div><div class="ig-trilha-eixo"><span>' + pontos.length + ' dias atrás</span><span>hoje</span></div>';
+}
+
+// "média 86,3/dia · pico +303 em qua, 08/07"
+function igResumoSerie(pontos, comSinal){
+  if(!pontos || pontos.length === 0) return "";
+  var pico = pontos[0];
+  pontos.forEach(function(p){ if(p.valor > pico.valor) pico = p; });
+  var media = igSomaPontos(pontos) / pontos.length;
+  return "média " + media.toLocaleString("pt-BR", { maximumFractionDigits: media >= 100 ? 0 : 1 }) + "/dia · pico " +
+    (comSinal && pico.valor > 0 ? "+" : "") + igFormatarNumero(pico.valor) + " em " + IG_DIAS_SEMANA[new Date(pico.dia).getDay()] + ", " + igDataCurta(pico.dia);
+}
+
+function igCartaoTrilha(titulo, legenda, grande, unidade, pontos, comSinal){
+  return '<div class="painel-branco ig-visao-card"><p class="ig-card-titulo">' + titulo + ' <span>' + legenda + '</span></p>' +
+    '<p class="ig-grande">' + grande + ' <small>' + unidade + '</small></p>' +
+    igGraficoTrilha(pontos, comSinal) +
+    '<p class="ig-card-rodape">' + escapa(igResumoSerie(pontos, comSinal)) + '</p></div>';
+}
+
+// Os números do Instagram (seguidores e alcance) vêm de uma consulta mais lenta:
+// pedimos os últimos 30 dias (que já ficam guardados pra aba Análises) e usamos os 15 mais recentes.
+async function igDadosConta30(){
+  var guardado = igCacheConta[30];
+  if(guardado) return guardado;
+  var r = await igChamarFuncao("ig-analise", { acao: "conta", dias: 30 });
+  if(!r.ok) return { conectado: false, motivo: igTextoFuncaoIndisponivel("ig-analise", r.mensagem) };
+  if(r.dados.conectado) igCacheConta[30] = r.dados;
+  return r.dados;
+}
+
+function igPreencherAnaliseVisao(dados){
+  var graficos = document.getElementById("igGraficosVisao");
+  if(!graficos) return;                                   // trocou de aba enquanto carregava
+  var subSeg = document.getElementById("igKpiSegSub");
+  var numAlc = document.getElementById("igKpiAlcN");
+  var subAlc = document.getElementById("igKpiAlcSub");
+
+  if(!dados || !dados.conectado){
+    if(subSeg) subSeg.innerHTML = '<span class="neutro">sem dados</span>';
+    if(numAlc) numAlc.textContent = "-";
+    if(subAlc) subAlc.innerHTML = '<span class="neutro">sem dados</span>';
+    graficos.innerHTML = '<div class="painel-branco ig-visao-card" style="grid-column:1 / -1;"><p class="ig-card-titulo">Crescimento e alcance</p>' +
+      '<p style="font-size:.82rem; color:#6F554B;">Os gráficos vêm direto do Instagram. ' + escapa((dados && dados.motivo) || "Quando a conexão estiver pronta, eles aparecem aqui.") + '</p></div>';
+    return;
+  }
+  var novos = (dados.novos_seguidores || []).slice(-IG_DIAS_VISAO);
+  var alcance = (dados.alcance || []).slice(-IG_DIAS_VISAO);
+  var somaNovos = igSomaPontos(novos);
+  var somaAlcance = igSomaPontos(alcance);
+
+  if(subSeg) subSeg.innerHTML = igVariacao(novos.length ? somaNovos : null, "em " + novos.length + " dias");
+  if(numAlc) numAlc.textContent = alcance.length ? igFormatarNumero(somaAlcance) : "-";
+  if(subAlc) subAlc.textContent = alcance.length ? "soma dos últimos " + alcance.length + " dias" : "sem dados";
+
+  graficos.innerHTML =
+    igCartaoTrilha("Crescimento do perfil", "novos seguidores por dia · " + novos.length + " dias · passe o mouse",
+      novos.length ? (somaNovos > 0 ? "+" : "") + igFormatarNumero(somaNovos) : "-", "seguidores", novos, true) +
+    igCartaoTrilha("Alcance", "contas alcançadas por dia · " + alcance.length + " dias · passe o mouse",
+      alcance.length ? igFormatarNumero(somaAlcance) : "-", "contas", alcance, false);
+}
+
+// Os últimos 30 dias de envio, numa barra só: entregues, falharam, pulados (e na fila, se tiver).
+function igAgruparMotivos(linhas){
+  var mapa = {};
+  (linhas || []).forEach(function(l){
+    var texto = String(l.motivo || "motivo não informado").replace(/\s+/g, " ").trim().replace(/\d{6,}/g, "...");
+    if(!mapa[texto]) mapa[texto] = { texto: texto, qtd: 0 };
+    mapa[texto].qtd++;
+  });
+  return Object.keys(mapa).map(function(k){ return mapa[k]; }).sort(function(a, b){ return b.qtd - a.qtd; }).slice(0, 5);
+}
+
+function igHtmlSaudeEnvio(c, motivos, ativas, totalAutomacoes, naFila){
+  var segs = [
+    { classe: "ok", rotulo: "entregues", qtd: c.ok },
+    { classe: "erro", rotulo: "falharam", qtd: c.erro },
+    { classe: "pulado", rotulo: "pulados", qtd: c.pulado },
+    { classe: "fila", rotulo: "na fila", qtd: c.fila }
+  ];
+  var total = segs.reduce(function(t, s){ return t + s.qtd; }, 0);
+  var barra = total > 0
+    ? segs.filter(function(s){ return s.qtd > 0; }).map(function(s){ return '<i class="' + s.classe + '" style="width:' + (s.qtd / total * 100) + '%" title="' + s.qtd + " " + s.rotulo + '"></i>'; }).join("")
+    : "";
+  var legenda = segs.filter(function(s, i){ return i < 3 || s.qtd > 0; })
+    .map(function(s){ return '<span class="' + s.classe + '"><b>' + igFormatarNumero(s.qtd) + '</b> ' + s.rotulo + '</span>'; }).join("");
+  var listaMotivos = motivos.length
+    ? '<div class="ig-motivos">' + motivos.map(function(m){
+        var curto = m.texto.length > 110 ? m.texto.slice(0, 107) + "..." : m.texto;
+        return '<div class="ig-motivo"><span title="' + igAttr(m.texto) + '">' + escapa(curto) + '</span><b>' + igFormatarNumero(m.qtd) + '</b></div>';
+      }).join("") + '</div>'
+    : "";
+  return '<div class="painel-branco ig-visao-card"><p class="ig-card-titulo">Saúde do envio <span>últimos 30 dias</span></p>' +
+    (total > 0
+      ? '<div class="ig-saude-barra">' + barra + '</div><div class="ig-legenda">' + legenda + '</div>'
+      : '<p class="vazio-explicacao">Ainda não saiu nenhuma mensagem nos últimos 30 dias.</p>') +
+    listaMotivos +
+    '<p class="ig-card-rodape">' + (ativas === null ? "-" : ativas + " de " + totalAutomacoes) + ' automações ativas · ' + (naFila === null ? "-" : igFormatarNumero(naFila)) + ' na fila de envio</p></div>';
+}
+
+// "O que as pessoas querem": quantas pessoas entraram por cada automação, e por onde chegaram.
+function igHtmlQuerem(leadsRes, automacoes){
+  var cabecalho = '<p class="ig-card-titulo">O que as pessoas querem <span>por automação</span></p>';
+  if(!leadsRes.ok) return '<div class="painel-branco ig-visao-card">' + cabecalho + faixaAviso("Não consegui ler os leads: " + (leadsRes.mensagem || "erro"), "erro") + '</div>';
+  var nomes = {};
+  (automacoes || []).forEach(function(a){ nomes[a.id] = a.nome || "(sem nome)"; });
+  var contagem = {};
+  var origem = { comment: 0, dm: 0, story_reply: 0 };
+  leadsRes.dados.forEach(function(l){
+    var nome = l.automation_id ? (nomes[l.automation_id] || "Automação apagada") : "Sem automação";
+    contagem[nome] = (contagem[nome] || 0) + 1;
+    if(origem[l.last_source] !== undefined) origem[l.last_source]++;
+  });
+  var ordem = Object.keys(contagem).map(function(n){ return { nome: n, qtd: contagem[n] }; })
+    .sort(function(a, b){ return b.qtd - a.qtd; }).slice(0, 6);
+  if(ordem.length === 0){
+    return '<div class="painel-branco ig-visao-card">' + cabecalho + '<p class="vazio-explicacao">Ainda sem leads. Quando alguém comentar a palavra de uma automação, aparece aqui.</p></div>';
+  }
+  var maior = ordem[0].qtd;
+  return '<div class="painel-branco ig-visao-card">' + cabecalho +
+    ordem.map(function(o){
+      return '<div class="ig-querem-linha"><span class="nome" title="' + igAttr(o.nome) + '">' + escapa(o.nome) + '</span>' +
+        '<span class="ig-querem-barra"><i style="width:' + Math.max(3, Math.round(o.qtd / maior * 100)) + '%"></i></span><b>' + igFormatarNumero(o.qtd) + '</b></div>';
+    }).join("") +
+    '<p class="ig-card-rodape">' + igFormatarNumero(origem.comment) + ' comentário · ' + igFormatarNumero(origem.dm) + ' direct · ' + igFormatarNumero(origem.story_reply) + ' story</p></div>';
+}
+
 async function igRenderVisaoGeral(area){
   area.innerHTML = '<p class="vazio-explicacao">Carregando a visão geral...</p>';
-  var ontem = new Date(Date.now() - 86400000).toISOString();
-  var semana = new Date(Date.now() - 7 * 86400000).toISOString();
+  var desdeJanela = new Date(Date.now() - IG_DIAS_VISAO * 86400000).toISOString();
+  var desde30 = new Date(Date.now() - 30 * 86400000).toISOString();
+  var entregas30 = function(status){
+    return igContar(banco.from("ig_deliveries").select("id", { count: "exact", head: true }).eq("status", status).gte("ts", desde30));
+  };
 
+  var analise = igDadosConta30();                         // devagar (fala com o Instagram): preenche depois
   var r = await Promise.all([
-    igChamarFuncao("ig-insights"),
-    buscarSeguro(banco.from("ig_token_status").select("*").eq("id", "main").limit(1)),
-    buscarSeguro(banco.from("ig_automations").select("id, active")),
-    igContar(banco.from("ig_leads").select("ig_user_id", { count: "exact", head: true })),
-    igContar(banco.from("ig_deliveries").select("id", { count: "exact", head: true }).eq("status", "ok").gte("ts", ontem)),
-    igContar(banco.from("ig_deliveries").select("id", { count: "exact", head: true }).eq("status", "ok").gte("ts", semana)),
-    igContar(banco.from("ig_send_queue").select("id", { count: "exact", head: true }).eq("status", "pendente"))
+    igChamarFuncao("ig-insights"),                                                                                          // 0
+    buscarSeguro(banco.from("ig_token_status").select("*").eq("id", "main").limit(1)),                                      // 1
+    buscarSeguro(banco.from("ig_automations").select("id, nome, active")),                                                  // 2
+    igContar(banco.from("ig_leads").select("ig_user_id", { count: "exact", head: true })),                                  // 3
+    igContar(banco.from("ig_leads").select("ig_user_id", { count: "exact", head: true }).gte("created_at", desdeJanela)),   // 4
+    igContar(banco.from("marcas").select("id", { count: "exact", head: true })),                                            // 5
+    igContar(banco.from("marcas").select("id", { count: "exact", head: true }).gte("criado_em", desdeJanela)),              // 6
+    entregas30("ok"), entregas30("erro"), entregas30("pulado"), entregas30("na_fila"),                                      // 7 a 10
+    igContar(banco.from("ig_send_queue").select("id", { count: "exact", head: true }).eq("status", "pendente")),            // 11
+    buscarSeguro(banco.from("ig_deliveries").select("motivo").eq("status", "erro").gte("ts", desde30).order("ts", { ascending: false }).limit(500)), // 12
+    igCarregarTodasAsLinhas(function(){ return banco.from("ig_leads").select("automation_id, last_source").order("created_at"); }, 10)             // 13
   ]);
   var conexao = r[0], tokenRes = r[1], automacoes = r[2];
   igEstadoToken = tokenRes.ok && tokenRes.dados.length > 0 ? tokenRes.dados[0] : igEstadoToken;
@@ -200,14 +397,15 @@ async function igRenderVisaoGeral(area){
   var ativas = automacoes.ok ? automacoes.dados.filter(function(a){ return a.active; }).length : null;
   var ig = conexao.ok ? conexao.dados : null;
   var conectado = !!(ig && ig.conectado);
+  var saude = { ok: r[7] || 0, erro: r[8] || 0, pulado: r[9] || 0, fila: r[10] || 0 };
 
-  var html = '<div class="ig-visao-grade">';
-  html += igHtmlCartaoToken(igEstadoToken);
-  if(conectado){
-    html += '<div>' + igCartaoConexao(ig) +
-      '<div class="painel-branco"><p class="painel-titulo">Seu perfil</p><p style="font-size:.84rem;"><strong>@' + escapa(ig.username || "") + '</strong>: ' +
-      igFormatarNumero(ig.seguidores) + ' seguidores, ' + igFormatarNumero(ig.midias) + ' publicações.</p></div></div>';
-  } else {
+  var html = '<div id="igAvisoFreio"></div>';
+
+  // Aviso de conexão: se precisa de atenção, fica no topo; se está tudo certo, vai pra baixo.
+  var cartaoConexao = conectado ? igCartaoConexao(ig) : "";
+  var conexaoComProblema = cartaoConexao.indexOf('<div class="aviso erro"') === 0;
+  if(conexaoComProblema) html += cartaoConexao;
+  if(!conectado){
     var passos = [
       { feito: tokenRes.ok && automacoes.ok, texto: "Tabelas do banco criadas (instagram.sql)" },
       { feito: conexao.ok, texto: "Funções do Instagram publicadas no Supabase" + (conexao.ok ? "" : " (a ig-insights não respondeu)") },
@@ -223,27 +421,36 @@ async function igRenderVisaoGeral(area){
       (!conexao.ok ? '<p class="ig-ajuda">' + escapa(igTextoFuncaoIndisponivel("ig-insights", conexao.mensagem)) + '</p>' : '') +
       '<p class="ig-ajuda">Passo a passo completo no arquivo INSTAGRAM-LEIA-ME.md.</p></div>';
   }
-  html += '</div>';
 
-  html += '<div class="grade-cartoes">' +
-    igCartaoMetrica(ativas === null ? "-" : ativas + " de " + automacoes.dados.length, "automações ativas") +
-    igCartaoMetrica(r[3] === null ? "-" : igFormatarNumero(r[3]), "leads captados") +
-    igCartaoMetrica(r[4] === null ? "-" : igFormatarNumero(r[4]), "DMs enviadas (24h)") +
-    igCartaoMetrica(r[5] === null ? "-" : igFormatarNumero(r[5]), "DMs enviadas (7 dias)") +
-    igCartaoMetrica(r[6] === null ? "-" : igFormatarNumero(r[6]), "na fila de envio") +
+  // os quatro números do topo
+  html += '<div class="ig-kpis">' +
+    igCartaoKpi("Seguidores", conectado ? igFormatarNumero(ig.seguidores) : "-", conectado ? '<span class="neutro">carregando...</span>' : '<span class="neutro">sem dados</span>', false, null, "igKpiSegSub") +
+    igCartaoKpi("Leads captados", r[3] === null ? "-" : igFormatarNumero(r[3]), igVariacao(r[4], "em " + IG_DIAS_VISAO + " dias"), true) +
+    igCartaoKpi("Marcas cadastradas", r[5] === null ? "-" : igFormatarNumero(r[5]), igVariacao(r[6], "em " + IG_DIAS_VISAO + " dias")) +
+    igCartaoKpi("Alcance", "...", "soma dos últimos " + IG_DIAS_VISAO + " dias", false, "igKpiAlcN", "igKpiAlcSub") +
   '</div>';
 
-  html += '<div id="igAvisoFreio"></div>';
+  // os dois gráficos (preenchidos quando o Instagram responder)
+  html += '<div class="ig-duas" id="igGraficosVisao">' +
+    '<div class="painel-branco ig-visao-card"><p class="ig-card-titulo">Crescimento do perfil</p><p class="vazio-explicacao">Carregando...</p></div>' +
+    '<div class="painel-branco ig-visao-card"><p class="ig-card-titulo">Alcance</p><p class="vazio-explicacao">Carregando...</p></div>' +
+  '</div>';
+
+  // saúde do envio e o que as pessoas querem
+  html += '<div class="ig-duas">' +
+    igHtmlSaudeEnvio(saude, igAgruparMotivos(r[12].ok ? r[12].dados : []), ativas, automacoes.ok ? automacoes.dados.length : 0, r[11]) +
+    igHtmlQuerem(r[13], automacoes.ok ? automacoes.dados : []) +
+  '</div>';
+
+  if(conectado && !conexaoComProblema) html += cartaoConexao;
   html += '<div class="painel-branco"><p class="painel-titulo">Últimos envios</p><div id="igUltimosEnvios"><p class="vazio-explicacao">Carregando...</p></div></div>';
   area.innerHTML = html;
 
-  var botaoRenovar = document.getElementById("btnRenovarToken");
-  if(botaoRenovar) botaoRenovar.addEventListener("click", igRenovarToken);
   var botaoAssinar = document.getElementById("btnAssinarWebhooks");
   if(botaoAssinar) botaoAssinar.addEventListener("click", igAssinarWebhooks);
-  igIniciarRelogioToken();
   igCarregarAvisoFreio();
   igCarregarUltimosEnvios();
+  analise.then(igPreencherAnaliseVisao);
 }
 
 /* ============================================================================
