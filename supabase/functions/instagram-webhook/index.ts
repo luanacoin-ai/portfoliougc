@@ -562,7 +562,9 @@ async function tratarMensagem(sb: Qualquer, ev: Qualquer, idContaDaEntrada: stri
     status: r.ok ? "ok" : "erro", motivo: r.ok ? null : r.erro?.mensagem,
   });
   if (!r.ok) return;
-  await salvarLead(sb, { ig_user_id: remetente, last_source: "dm", last_keyword: texto.slice(0, 80), automation_id: automacao.id });
+  // Guarda só a palavra-chave da automação, nunca o texto que a pessoa escreveu
+  // (a política de privacidade promete que o texto das mensagens não é guardado).
+  await salvarLead(sb, { ig_user_id: remetente, last_source: "dm", last_keyword: String(automacao.keyword ?? ""), automation_id: automacao.id });
   await aposEnviarPasso(sb, automacao, passo0, remetente);
   await enviarAnexos(sb, remetente, passo0.assets);
 }

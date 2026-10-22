@@ -1,7 +1,8 @@
 /* ============================================================================
    ABA: INSTAGRAM (automação de DM, estilo ManyChat)
-   Duas sub-abas:
+   Três sub-abas:
      Automações: a lista, e o editor com a prévia ao vivo (celular).
+     Contatos: quem entrou nas automações, baixar a lista e apagar uma pessoa.
      Métricas: seguidores, novos seguidores, alcance e leads.
 
    Como funciona por trás: quando alguém comenta a palavra escolhida num post,
@@ -12,7 +13,7 @@
    Este arquivo é carregado DEPOIS do script principal, então pode usar tudo
    que já existe lá: banco, buscarSeguro, escapa, el, icone, faixaAviso,
    irParaAba, abrirModal, fecharModal, guardaFecharModal, modalBox,
-   formatarDataHora.
+   formatarDataHora, baixarCSV.
 ============================================================================ */
 "use strict";
 
@@ -35,6 +36,7 @@ var igEdSujo = false;                // o editor tem alterações não salvas?
 async function abaInstagram(painel){
   var subabas = [
     { chave: "automacoes", rotulo: "Automações" },
+    { chave: "contatos", rotulo: "Contatos" },
     { chave: "metricas", rotulo: "Métricas" }
   ];
   painel.innerHTML = '<div class="subtabs">' + subabas.map(function(s){
@@ -50,6 +52,7 @@ async function abaInstagram(painel){
 
   var area = document.getElementById("igConteudo");
   if(igSubabaAtual === "metricas") await igRenderMetricas(area);
+  else if(igSubabaAtual === "contatos") await igRenderContatos(area);
   else await igRenderAutomacoes(area);
 }
 
@@ -226,6 +229,138 @@ async function igChamarFuncao(nome, corpo){
   }catch(erro){
     return { ok: false, mensagem: erro && erro.message ? erro.message : "erro desconhecido" };
   }
+}
+
+/* ============================================================================
+   SUB-ABA: CONTATOS (quem entrou nas automações)
+   Aqui você vê os contatos, baixa a lista (pedido de acesso ou portabilidade)
+   e apaga os dados de uma pessoa (pedido de exclusão, LGPD). A política de
+   privacidade promete apagar tudo em até 15 dias depois do pedido, e os
+   contatos sem interação há 12 meses são apagados sozinhos pelo robô.
+============================================================================ */
+var igTextoBuscaContatos = "";
+
+function igRotuloOrigem(origem){
+  return { comment: "Comentário", dm: "Mensagem direta", story_reply: "Resposta a story" }[origem] || (origem || "-");
+}
+
+async function igRenderContatos(area){
+  area.innerHTML = '<p class="vazio-explicacao">Carregando contatos...</p>';
+  var res = await buscarSeguro(banco.from("ig_leads").select("*").order("updated_at", { ascending: false }).limit(1000));
+  if(!res.ok){
+    area.innerHTML = faixaAviso("Não consegui carregar os contatos. Confira se você rodou o arquivo instagram.sql no Supabase. Detalhe: " + (res.mensagem || ""), "erro");
+    return;
+  }
+  var todos = res.dados;
+
+  area.innerHTML =
+    '<div class="barra-acoes">' +
+      '<div class="campo-busca">' + icone("busca") + '<input id="igBuscaContatos" placeholder="Buscar por @ ou e-mail" value="' + igAttr(igTextoBuscaContatos) + '"></div>' +
+      '<button class="btn" id="btnBaixarContatos">' + icone("baixar") + ' Baixar lista (CSV)</button>' +
+    '</div>' +
+    '<p style="font-size:.76rem; color:#8a8272; margin-bottom:12px;">Contatos sem nenhuma interação há 12 meses são apagados sozinhos. Pra atender um pedido de exclusão, use a lixeira da pessoa: ela apaga o contato, o histórico de envios e o e-mail ou telefone que ela tenha mandado.' +
+      (todos.length >= 1000 ? ' Mostrando os 1000 mais recentes.' : '') + '</p>' +
+    '<div class="painel-branco"><div class="tabela-scroll" id="igAreaContatos"></div></div>';
+
+  var campoBusca = document.getElementById("igBuscaContatos");
+  var desenhar = function(){
+    igTextoBuscaContatos = campoBusca.value;
+    igDesenharTabelaContatos(todos, igTextoBuscaContatos);
+  };
+  campoBusca.addEventListener("input", desenhar);
+  document.getElementById("btnBaixarContatos").addEventListener("click", function(){
+    var filtrados = igFiltrarContatos(todos, igTextoBuscaContatos);
+    if(filtrados.length === 0){ alert("Nenhum contato pra baixar."); return; }
+    baixarCSV("contatos-instagram.csv",
+      ["@", "ID no Instagram", "Como chegou", "Palavra", "E-mail", "Telefone", "Etiquetas", "Passo da conversa", "Primeira vez", "Última interação"],
+      filtrados.map(function(l){
+        return [l.username ? "@" + l.username : "", l.ig_user_id, igRotuloOrigem(l.last_source), l.last_keyword || "", l.email || "", l.telefone || "", (l.tags || []).join(", "), l.flow_step || "", l.created_at || "", l.updated_at || ""];
+      }));
+  });
+  desenhar();
+}
+
+function igFiltrarContatos(lista, texto){
+  var t = String(texto || "").trim().toLowerCase().replace(/^@/, "");
+  if(!t) return lista;
+  return lista.filter(function(l){
+    return (String(l.username || "") + " " + String(l.email || "") + " " + String(l.ig_user_id || "")).toLowerCase().indexOf(t) !== -1;
+  });
+}
+
+function igDesenharTabelaContatos(todos, texto){
+  var area = document.getElementById("igAreaContatos");
+  if(!area) return;
+  if(todos.length === 0){
+    area.innerHTML = '<p class="vazio-explicacao">Nenhum contato ainda. Quem comentar a palavra de uma automação ligada aparece aqui.</p>';
+    return;
+  }
+  var lista = igFiltrarContatos(todos, texto);
+  if(lista.length === 0){
+    area.innerHTML = '<p class="vazio-explicacao">Nenhum contato encontrado com essa busca.</p>';
+    return;
+  }
+  var tabela = el('<table><thead><tr><th>Pessoa</th><th>Como chegou</th><th>Palavra</th><th>E-mail / telefone</th><th>Última interação</th><th></th></tr></thead><tbody></tbody></table>');
+  var corpo = tabela.querySelector("tbody");
+  lista.forEach(function(l){
+    var arroba = l.username ? "@" + l.username : "(sem @)";
+    var nomeLink = l.username
+      ? '<a href="https://instagram.com/' + igAttr(l.username) + '" target="_blank" rel="noopener"><strong>' + escapa(arroba) + '</strong></a>'
+      : '<strong>' + escapa(arroba) + '</strong>';
+    var contato = [l.email, l.telefone].filter(Boolean).map(escapa).join("<br>") || "-";
+    var tags = (l.tags || []).length ? ' <span class="pilula" style="background:#efe9db;">' + escapa(l.tags.join(", ")) + '</span>' : "";
+    var tr = el('<tr><td>' + nomeLink + tags + '<div style="font-size:.66rem; color:#8a8272;">ID ' + escapa(l.ig_user_id) + '</div></td>' +
+      '<td>' + escapa(igRotuloOrigem(l.last_source)) + '</td>' +
+      '<td>' + escapa(l.last_keyword || "-") + '</td>' +
+      '<td>' + contato + '</td>' +
+      '<td style="white-space:nowrap;">' + escapa(formatarDataHora(l.updated_at)) + '</td>' +
+      '<td><button class="btn btn-icone btn-perigo" title="Apagar todos os dados desta pessoa">' + icone("lixeira") + '</button></td></tr>');
+    tr.querySelector("button").addEventListener("click", function(){ igConfirmarApagarPessoa(l); });
+    corpo.appendChild(tr);
+  });
+  area.innerHTML = "";
+  area.appendChild(tabela);
+}
+
+function igConfirmarApagarPessoa(lead){
+  var arroba = lead.username ? "@" + lead.username : "esta pessoa";
+  abrirModal(
+    '<p class="form-titulo">Apagar os dados de ' + escapa(arroba) + '</p>' +
+    '<p style="font-size:.85rem; margin-bottom:10px;">Isso apaga <strong>tudo</strong> que o sistema guardou dessa pessoa: o contato, o histórico de envios, a fila, os passos agendados e o e-mail ou telefone que ela tenha enviado. Essa ação não pode ser desfeita.</p>' +
+    '<p class="ig-ajuda" style="margin-bottom:16px;">As mensagens que ficam dentro do Instagram não são afetadas: elas pertencem à plataforma da Meta.</p>' +
+    '<div class="form-acoes"><button class="btn" id="btnCancelarApagarPessoa">Cancelar</button><button class="btn btn-perigo" id="btnConfirmarApagarPessoa">Apagar tudo</button></div>' +
+    '<p class="aviso erro oculto" id="igErroApagarPessoa" style="margin-top:12px;"></p>'
+  );
+  document.getElementById("btnCancelarApagarPessoa").addEventListener("click", fecharModal);
+  document.getElementById("btnConfirmarApagarPessoa").addEventListener("click", async function(e){
+    var botao = e.currentTarget;
+    var areaErro = document.getElementById("igErroApagarPessoa");
+    botao.disabled = true;
+    areaErro.classList.add("oculto");
+
+    // Primeiro apaga o que depende do contato (passos agendados, fila, histórico de envios)
+    // e confere. O contato em si só é apagado DEPOIS, se tudo isso deu certo: assim, se algo
+    // falhar, ele continua na lista pra você tentar de novo (sem sobrar dados soltos).
+    var dependentes = ["ig_scheduled", "ig_send_queue", "ig_deliveries"];
+    var problemas = [];
+    var apagarEConferir = async function(tabela){
+      var r = await buscarSeguro(banco.from(tabela).delete().eq("ig_user_id", lead.ig_user_id));
+      if(!r.ok) problemas.push(tabela + ": " + (r.mensagem || "erro"));
+      var sobrou = await igContar(banco.from(tabela).select("ig_user_id", { count: "exact", head: true }).eq("ig_user_id", lead.ig_user_id));
+      if(sobrou) problemas.push("ainda restam " + sobrou + " registro(s) em " + tabela);
+    };
+    for(var i = 0; i < dependentes.length; i++) await apagarEConferir(dependentes[i]);
+    if(problemas.length === 0) await apagarEConferir("ig_leads");
+
+    if(problemas.length > 0){
+      areaErro.textContent = "Não consegui apagar tudo: " + problemas.join("; ") + ". Rode o arquivo instagram.sql de novo no Supabase (ele libera a exclusão) e tente outra vez.";
+      areaErro.classList.remove("oculto");
+      botao.disabled = false;
+      return;
+    }
+    fecharModal();
+    irParaAba("instagram");
+  });
 }
 
 /* ============================================================================

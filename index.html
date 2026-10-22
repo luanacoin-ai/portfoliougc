@@ -1271,6 +1271,7 @@
       <a href="https://instagram.com/luanacoin" target="_blank" rel="noopener">Instagram</a>
       <a href="https://wa.me/5581989477095" target="_blank" rel="noopener">WhatsApp</a>
       <a href="mailto:contato@luanacoin.com">E-mail</a>
+      <a href="politica-de-privacidade/">Política de Privacidade</a>
     </div>
     <span class="footer-year"></span>
   </div>
@@ -1861,6 +1862,20 @@
     if(!captureForm.checkValidity()){
       captureForm.reportValidity();
       return;
+    }
+    // Guarda o pedido do midia kit como "lead" na sua base (igual ao formulario
+    // de contato). Se o banco falhar, a pessoa ainda ve a confirmacao e o erro
+    // fica so no console.
+    if(window.banco){
+      banco.from("marcas").insert({
+        nome: document.getElementById("captureNome").value.trim(),
+        email: document.getElementById("captureEmail").value.trim(),
+        obs: "Pediu o mídia kit pelo site",
+        situacao: "lead",
+        ultimo_contato: new Date().toISOString().slice(0, 10)
+      }).then(function(resultado){
+        if(resultado.error) console.error("Não consegui salvar o pedido do mídia kit:", resultado.error);
+      }).catch(function(erro){ console.error("Não consegui salvar o pedido do mídia kit:", erro); });
     }
     captureMsg.hidden = false;
     captureForm.reset();

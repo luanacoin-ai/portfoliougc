@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Política de Privacidade | Luana Coin</title>
+<meta name="description" content="Política de Privacidade de Luana Coin (@luanacoin): como trato os dados de quem interage pelo Instagram (comentários e mensagens diretas), pelo site e por e-mail, conforme a LGPD, e como pedir a exclusão dos seus dados.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://luanacoin.com/politica-de-privacidade/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f4f2;
+    --card:#ffffff;
+    --black:#111111;
+    --lime:#c6f24e;
+    --lime-strong:#aede2e;
+    --gray-line:rgba(17,17,17,.12);
+    --gray-text:#55574f;
+    --radius:18px;
+    --ff:'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ scroll-padding-top:20px; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--black);
+    font-family:var(--ff);
+    font-size:1.0625rem;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{ color:var(--black); text-decoration-thickness:2px; text-underline-offset:3px; text-decoration-color:var(--lime-strong); }
+  a:hover{ background:var(--lime); text-decoration-color:var(--black); }
+  a:focus-visible, summary:focus-visible{ outline:3px solid var(--black); outline-offset:3px; border-radius:4px; }
+
+  .pular{
+    position:absolute; left:-9999px; top:8px;
+    background:var(--black); color:var(--lime); padding:10px 16px; border-radius:10px; font-weight:700; z-index:10;
+  }
+  .pular:focus{ left:12px; }
+
+  .topo{
+    max-width:820px; margin:0 auto; padding:22px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+  .marca{ font-weight:800; font-size:1.05rem; text-decoration:none; }
+  .marca:hover{ background:none; }
+  .voltar{
+    font-size:.9rem; font-weight:700; text-decoration:none;
+    border:2px solid var(--black); border-radius:999px; padding:7px 16px; background:var(--card);
+  }
+  .voltar:hover{ background:var(--lime); }
+
+  main{ max-width:820px; margin:0 auto; padding:18px 20px 70px; }
+  .folha{
+    background:var(--card);
+    border:1px solid var(--gray-line);
+    border-radius:var(--radius);
+    padding:clamp(22px, 5vw, 48px);
+    box-shadow:0 18px 40px -22px rgba(17,17,17,.2);
+  }
+  .selo{
+    display:inline-block; background:var(--lime); font-weight:800; font-size:.78rem;
+    letter-spacing:.06em; text-transform:uppercase; padding:5px 12px; border-radius:999px; margin:0 0 14px;
+  }
+  h1{ font-size:clamp(1.9rem, 6vw, 2.7rem); line-height:1.15; margin:0 0 10px; font-weight:800; letter-spacing:-.02em; }
+  .atualizacao{ color:var(--gray-text); font-size:.95rem; margin:0 0 22px; }
+  .resumo{
+    border-left:5px solid var(--lime-strong); background:#f7f9f1; border-radius:0 12px 12px 0;
+    padding:14px 18px; margin:0 0 26px; font-size:1rem;
+  }
+  .resumo p{ margin:0; }
+
+  .indice{ border:1px solid var(--gray-line); border-radius:14px; padding:16px 20px; margin:0 0 34px; background:#fbfbfa; }
+  .indice h2{ font-size:.82rem; letter-spacing:.07em; text-transform:uppercase; color:var(--gray-text); margin:0 0 8px; border:none; padding:0; }
+  .indice ol{ margin:0; padding-left:1.3rem; columns:2; column-gap:30px; font-size:.96rem; line-height:1.9; }
+  @media (max-width:640px){ .indice ol{ columns:1; } }
+  .indice a{ text-decoration:none; }
+  .indice a:hover{ text-decoration:underline; }
+
+  section{ margin:0 0 34px; }
+  h2{ font-size:1.35rem; line-height:1.3; margin:0 0 12px; font-weight:800; letter-spacing:-.01em; padding-top:6px; }
+  h3{ font-size:1.05rem; margin:20px 0 6px; font-weight:800; }
+  p{ margin:0 0 14px; }
+  ul, ol{ margin:0 0 14px; padding-left:1.3rem; }
+  li{ margin:0 0 6px; }
+  strong{ font-weight:800; }
+
+  .destaque-exclusao{
+    background:#f7f9f1; border:2px solid var(--black); border-radius:16px; padding:20px 22px;
+    box-shadow:5px 5px 0 var(--black);
+  }
+  .destaque-exclusao h2{ margin-top:0; padding-top:0; }
+  .botao-email{
+    display:inline-block; background:var(--lime); border:2px solid var(--black); border-radius:999px;
+    padding:10px 22px; font-weight:800; text-decoration:none; margin:4px 0 6px;
+    line-height:1.4; text-align:center;
+  }
+  .botao-email:hover{ background:var(--lime-strong); }
+
+  .tabela-rolagem{ overflow-x:auto; margin:0 0 14px; }
+  table{ width:100%; border-collapse:collapse; font-size:.95rem; line-height:1.55; }
+  th, td{ text-align:left; padding:10px 12px; border-bottom:1px solid var(--gray-line); vertical-align:top; }
+  th{ font-size:.8rem; letter-spacing:.05em; text-transform:uppercase; color:var(--gray-text); white-space:nowrap; }
+
+  .rodape-meta{
+    border-top:1px solid var(--gray-line); margin-top:34px; padding-top:20px;
+    font-size:.92rem; color:var(--gray-text);
+  }
+  .rodape-meta p{ margin:0 0 10px; }
+  footer{ max-width:820px; margin:0 auto; padding:0 20px 40px; font-size:.88rem; color:var(--gray-text); text-align:center; }
+</style>
+</head>
+<body>
+<a class="pular" href="#conteudo">Ir para o conteúdo</a>
+
+<header class="topo">
+  <a class="marca" href="../">Luana Coin</a>
+  <a class="voltar" href="../">Voltar ao site</a>
+</header>
+
+<main id="conteudo">
+<article class="folha">
+  <p class="selo">Documento público</p>
+  <h1>Política de Privacidade</h1>
+  <p class="atualizacao">Última atualização: <time datetime="2026-10-22">22 de outubro de 2026</time></p>
+
+  <div class="resumo">
+    <p><strong>Em poucas palavras:</strong> eu só respondo quem falou comigo primeiro. Guardo o mínimo de dados necessário, não vendo nada para ninguém, e você pode pedir para apagar tudo quando quiser, por e-mail, em até 15 dias. Os detalhes estão abaixo.</p>
+  </div>
+
+  <nav class="indice" aria-label="Índice desta política">
+    <h2>Índice</h2>
+    <ol>
+      <li><a href="#quem-somos">Quem somos</a></li>
+      <li><a href="#dados-que-coletamos">Dados que coletamos</a></li>
+      <li><a href="#como-usamos">Como e por que usamos os dados</a></li>
+      <li><a href="#compartilhamento">Compartilhamento e operadores</a></li>
+      <li><a href="#transferencia-internacional">Transferência internacional</a></li>
+      <li><a href="#retencao">Por quanto tempo guardamos</a></li>
+      <li><a href="#seguranca">Segurança</a></li>
+      <li><a href="#direitos">Seus direitos (LGPD)</a></li>
+      <li><a href="#exclusao-de-dados">Como pedir a exclusão dos seus dados</a></li>
+      <li><a href="#menores">Dados de menores</a></li>
+      <li><a href="#alteracoes">Alterações nesta política</a></li>
+      <li><a href="#contato">Contato</a></li>
+    </ol>
+  </nav>
+
+  <section id="quem-somos" aria-labelledby="t-quem-somos">
+    <h2 id="t-quem-somos">1. Quem somos</h2>
+    <p>Esta política é de <strong>Luana Coin</strong> (<a href="https://instagram.com/luanacoin" rel="noopener">@luanacoin</a> no Instagram), criadora de conteúdo UGC, com base em Cabo de Santo Agostinho, Pernambuco, Brasil. Nela eu explico, de forma simples, como trato os dados pessoais de quem interage comigo pelo Instagram, pelo meu site (luanacoin.com) e por e-mail.</p>
+    <p>Pela Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018), eu sou a <strong>controladora</strong> desses dados e também a pessoa <strong>encarregada</strong> pelo tratamento. O contato está no fim desta página.</p>
+    <p>Parte do meu atendimento no Instagram é <strong>automática</strong>: quando alguém comenta uma palavra combinada em um post meu, ou toca em um botão de uma conversa, um sistema próprio envia uma mensagem direta com o que a pessoa pediu (por exemplo, um link ou um material). Isso funciona pela <strong>API oficial do Instagram, da Meta</strong>, sem acessar a sua conta de nenhuma outra forma.</p>
+  </section>
+
+  <section id="dados-que-coletamos" aria-labelledby="t-dados">
+    <h2 id="t-dados">2. Dados que coletamos</h2>
+
+    <h3>Pelo Instagram (automação de comentários e mensagens)</h3>
+    <ul>
+      <li>O seu <strong>nome de usuário (@)</strong> e o <strong>identificador numérico</strong> da sua conta no Instagram, que a própria Meta informa quando você comenta ou me manda mensagem.</li>
+      <li>A <strong>palavra combinada</strong> que ativou a automação e o <strong>ponto da conversa</strong> em que você está (por exemplo, se já recebeu a primeira mensagem ou se tocou em um botão).</li>
+      <li>O <strong>registro técnico dos envios</strong>: data, hora e se a mensagem foi entregue ou deu erro.</li>
+      <li>O seu <strong>e-mail ou telefone</strong>, somente se eu pedir dentro da conversa e você decidir enviar.</li>
+    </ul>
+    <p>O texto do seu comentário ou da sua mensagem é lido no momento, para identificar a palavra combinada, e <strong>não é guardado</strong> na minha base de dados. As mensagens trocadas ficam na caixa de mensagens do Instagram da minha conta, que também segue as regras da Meta.</p>
+
+    <h3>Pelo site luanacoin.com</h3>
+    <ul>
+      <li><strong>Formulário de contato:</strong> o nome, o e-mail e a mensagem que você escrever.</li>
+      <li><strong>Pedido do mídia kit:</strong> o nome e o e-mail que você informar.</li>
+      <li><strong>Visitas:</strong> qual página foi aberta e de qual site você veio (por exemplo, instagram.com). Isso <strong>não identifica você</strong>, e o site não usa ferramentas de publicidade nem de análise de terceiros.</li>
+      <li><strong>Dados técnicos de acesso:</strong> como em qualquer site, o serviço de hospedagem e os recursos de terceiros que o site carrega (veja a seção 4) podem registrar o endereço IP e o tipo de navegador de quem visita.</li>
+    </ul>
+
+    <h3>O que eu NÃO coleto</h3>
+    <ul>
+      <li>Senhas, dados de pagamento ou documentos.</li>
+      <li>Conversas de terceiros: eu não acesso mensagens entre você e outras pessoas, nem mensagens de quem nunca interagiu comigo.</li>
+      <li>Dados sensíveis, como saúde, religião ou orientação sexual. Se você escrever algo assim espontaneamente em uma mensagem, não uso para nenhuma finalidade além de responder você.</li>
+    </ul>
+  </section>
+
+  <section id="como-usamos" aria-labelledby="t-usamos">
+    <h2 id="t-usamos">3. Como e por que usamos os dados</h2>
+    <p><strong>Eu só respondo quem interagiu comigo primeiro:</strong> quem comentou uma palavra combinada, me enviou uma mensagem ou tocou em um botão. Eu <strong>não envio mensagem para quem nunca falou comigo</strong>, não compro listas de contatos e não faço envio em massa. Respeito os limites e as regras da Meta: cada pessoa recebe, no máximo, uma resposta automática a comentário por dia.</p>
+    <div class="tabela-rolagem">
+      <table>
+        <thead>
+          <tr><th scope="col">Para quê</th><th scope="col">Base legal (LGPD, art. 7º)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Entregar o que você pediu ao comentar (um link, um material) e continuar a conversa quando você toca em um botão.</td><td>Legítimo interesse (inciso IX), a partir de um pedido feito por você.</td></tr>
+          <tr><td>Guardar o e-mail ou o telefone que você escolher enviar na conversa.</td><td>Consentimento (inciso I), que você pode retirar quando quiser.</td></tr>
+          <tr><td>Responder ao formulário de contato e ao pedido de mídia kit.</td><td>Procedimentos preliminares a pedido seu (inciso V) e legítimo interesse (inciso IX).</td></tr>
+          <tr><td>Evitar mensagens repetidas, respeitar os limites do Instagram e manter o sistema seguro.</td><td>Legítimo interesse (inciso IX).</td></tr>
+          <tr><td>Saber, de forma geral, quantas pessoas visitam o site e de onde vêm.</td><td>Legítimo interesse (inciso IX), sem identificar ninguém.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Eu não uso os seus dados para tomar decisões automatizadas sobre você, não crio perfis e <strong>não envio comentários ou mensagens do Instagram para ferramentas de inteligência artificial</strong>.</p>
+  </section>
+
+  <section id="compartilhamento" aria-labelledby="t-compartilhamento">
+    <h2 id="t-compartilhamento">4. Compartilhamento e operadores</h2>
+    <p>Para o sistema funcionar, uso alguns serviços de terceiros, que tratam dados em meu nome (são os <strong>operadores</strong>):</p>
+    <div class="tabela-rolagem">
+      <table>
+        <thead>
+          <tr><th scope="col">Serviço</th><th scope="col">Para que serve</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Meta (Instagram)</strong></td><td>Canal dos comentários e das mensagens diretas, e a API oficial pela qual a automação funciona.</td></tr>
+          <tr><td><strong>Supabase</strong></td><td>Banco de dados e funções do sistema, onde ficam os registros descritos na seção 2.</td></tr>
+          <tr><td><strong>GitHub</strong></td><td>Hospedagem do site luanacoin.com (GitHub Pages).</td></tr>
+          <tr><td><strong>Resend</strong></td><td>Envio dos e-mails que eu mando, como respostas a contatos e propostas.</td></tr>
+          <tr><td><strong>Google Fontes, YouTube e jsDelivr</strong></td><td>Carregam as letras, as miniaturas e os vídeos do site e uma biblioteca técnica. Ao abrir a página ou tocar em um vídeo, esses serviços podem receber dados técnicos de acesso (como o IP) e, no caso do YouTube, gravar cookies, conforme as políticas deles.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Eu <strong>não vendo, não alugo e não compartilho</strong> os seus dados para fins de marketing de terceiros. Só os revelaria a uma autoridade se houvesse uma obrigação legal ou uma ordem judicial.</p>
+  </section>
+
+  <section id="transferencia-internacional" aria-labelledby="t-transferencia">
+    <h2 id="t-transferencia">5. Transferência internacional de dados</h2>
+    <p>A Meta, o Supabase, o GitHub, o Resend, o Google e o jsDelivr podem processar e armazenar dados em servidores <strong>fora do Brasil</strong>, como nos Estados Unidos. Essa transferência acontece nos termos do art. 33 da LGPD, com fornecedores que declaram adotar medidas de segurança e proteção de dados compatíveis com a lei.</p>
+  </section>
+
+  <section id="retencao" aria-labelledby="t-retencao">
+    <h2 id="t-retencao">6. Por quanto tempo guardamos os dados</h2>
+    <ul>
+      <li><strong>Contatos da automação do Instagram</strong> (seção 2): até <strong>12 meses após a sua última interação</strong>. Depois disso, são apagados automaticamente.</li>
+      <li><strong>Formulário de contato e mídia kit:</strong> pelo tempo necessário para responder você e para uma eventual relação de trabalho, ou até você pedir a exclusão.</li>
+      <li><strong>Registro de visitas:</strong> não identifica ninguém e pode ser mantido para estatísticas gerais.</li>
+    </ul>
+    <p>A qualquer momento você pode pedir a exclusão antes desses prazos (veja a seção 9).</p>
+  </section>
+
+  <section id="seguranca" aria-labelledby="t-seguranca">
+    <h2 id="t-seguranca">7. Segurança</h2>
+    <p>Adoto medidas técnicas razoáveis para proteger os dados: conexão criptografada (HTTPS), acesso ao painel restrito à minha conta, com login, regras de acesso no banco de dados para que ninguém além de mim leia os contatos, e chaves de acesso guardadas em cofre de segredos do servidor, fora do código do site.</p>
+    <p>Nenhum sistema é 100% seguro. Se houver um incidente que possa trazer risco relevante a você, vou avisar você e a Autoridade Nacional de Proteção de Dados (ANPD), como a lei determina.</p>
+  </section>
+
+  <section id="direitos" aria-labelledby="t-direitos">
+    <h2 id="t-direitos">8. Seus direitos (LGPD)</h2>
+    <p>Pelo art. 18 da LGPD, você pode me pedir, a qualquer momento e sem custo:</p>
+    <ul>
+      <li>a <strong>confirmação</strong> de que eu trato dados seus e o <strong>acesso</strong> a eles;</li>
+      <li>a <strong>correção</strong> de dados incompletos, errados ou desatualizados;</li>
+      <li>a <strong>anonimização, o bloqueio ou a eliminação</strong> de dados desnecessários ou tratados fora da lei;</li>
+      <li>a <strong>portabilidade</strong> dos dados;</li>
+      <li>a <strong>eliminação</strong> dos dados tratados com o seu consentimento;</li>
+      <li>informações sobre <strong>com quem compartilho</strong> os dados;</li>
+      <li>a <strong>revogação do consentimento</strong> e a oposição a um tratamento que você não aceite;</li>
+      <li>fazer uma <strong>reclamação à ANPD</strong> (gov.br/anpd).</li>
+    </ul>
+    <p>Para exercer qualquer um desses direitos, escreva para <a href="mailto:contato@luanacoin.com">contato@luanacoin.com</a>. Eu respondo em até <strong>15 dias</strong>.</p>
+  </section>
+
+  <section id="exclusao-de-dados" class="destaque-exclusao" aria-labelledby="t-exclusao">
+    <h2 id="t-exclusao">9. Como pedir a exclusão dos seus dados</h2>
+    <p>Se você interagiu com a minha conta do Instagram ou com o meu site e quer que eu <strong>apague os seus dados</strong>, é simples:</p>
+    <ol>
+      <li>Envie um e-mail para <a href="mailto:contato@luanacoin.com?subject=Exclus%C3%A3o%20de%20dados">contato@luanacoin.com</a> com o assunto <strong>Exclusão de dados</strong>, informando o seu <strong>@ do Instagram</strong> (e o e-mail que você usou no formulário do site, se foi o caso). Se preferir, você também pode me mandar uma <strong>mensagem direta</strong> em <a href="https://instagram.com/luanacoin" rel="noopener">@luanacoin</a> escrevendo "excluir meus dados".</li>
+      <li>Eu confirmo que o pedido é seu (por exemplo, respondendo pela própria conta do Instagram), para impedir que outra pessoa apague dados que não são dela.</li>
+      <li>Eu apago os seus dados em até <strong>15 dias</strong> e confirmo para você por mensagem ou e-mail.</li>
+    </ol>
+    <p><a class="botao-email" href="mailto:contato@luanacoin.com?subject=Exclus%C3%A3o%20de%20dados">Pedir exclusão por e-mail</a></p>
+    <p><strong>O que é apagado:</strong> o seu registro de contato na automação, o histórico de envios ligado ao seu @, o e-mail ou telefone que você tenha enviado e os dados do formulário do site.</p>
+    <p><strong>O que não depende de mim:</strong> as mensagens que ficam dentro do Instagram pertencem à plataforma da Meta. Para apagá-las ou gerenciar o que o Instagram guarda sobre você, use as configurações da sua conta no Instagram e a <a href="https://privacycenter.instagram.com/policy" rel="noopener">política de privacidade do Instagram</a>.</p>
+  </section>
+
+  <section id="menores" aria-labelledby="t-menores">
+    <h2 id="t-menores">10. Dados de menores</h2>
+    <p>Meu conteúdo e a minha automação <strong>não são direcionados a menores de 18 anos</strong>, e eu não coleto dados de crianças e adolescentes de forma intencional. Se você é responsável por um menor e acha que ele interagiu com a minha conta ou com o meu site, escreva para o e-mail de contato que eu apago os dados.</p>
+  </section>
+
+  <section id="alteracoes" aria-labelledby="t-alteracoes">
+    <h2 id="t-alteracoes">11. Alterações nesta política</h2>
+    <p>Posso atualizar esta política para refletir mudanças no sistema ou na lei. A data no início da página mostra a última revisão. Quando a mudança for importante, eu aviso no site.</p>
+  </section>
+
+  <section id="contato" aria-labelledby="t-contato">
+    <h2 id="t-contato">12. Contato</h2>
+    <p><strong>Luana Coin</strong>, controladora e encarregada pelo tratamento de dados<br>
+    E-mail: <a href="mailto:contato@luanacoin.com">contato@luanacoin.com</a><br>
+    Instagram: <a href="https://instagram.com/luanacoin" rel="noopener">@luanacoin</a><br>
+    Cabo de Santo Agostinho, Pernambuco, Brasil</p>
+  </section>
+
+  <div class="rodape-meta">
+    <p>A automação de mensagens usa a <strong>Plataforma da Meta</strong> (API do Instagram) e segue os <a href="https://developers.facebook.com/terms/" rel="noopener">Termos da Plataforma</a> e as <a href="https://developers.facebook.com/devpolicy/" rel="noopener">Políticas para Desenvolvedores</a> da Meta.</p>
+    <p>Instagram e Meta são marcas de Meta Platforms, Inc. Este serviço não é patrocinado nem endossado por elas.</p>
+  </div>
+</article>
+</main>
+
+<footer>
+  <p>© <span id="ano">2026</span> Luana Coin. Todos os direitos reservados.</p>
+</footer>
+
+<script>
+  document.getElementById("ano").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>

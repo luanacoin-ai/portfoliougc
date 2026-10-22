@@ -367,6 +367,21 @@ create policy "ig_send_budget_destravar_somente_admin"
   on public.ig_send_budget for update
   using ( public.ig_eh_admin() ) with check ( public.ig_eh_admin() );
 
+-- PEDIDO DE EXCLUSÃO (LGPD): pra apagar TODOS os dados de uma pessoa pela aba
+-- Instagram > Contatos, você também precisa poder apagar o histórico de envios,
+-- a fila e os passos agendados dela. Só apagar, nada de editar.
+drop policy if exists "ig_deliveries_apagar_somente_admin" on public.ig_deliveries;
+create policy "ig_deliveries_apagar_somente_admin"
+  on public.ig_deliveries for delete using ( public.ig_eh_admin() );
+
+drop policy if exists "ig_send_queue_apagar_somente_admin" on public.ig_send_queue;
+create policy "ig_send_queue_apagar_somente_admin"
+  on public.ig_send_queue for delete using ( public.ig_eh_admin() );
+
+drop policy if exists "ig_scheduled_apagar_somente_admin" on public.ig_scheduled;
+create policy "ig_scheduled_apagar_somente_admin"
+  on public.ig_scheduled for delete using ( public.ig_eh_admin() );
+
 -- ig_bot_sends e ig_processed_events: sem nenhuma regra de propósito. Com o
 -- RLS ligado e sem regra, ninguém de fora acessa; só as funções na nuvem.
 

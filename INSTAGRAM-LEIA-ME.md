@@ -27,6 +27,8 @@ A tela do painel já está pronta e no ar. O que falta é a parte de "fora": o b
 
 Isso cria as tabelas, o freio de envio (as duas funções `take_send_slot` e `record_send_result`), as regras de acesso (só o seu e-mail enxerga) e a pasta de arquivos `ig-arquivos`.
 
+> Se você já rodou uma versão anterior deste arquivo, **rode de novo inteiro**. É seguro, e ele acrescenta a permissão de apagar o histórico de uma pessoa (usada pelo botão da lixeira em Contatos).
+
 > **Atenção:** sem o freio, NENHUMA DM por comentário sai (tudo vai pra fila e a fila nunca anda). É o passo que não pode faltar.
 
 Depois deste passo, a aba Instagram do painel já abre e você já consegue criar automações (elas só ainda não disparam nada).
@@ -146,6 +148,23 @@ Quando tudo estiver funcionando, troque o segredo `APP_SECRET_ENFORCE` para `tru
 - **O token vence em cerca de 60 dias.** A renovação roda sozinha toda semana. Se falhar, a aba Métricas mostra um aviso.
 - **DM solta** (alguém te manda uma mensagem sem comentar): só dispara se a mensagem tiver uma das palavras da automação. A opção "qualquer palavra" vale só para comentários, nunca para DM.
 - O banco devolve no máximo 1000 linhas por pedido. Se um dia a tabela de contatos passar disso, as telas que listam tudo precisam de paginação.
+
+---
+
+## Privacidade, LGPD e a Política de Privacidade
+
+A página pública da política está em **https://luanacoin.com/politica-de-privacidade/** e a de exclusão de dados em **https://luanacoin.com/politica-de-privacidade/#exclusao-de-dados**. É a URL que o Meta for Developers pede (campos "Privacy Policy URL" e "Data Deletion Instructions URL"). O código da página está em `politica-de-privacidade/index.html`.
+
+O que o sistema faz pra a política ser verdadeira:
+
+- **Não guarda o texto** de comentários nem de mensagens. Guarda só o @, o ID, a palavra-chave da automação, o ponto da conversa, o registro de envios e, se um passo da conversa pedir, o e-mail ou telefone que a pessoa mandar.
+- **Apaga sozinho** (o robô `ig-scheduler`, uma vez por hora) os contatos sem nenhuma interação há **12 meses**, junto com o histórico de envios com mais de 12 meses.
+- **Pedido de exclusão** (a política promete responder em até 15 dias): aba **Instagram > Contatos**, ache a pessoa pela busca e clique na lixeira. Ela apaga o contato, o histórico, a fila, os passos agendados e o e-mail ou telefone. Depois responda a pessoa confirmando.
+- **Pedido de acesso ou portabilidade:** na mesma aba, busque a pessoa e clique em **Baixar lista (CSV)**.
+
+Se você mudar o que o sistema guarda (por exemplo, passar a pedir telefone, ou usar uma ferramenta de IA), **atualize a política** antes: abra `politica-de-privacidade/index.html`, ajuste o texto das seções 2 a 6 e troque a data em "Última atualização" (aparece no começo da página e na tag `<time>`). Salvou e publicou, vale na hora.
+
+Observação: a política descreve a prática da Luana, mas não substitui a opinião de um advogado. Se o negócio crescer, vale uma revisão profissional.
 
 ---
 

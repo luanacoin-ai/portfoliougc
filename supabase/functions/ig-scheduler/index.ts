@@ -415,6 +415,12 @@ async function faxina(sb: Qualquer) {
   await sb.from("ig_bot_sends").delete().lt("created_at", dias(3));
   await sb.from("ig_scheduled").delete().eq("sent", true).lt("created_at", dias(7));
   await sb.from("ig_send_queue").delete().neq("status", "pendente").lt("created_at", dias(30));
+
+  // Privacidade (LGPD): a política promete apagar os contatos da automação 12 meses
+  // depois da última interação. "updated_at" do contato muda a cada nova interação.
+  const { error: erroLeads } = await sb.from("ig_leads").delete().lt("updated_at", dias(365));
+  if (erroLeads) console.error("não consegui apagar contatos antigos", erroLeads.message);
+  await sb.from("ig_deliveries").delete().lt("ts", dias(365));
 }
 
 Deno.serve(async (req: Request) => {
