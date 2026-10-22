@@ -1,25 +1,36 @@
 // ============================================================================
-// FUNÇÃO "ig-insights" (as métricas da aba Instagram)
+// FUNÇÃO "ig-insights" (a conexão com o Instagram e o token)
 // ============================================================================
-// O que ela faz: puxa da API do Instagram o número de seguidores, os novos
-// seguidores por dia e o alcance por dia (últimos 15 dias), e devolve tudo
-// pronto pro painel desenhar os gráficos.
+// Duas coisas, conforme o pedido que o painel manda ("acao"):
+//
+//   sem nada / "conexao"  Confere a ligação: qual conta está ligada, quantos
+//                         seguidores ela tem e se o Instagram está mesmo
+//                         avisando o sistema sobre comentários, mensagens e
+//                         toques nos botões (a "assinatura de webhooks").
+//
+//   "renovar_token"       Pede ao Instagram pra estender a validade do token
+//                         (que dura cerca de 60 dias) e anota a data nova na
+//                         tabela ig_token_status. É o botão "Renovar agora" da
+//                         contagem regressiva do painel. O robô semanal
+//                         (ig-token-refresh) faz a mesma coisa sozinho.
+//
+// Os gráficos de alcance, novos seguidores e os melhores posts agora ficam na
+// função ig-analise.
 //
 // Quem chama: o painel, com você logada. Ela confere se quem chamou é mesmo
-// você (e-mail luanacoin@gmail.com) antes de devolver qualquer coisa. Pode
-// deixar a "Verify JWT" desta função ligada (o padrão).
+// você (e-mail luanacoin@gmail.com). Pode deixar a "Verify JWT" ligada.
 //
 // Se o Instagram ainda não estiver ligado (faltam os segredos), ela NÃO dá erro:
 // responde { conectado: false } e o painel mostra um aviso simpático.
 //
 // Segredos (nos segredos da função, nunca aqui): IG_ACCESS_TOKEN,
-// GRAPH_API_VERSION (opcional).
+// GRAPH_API_VERSION (opcional). A chave de serviço do banco o Supabase já
+// coloca sozinho.
 // ============================================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const EMAIL_PERMITIDO = "luanacoin@gmail.com";
-const DIAS = 15;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -50,15 +61,47 @@ async function lerGraph(caminho: string): Promise<{ ok: boolean; dados: Qualquer
   }
 }
 
-// O Instagram marca o fim de cada dia por volta das 7h/8h UTC do dia seguinte.
-// Tirando 12 horas, cai certinho dentro do dia que a métrica mede.
-function diaDaMetrica(fim: string): string {
-  return new Date(new Date(fim).getTime() - 12 * 3600 * 1000).toISOString().slice(0, 10);
-}
+// Renova o token e anota a validade nova. O endereço de renovação NÃO leva a
+// versão no caminho, e o token precisa ter pelo menos 24 horas de vida.
+async function renovarToken() {
+  const servico = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+    auth: { persistSession: false },
+  });
+  const anotar = async (campos: Record<string, unknown>) => {
+    const { error } = await servico.from("ig_token_status").upsert(
+      { id: "main", ...campos, updated_at: new Date().toISOString() },
+      { onConflict: "id" },
+    );
+    return !error;
+  };
 
-function serieDia(dados: Qualquer): Array<{ dia: string; valor: number }> {
-  const valores = dados?.data?.[0]?.values ?? [];
-  return valores.map((v: Qualquer) => ({ dia: diaDaMetrica(v.end_time), valor: Number(v.value) || 0 }));
+  const token = Deno.env.get("IG_ACCESS_TOKEN") ?? "";
+  try {
+    const r = await fetch(
+      "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=" + encodeURIComponent(token),
+    );
+    const dados = await r.json().catch(() => ({}));
+    if (!r.ok || dados?.error) {
+      const mensagem = String(dados?.error?.message ?? ("Erro HTTP " + r.status));
+      await anotar({ last_ok: false, last_error: mensagem });
+      return { ok: false, erro: mensagem };
+    }
+    const segundos = Number(dados?.expires_in) || 0;
+    const expiraEm = segundos > 0 ? new Date(Date.now() + segundos * 1000).toISOString() : null;
+    // Normalmente o Instagram devolve o MESMO token, só com a validade estendida.
+    const aviso = dados?.access_token && dados.access_token !== token
+      ? "O Instagram devolveu um token diferente do que está nos segredos. Gere um token novo no Meta e atualize o segredo IG_ACCESS_TOKEN."
+      : null;
+    const guardou = await anotar({
+      expires_at: expiraEm,
+      last_ok: aviso === null,
+      last_error: aviso,
+      last_refreshed_at: new Date().toISOString(),
+    });
+    return { ok: true, expira_em: expiraEm, aviso, guardou_no_banco: guardou };
+  } catch (erro) {
+    return { ok: false, erro: erro instanceof Error ? erro.message : "erro desconhecido" };
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -81,6 +124,11 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  let corpo: Qualquer = {};
+  try { corpo = await req.json(); } catch { corpo = {}; }
+
+  if (corpo?.acao === "renovar_token") return resposta(await renovarToken());
+
   const perfil = await lerGraph("/me?fields=username,name,followers_count,follows_count,media_count");
   if (!perfil.ok) {
     return resposta({ conectado: false, motivo: "O Instagram recusou a conexão: " + perfil.erro });
@@ -98,27 +146,12 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  const agora = Math.floor(Date.now() / 1000);
-  const desde = agora - DIAS * 24 * 3600;
-  const avisos: string[] = [];
-
-  const alcance = await lerGraph("/me/insights?metric=reach&period=day&since=" + desde + "&until=" + agora);
-  if (!alcance.ok) avisos.push("Alcance: " + alcance.erro);
-
-  const novos = await lerGraph("/me/insights?metric=follower_count&period=day&since=" + desde + "&until=" + agora);
-  if (!novos.ok) {
-    avisos.push("Novos seguidores: " + novos.erro + " (o Instagram só mostra isso pra contas com mais de 100 seguidores)");
-  }
-
   return resposta({
     conectado: true,
     username: perfil.dados.username ?? null,
     seguidores: perfil.dados.followers_count ?? null,
     seguindo: perfil.dados.follows_count ?? null,
     midias: perfil.dados.media_count ?? null,
-    novos_seguidores: novos.ok ? serieDia(novos.dados) : [],
-    alcance: alcance.ok ? serieDia(alcance.dados) : [],
     webhooks: { consultou: assinatura.ok, campos: camposAssinados, erro: assinatura.ok ? null : assinatura.erro },
-    avisos,
   });
 });

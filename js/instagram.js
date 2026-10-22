@@ -1,14 +1,22 @@
 /* ============================================================================
-   ABA: INSTAGRAM (automação de DM, estilo ManyChat)
-   Três sub-abas:
-     Automações: a lista, e o editor com a prévia ao vivo (celular).
-     Contatos: quem entrou nas automações, baixar a lista e apagar uma pessoa.
-     Métricas: seguidores, novos seguidores, alcance e leads.
+   ABA: INSTAGRAM (automação de DM, estilo ManyChat, e análises do perfil)
+   Sete sub-abas (as mesmas do modelo que você mandou):
+     Visão geral: o token com contagem regressiva, a saúde da conexão, os
+       números do dia e os últimos envios.                  (instagram-analises.js)
+     Automações: a lista (com a foto do post de cada uma), e o editor com a
+       prévia ao vivo (celular).                            (este arquivo)
+     Leads: a planilha de todo mundo que entrou nas automações, com busca,
+       filtros, etiquetas, CSV e a lixeira de pedido de exclusão. (este arquivo)
+     Análises: seguidores, novos seguidores, alcance por dia, interações e
+       melhores posts, com filtro de dias.                  (instagram-analises.js)
+     Marcas: as marcas que chegaram pelo Instagram.         (instagram-analises.js)
+     Propostas: o controle das propostas de parceria.       (instagram-analises.js)
+     Sorteio: sorteia ganhadores entre quem comentou num post. (instagram-analises.js)
 
    Como funciona por trás: quando alguém comenta a palavra escolhida num post,
    o Instagram avisa a função "instagram-webhook" no Supabase, que manda a DM.
-   Este arquivo só cria e edita as automações (tabela ig_automations) e mostra
-   os resultados. Passo a passo de configuração: INSTAGRAM-LEIA-ME.md.
+   Este arquivo cria e edita as automações (tabela ig_automations) e mostra os
+   resultados. Passo a passo de configuração: INSTAGRAM-LEIA-ME.md.
 
    Este arquivo é carregado DEPOIS do script principal, então pode usar tudo
    que já existe lá: banco, buscarSeguro, escapa, el, icone, faixaAviso,
@@ -24,7 +32,7 @@ var IG_LIMITE_MSG = 900;             // mensagem sem botão (o teto real são 10
 var IG_MAX_BOTOES = 3;               // botões anexados na mesma mensagem: no máximo 3
 var IG_MAX_ARQUIVO_BYTES = 25 * 1024 * 1024;
 
-var igSubabaAtual = "automacoes";
+var igSubabaAtual = "visao";
 var igPostsCache = null;             // { conectado, posts, motivo }, vindo da função ig-media
 var igAssets = [];                   // a biblioteca de arquivos (tabela ig_assets)
 var igEd = null;                     // o estado do editor que está aberto
@@ -35,13 +43,23 @@ var igEdSujo = false;                // o editor tem alterações não salvas?
 ============================================================================ */
 async function abaInstagram(painel){
   var subabas = [
+    { chave: "visao", rotulo: "Visão geral" },
     { chave: "automacoes", rotulo: "Automações" },
-    { chave: "contatos", rotulo: "Contatos" },
-    { chave: "metricas", rotulo: "Métricas" }
+    { chave: "leads", rotulo: "Leads" },
+    { chave: "analises", rotulo: "Análises" },
+    { chave: "marcas", rotulo: "Marcas" },
+    { chave: "propostas", rotulo: "Propostas" },
+    { chave: "sorteio", rotulo: "Sorteio" }
   ];
-  painel.innerHTML = '<div class="subtabs">' + subabas.map(function(s){
-    return '<button type="button" class="subtab-btn ' + (igSubabaAtual === s.chave ? "ativo" : "") + '" data-ig-sub="' + s.chave + '">' + s.rotulo + '</button>';
-  }).join("") + '</div><div id="igConteudo"></div>';
+  painel.innerHTML =
+    '<div class="ig-topo">' +
+      '<div class="ig-topo-titulo"><strong>Automação do Instagram</strong>' +
+        '<span>Responde comentários por DM, guarda os leads e mostra como o seu perfil está indo.</span></div>' +
+      '<div class="ig-pills" id="igPills"></div>' +
+    '</div>' +
+    '<div class="subtabs">' + subabas.map(function(sub){
+      return '<button type="button" class="subtab-btn ' + (igSubabaAtual === sub.chave ? "ativo" : "") + '" data-ig-sub="' + sub.chave + '">' + sub.rotulo + '</button>';
+    }).join("") + '</div><div id="igConteudo"></div>';
 
   painel.querySelectorAll("[data-ig-sub]").forEach(function(botao){
     botao.addEventListener("click", function(){
@@ -50,10 +68,18 @@ async function abaInstagram(painel){
     });
   });
 
+  // O topo (token e entregas) é preenchido em segundo plano, sem travar a aba.
+  if(typeof igCarregarPills === "function") igCarregarPills();
+
   var area = document.getElementById("igConteudo");
-  if(igSubabaAtual === "metricas") await igRenderMetricas(area);
-  else if(igSubabaAtual === "contatos") await igRenderContatos(area);
-  else await igRenderAutomacoes(area);
+  var telas = {
+    visao: "igRenderVisaoGeral", analises: "igRenderAnalises", marcas: "igRenderMarcas",
+    propostas: "igRenderPropostas", sorteio: "igRenderSorteio"
+  };
+  if(igSubabaAtual === "leads") await igRenderInteracoes(area);
+  else if(igSubabaAtual === "automacoes") await igRenderAutomacoes(area);
+  else if(telas[igSubabaAtual] && typeof window[telas[igSubabaAtual]] === "function") await window[telas[igSubabaAtual]](area);
+  else area.innerHTML = faixaAviso("Não consegui carregar esta tela. Recarregue a página com Ctrl+F5.", "erro");
 }
 
 /* ---------- pequenos ajudantes ---------- */
@@ -84,7 +110,7 @@ function igTextoFuncaoIndisponivel(nomeFuncao, mensagem){
 }
 
 /* ============================================================================
-   SUB-ABA: MÉTRICAS
+   GRÁFICOS E PEQUENOS AJUDANTES (usados pelas várias sub-abas)
 ============================================================================ */
 function igGraficoBarras(pontos, classeCor){
   if(!pontos || pontos.length === 0){
@@ -92,12 +118,14 @@ function igGraficoBarras(pontos, classeCor){
   }
   var maior = 1;
   pontos.forEach(function(p){ if(p.valor > maior) maior = p.valor; });
-  var html = '<div class="grafico-barras">';
-  pontos.forEach(function(p){
+  // Com muitos dias, mostra a data só de vez em quando (senão as datas se embolam).
+  var passo = pontos.length > 16 ? Math.ceil(pontos.length / 10) : 1;
+  var html = '<div class="grafico-barras' + (pontos.length > 40 ? " fino" : "") + '">';
+  pontos.forEach(function(p, i){
     var altura = Math.round((p.valor / maior) * 90) + 4;
-    html += '<div class="barra-dia"><span class="dica">' + igDataCurta(p.dia) + ": " + p.valor + '</span>' +
+    html += '<div class="barra-dia"><span class="dica">' + igDataCurta(p.dia) + ": " + igFormatarNumero(p.valor) + '</span>' +
       '<div class="barra ' + (classeCor || "") + '" style="height:' + altura + 'px"></div>' +
-      '<div class="rotulo-dia">' + igDataCurta(p.dia) + '</div></div>';
+      '<div class="rotulo-dia">' + (i % passo === 0 ? igDataCurta(p.dia) : "&nbsp;") + '</div></div>';
   });
   return html + '</div>';
 }
@@ -115,88 +143,6 @@ function igUltimosDiasISO(quantidade){
     dias.push(d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2));
   }
   return dias;
-}
-
-async function igRenderMetricas(area){
-  area.innerHTML = '<p class="vazio-explicacao">Carregando métricas...</p>';
-
-  var desde15 = new Date(Date.now() - 15 * 86400000).toISOString();
-  var desde7 = new Date(Date.now() - 7 * 86400000).toISOString();
-
-  // Tudo ao mesmo tempo; nenhuma falha derruba as outras.
-  var resultados = await Promise.all([
-    igChamarFuncao("ig-insights"),
-    buscarSeguro(banco.from("ig_leads").select("created_at").gte("created_at", desde15).limit(1000)),
-    igContar(banco.from("ig_leads").select("ig_user_id", { count: "exact", head: true })),
-    igContar(banco.from("ig_deliveries").select("id", { count: "exact", head: true }).eq("status", "ok").gte("ts", desde7)),
-    buscarSeguro(banco.from("ig_token_status").select("*").eq("id", "main").limit(1))
-  ]);
-  var insights = resultados[0];
-  var leadsRecentes = resultados[1];
-  var totalLeads = resultados[2];
-  var dmsSemana = resultados[3];
-  var token = resultados[4];
-
-  var html = "";
-
-  // Aviso do token (vence em ~60 dias; a renovação roda sozinha toda semana).
-  var statusToken = token.ok && token.dados.length > 0 ? token.dados[0] : null;
-  if(statusToken){
-    if(statusToken.last_ok === false){
-      html += faixaAviso("A última renovação do token do Instagram falhou: " + (statusToken.last_error || "motivo desconhecido") + ". Se o token vencer, as automações param.", "erro");
-    } else if(statusToken.expires_at){
-      var diasRestantes = Math.floor((new Date(statusToken.expires_at).getTime() - Date.now()) / 86400000);
-      if(diasRestantes <= 10) html += faixaAviso("O token do Instagram vence em " + Math.max(diasRestantes, 0) + " dia(s). Confira se a renovação automática está rodando (INSTAGRAM-LEIA-ME.md).", "erro");
-    }
-  }
-
-  var leadsPorDia = [];
-  if(leadsRecentes.ok){
-    var dias = igUltimosDiasISO(15);
-    var contagem = {};
-    leadsRecentes.dados.forEach(function(l){
-      var d = new Date(l.created_at);
-      var chave = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
-      contagem[chave] = (contagem[chave] || 0) + 1;
-    });
-    leadsPorDia = dias.map(function(d){ return { dia: d, valor: contagem[d] || 0 }; });
-  }
-
-  var ig = insights.ok ? insights.dados : null;
-  var conectado = !!(ig && ig.conectado);
-
-  html += '<div class="grade-cartoes">' +
-    igCartaoMetrica(conectado ? igFormatarNumero(ig.seguidores) : "-", "seguidores") +
-    igCartaoMetrica(conectado ? "+" + igFormatarNumero(igSoma(ig.novos_seguidores)) : "-", "novos seguidores (15 dias)") +
-    igCartaoMetrica(conectado ? igFormatarNumero(igSoma(ig.alcance)) : "-", "alcance (15 dias)") +
-    igCartaoMetrica(totalLeads === null ? "-" : igFormatarNumero(totalLeads), "leads captados") +
-    igCartaoMetrica(dmsSemana === null ? "-" : igFormatarNumero(dmsSemana), "DMs enviadas (7 dias)") +
-  '</div>';
-
-  if(!conectado){
-    var motivo = !insights.ok
-      ? igTextoFuncaoIndisponivel("ig-insights", insights.mensagem)
-      : (ig && ig.motivo ? ig.motivo : "");
-    html += '<div class="painel-branco"><p class="painel-titulo">Conecte seu Instagram pra ver as métricas</p>' +
-      '<p style="font-size:.82rem; color:#6b6353; margin-bottom:8px;">Os números de seguidores e alcance vêm direto do Instagram. Quando você terminar a configuração (INSTAGRAM-LEIA-ME.md), eles aparecem aqui.</p>' +
-      (motivo ? '<p style="font-size:.76rem; color:#8a8272;">' + escapa(motivo) + '</p>' : '') +
-    '</div>';
-  } else {
-    html += igCartaoConexao(ig);
-    html += '<div class="ig-metricas-grade">' +
-      '<div class="painel-branco"><p class="painel-titulo">Novos seguidores por dia</p>' + igGraficoBarras(ig.novos_seguidores, "") + '</div>' +
-      '<div class="painel-branco"><p class="painel-titulo">Alcance por dia</p>' + igGraficoBarras(ig.alcance, "rosa") + '</div>' +
-    '</div>';
-    if(ig.avisos && ig.avisos.length > 0){
-      html += '<p style="font-size:.74rem; color:#8a8272; margin-bottom:16px;">' + ig.avisos.map(escapa).join("<br>") + '</p>';
-    }
-  }
-
-  html += '<div class="painel-branco"><p class="painel-titulo">Leads captados por dia</p>' +
-    (leadsRecentes.ok ? igGraficoBarras(leadsPorDia, "lima") : faixaAviso("Não consegui ler os leads. Rodou o arquivo instagram.sql no Supabase?", "erro")) +
-  '</div>';
-
-  area.innerHTML = html;
 }
 
 // Mostra se o Instagram está mesmo avisando o sistema sobre comentários e mensagens.
@@ -260,94 +206,306 @@ async function igChamarFuncao(nome, corpo){
 }
 
 /* ============================================================================
-   SUB-ABA: CONTATOS (quem entrou nas automações)
-   Aqui você vê os contatos, baixa a lista (pedido de acesso ou portabilidade)
-   e apaga os dados de uma pessoa (pedido de exclusão, LGPD). A política de
-   privacidade promete apagar tudo em até 15 dias depois do pedido, e os
-   contatos sem interação há 12 meses são apagados sozinhos pelo robô.
+   SUB-ABA: LEADS (a planilha de todo mundo que entrou nas automações)
+   Cada linha é uma pessoa. Dá pra buscar, filtrar, ordenar clicando no título
+   da coluna, editar as etiquetas, baixar a lista (pedido de acesso ou
+   portabilidade) e apagar os dados de uma pessoa (pedido de exclusão, LGPD).
+   A política de privacidade promete apagar tudo em até 15 dias depois do
+   pedido, e os contatos sem interação há 12 meses são apagados sozinhos.
 ============================================================================ */
-var igTextoBuscaContatos = "";
+var igFiltroInter = { busca: "", origem: "", automacao: "", etiqueta: "", soComContato: false };
+var igOrdemInter = { chave: "ultima", asc: false };
+var IG_PAGINA_INTER = 100;           // quantas linhas aparecem por vez
+var igLinhasInter = IG_PAGINA_INTER;
 
 function igRotuloOrigem(origem){
   return { comment: "Comentário", dm: "Mensagem direta", story_reply: "Resposta a story" }[origem] || (origem || "-");
 }
 
-async function igRenderContatos(area){
-  area.innerHTML = '<p class="vazio-explicacao">Carregando contatos...</p>';
-  var res = await buscarSeguro(banco.from("ig_leads").select("*").order("updated_at", { ascending: false }).limit(1000));
-  if(!res.ok){
-    area.innerHTML = faixaAviso("Não consegui carregar os contatos. Confira se você rodou o arquivo instagram.sql no Supabase. Detalhe: " + (res.mensagem || ""), "erro");
+// "há 3 dias", "há 2 horas": pra bater o olho e saber há quanto tempo foi.
+function igHa(textoISO){
+  if(!textoISO) return "";
+  var minutos = Math.floor((Date.now() - new Date(textoISO).getTime()) / 60000);
+  if(minutos < 1) return "agora";
+  if(minutos < 60) return "há " + minutos + " min";
+  var horas = Math.floor(minutos / 60);
+  if(horas < 24) return "há " + horas + (horas === 1 ? " hora" : " horas");
+  var dias = Math.floor(horas / 24);
+  if(dias < 60) return "há " + dias + (dias === 1 ? " dia" : " dias");
+  var meses = Math.floor(dias / 30);
+  return "há " + meses + (meses === 1 ? " mês" : " meses");
+}
+
+// O Supabase devolve no máximo 1000 linhas por pedido, então busca de 1000 em 1000.
+async function igCarregarTodasAsLinhas(fabricaDeConsulta, maximoDePaginas){
+  var tudo = [];
+  for(var p = 0; p < maximoDePaginas; p++){
+    var r = await buscarSeguro(fabricaDeConsulta().range(p * 1000, p * 1000 + 999));
+    if(!r.ok) return { ok: false, mensagem: r.mensagem, dados: tudo };
+    tudo = tudo.concat(r.dados);
+    if(r.dados.length < 1000) return { ok: true, dados: tudo, truncado: false };
+  }
+  return { ok: true, dados: tudo, truncado: true };
+}
+
+// As colunas da planilha. "valor" é o que vale na hora de ordenar.
+var IG_COLUNAS_INTER = [
+  { chave: "pessoa", rotulo: "Pessoa", valor: function(p){ return (p.username || "").toLowerCase() || p.ig_user_id; } },
+  { chave: "origem", rotulo: "Origem", valor: function(p){ return igRotuloOrigem(p.last_source); } },
+  { chave: "palavra", rotulo: "Palavra", valor: function(p){ return (p.last_keyword || "").toLowerCase(); } },
+  { chave: "automacao", rotulo: "Automação", valor: function(p){ return (p.automacaoNome || "").toLowerCase(); } },
+  { chave: "contato", rotulo: "Contato", valor: function(p){ return (p.email || p.telefone || "").toLowerCase(); } },
+  { chave: "etiquetas", rotulo: "Etiquetas", valor: function(p){ return (p.tags || []).join(",").toLowerCase(); } },
+  { chave: "interacoes", rotulo: "Interações", numerico: true, valor: function(p){ return p.interacoes; } },
+  { chave: "enviadas", rotulo: "DMs enviadas", numerico: true, valor: function(p){ return p.enviadas; } },
+  { chave: "link", rotulo: "Link enviado", numerico: true, valor: function(p){ return p.link_sent ? 1 : 0; } },
+  { chave: "etapa", rotulo: "Etapa", numerico: true, valor: function(p){ return Number(p.flow_step) || 0; } },
+  { chave: "primeira", rotulo: "Primeira vez", valor: function(p){ return p.created_at || ""; } },
+  { chave: "ultima", rotulo: "Última vez", valor: function(p){ return p.updated_at || ""; } }
+];
+
+async function igRenderInteracoes(area){
+  area.innerHTML = '<p class="vazio-explicacao">Carregando leads...</p>';
+
+  var resultados = await Promise.all([
+    igCarregarTodasAsLinhas(function(){ return banco.from("ig_leads").select("*").order("ig_user_id"); }, 5),
+    igCarregarTodasAsLinhas(function(){ return banco.from("ig_deliveries").select("ig_user_id, status, tipo, motivo, ts").order("id"); }, 10),
+    buscarSeguro(banco.from("ig_automations").select("id, nome, keyword, match_any"))
+  ]);
+  var resLeads = resultados[0], resEntregas = resultados[1], resAutomacoes = resultados[2];
+  if(!resLeads.ok){
+    area.innerHTML = faixaAviso("Não consegui carregar os leads. Confira se você rodou o arquivo instagram.sql no Supabase. Detalhe: " + (resLeads.mensagem || ""), "erro");
     return;
   }
-  var todos = res.dados;
 
+  // Quantas vezes cada pessoa interagiu: cada comentário, toque em botão ou mensagem
+  // que o sistema tratou vira uma linha em ig_deliveries. Não conta o que o robô fez
+  // sozinho depois (envio pela fila, passo com atraso) nem os arquivos.
+  var porPessoa = {};
+  (resEntregas.dados || []).forEach(function(d){
+    if(d.tipo === "asset" || d.motivo === "Enviado pela fila" || d.motivo === "Passo com atraso") return;
+    var a = porPessoa[d.ig_user_id] || (porPessoa[d.ig_user_id] = { interacoes: 0, enviadas: 0 });
+    a.interacoes++;
+    if(d.status === "ok") a.enviadas++;
+  });
+  var nomesAutomacao = {};
+  (resAutomacoes.dados || []).forEach(function(a){ nomesAutomacao[a.id] = a.nome || a.keyword || "Sem nome"; });
+
+  var pessoas = resLeads.dados.map(function(l){
+    var a = porPessoa[l.ig_user_id] || { interacoes: 0, enviadas: 0 };
+    return Object.assign({}, l, { interacoes: a.interacoes, enviadas: a.enviadas, automacaoNome: nomesAutomacao[l.automation_id] || "" });
+  });
+
+  var etiquetasExistentes = [];
+  pessoas.forEach(function(p){ (p.tags || []).forEach(function(t){ if(etiquetasExistentes.indexOf(t) === -1) etiquetasExistentes.push(t); }); });
+  etiquetasExistentes.sort();
+  var automacoesExistentes = [];
+  pessoas.forEach(function(p){ if(p.automacaoNome && automacoesExistentes.indexOf(p.automacaoNome) === -1) automacoesExistentes.push(p.automacaoNome); });
+  automacoesExistentes.sort();
+
+  var f = igFiltroInter;
+  var opcoes = function(lista, atual){
+    return lista.map(function(v){ return '<option value="' + igAttr(v) + '" ' + (atual === v ? "selected" : "") + '>' + escapa(v) + '</option>'; }).join("");
+  };
   area.innerHTML =
     '<div class="barra-acoes">' +
-      '<div class="campo-busca">' + icone("busca") + '<input id="igBuscaContatos" placeholder="Buscar por @ ou e-mail" value="' + igAttr(igTextoBuscaContatos) + '"></div>' +
-      '<button class="btn" id="btnBaixarContatos">' + icone("baixar") + ' Baixar lista (CSV)</button>' +
+      '<div class="campo-busca">' + icone("busca") + '<input id="igBuscaInter" placeholder="Buscar por @, e-mail, telefone ou palavra" value="' + igAttr(f.busca) + '"></div>' +
+      '<select id="igFiltroOrigem" class="btn"><option value="">Todas as origens</option>' +
+        opcoes(["Comentário", "Mensagem direta", "Resposta a story"], f.origem) + '</select>' +
+      '<select id="igFiltroAutomacao" class="btn"><option value="">Todas as automações</option>' + opcoes(automacoesExistentes, f.automacao) + '</select>' +
+      '<select id="igFiltroEtiqueta" class="btn"><option value="">Todas as etiquetas</option>' + opcoes(etiquetasExistentes, f.etiqueta) + '</select>' +
+      '<label class="linha-interruptor" style="font-size:.76rem;"><span class="interruptor"><input type="checkbox" id="igFiltroContato" ' + (f.soComContato ? "checked" : "") + '><span class="trilho"></span></span> Só com e-mail ou telefone</label>' +
+      '<button class="btn" id="btnBaixarInter">' + icone("baixar") + ' Baixar planilha (CSV)</button>' +
     '</div>' +
-    '<p style="font-size:.76rem; color:#8a8272; margin-bottom:12px;">Contatos sem nenhuma interação há 12 meses são apagados sozinhos. Pra atender um pedido de exclusão, use a lixeira da pessoa: ela apaga o contato, o histórico de envios e o e-mail ou telefone que ela tenha mandado.' +
-      (todos.length >= 1000 ? ' Mostrando os 1000 mais recentes.' : '') + '</p>' +
-    '<div class="painel-branco"><div class="tabela-scroll" id="igAreaContatos"></div></div>';
+    '<p id="igResumoInter" style="font-size:.78rem; font-weight:600; margin-bottom:6px;"></p>' +
+    '<p style="font-size:.72rem; color:#8a8272; margin-bottom:12px;">' +
+      'Clique no título de uma coluna pra ordenar. Clique nas etiquetas de uma pessoa pra editar. ' +
+      '"Interações" conta cada comentário, toque em botão ou mensagem da pessoa. ' +
+      'O Instagram só informa o @ (não o nome da pessoa). ' +
+      'Quem fica 12 meses sem interagir é apagado sozinho. Pra atender um pedido de exclusão, use a lixeira da linha: ela apaga o contato, o histórico, a fila e o e-mail ou telefone da pessoa.' +
+      (resLeads.truncado ? ' Mostrando só as primeiras 5000 pessoas.' : '') +
+      (resEntregas.ok === false ? ' Atenção: não consegui ler o histórico de envios, então as contagens podem estar zeradas.' : '') +
+      (resEntregas.truncado ? ' A contagem de interações considera os 10 mil envios mais antigos.' : '') +
+    '</p>' +
+    '<div class="painel-branco ig-planilha"><div class="tabela-scroll" id="igAreaInter"></div></div>';
 
-  var campoBusca = document.getElementById("igBuscaContatos");
-  var desenhar = function(){
-    igTextoBuscaContatos = campoBusca.value;
-    igDesenharTabelaContatos(todos, igTextoBuscaContatos);
+  var redesenhar = function(){ igDesenharPlanilha(pessoas); };
+  var ligar = function(id, evento, aplicar){
+    document.getElementById(id).addEventListener(evento, function(e){ aplicar(e.target); igLinhasInter = IG_PAGINA_INTER; redesenhar(); });
   };
-  campoBusca.addEventListener("input", desenhar);
-  document.getElementById("btnBaixarContatos").addEventListener("click", function(){
-    var filtrados = igFiltrarContatos(todos, igTextoBuscaContatos);
-    if(filtrados.length === 0){ alert("Nenhum contato pra baixar."); return; }
-    baixarCSV("contatos-instagram.csv",
-      ["@", "ID no Instagram", "Como chegou", "Palavra", "E-mail", "Telefone", "Etiquetas", "Passo da conversa", "Primeira vez", "Última interação"],
-      filtrados.map(function(l){
-        return [l.username ? "@" + l.username : "", l.ig_user_id, igRotuloOrigem(l.last_source), l.last_keyword || "", l.email || "", l.telefone || "", (l.tags || []).join(", "), l.flow_step || "", l.created_at || "", l.updated_at || ""];
+  ligar("igBuscaInter", "input", function(el){ f.busca = el.value; });
+  ligar("igFiltroOrigem", "change", function(el){ f.origem = el.value; });
+  ligar("igFiltroAutomacao", "change", function(el){ f.automacao = el.value; });
+  ligar("igFiltroEtiqueta", "change", function(el){ f.etiqueta = el.value; });
+  ligar("igFiltroContato", "change", function(el){ f.soComContato = el.checked; });
+
+  document.getElementById("btnBaixarInter").addEventListener("click", function(){
+    var lista = igOrdenarPessoas(igFiltrarPessoas(pessoas));
+    if(lista.length === 0){ alert("Nenhuma pessoa pra baixar."); return; }
+    baixarCSV("leads-instagram.csv",
+      ["@", "ID no Instagram", "Origem", "Palavra", "Automação", "E-mail", "Telefone", "Etiquetas", "Interações", "DMs enviadas", "Link enviado", "Etapa da conversa", "Primeira vez", "Última vez"],
+      lista.map(function(p){
+        return [p.username ? "@" + p.username : "", p.ig_user_id, igRotuloOrigem(p.last_source), p.last_keyword || "", p.automacaoNome || "",
+          p.email || "", p.telefone || "", (p.tags || []).join(", "), p.interacoes, p.enviadas, p.link_sent ? "Sim" : "Não",
+          p.flow_step ? "Mensagem " + p.flow_step : "", p.created_at || "", p.updated_at || ""];
       }));
   });
-  desenhar();
+  redesenhar();
 }
 
-function igFiltrarContatos(lista, texto){
-  var t = String(texto || "").trim().toLowerCase().replace(/^@/, "");
-  if(!t) return lista;
-  return lista.filter(function(l){
-    return (String(l.username || "") + " " + String(l.email || "") + " " + String(l.ig_user_id || "")).toLowerCase().indexOf(t) !== -1;
+function igFiltrarPessoas(lista){
+  var f = igFiltroInter;
+  var t = String(f.busca || "").trim().toLowerCase().replace(/^@/, "");
+  return lista.filter(function(p){
+    if(f.origem && igRotuloOrigem(p.last_source) !== f.origem) return false;
+    if(f.automacao && p.automacaoNome !== f.automacao) return false;
+    if(f.etiqueta && (p.tags || []).indexOf(f.etiqueta) === -1) return false;
+    if(f.soComContato && !p.email && !p.telefone) return false;
+    if(!t) return true;
+    var alvo = [p.username, p.email, p.telefone, p.ig_user_id, p.last_keyword].join(" ").toLowerCase();
+    return alvo.indexOf(t) !== -1;
   });
 }
 
-function igDesenharTabelaContatos(todos, texto){
-  var area = document.getElementById("igAreaContatos");
+function igOrdenarPessoas(lista){
+  var coluna = IG_COLUNAS_INTER.filter(function(c){ return c.chave === igOrdemInter.chave; })[0] || IG_COLUNAS_INTER[IG_COLUNAS_INTER.length - 1];
+  var sentido = igOrdemInter.asc ? 1 : -1;
+  return lista.slice().sort(function(a, b){
+    var va = coluna.valor(a), vb = coluna.valor(b);
+    if(va === vb) return 0;
+    if(coluna.numerico) return (va - vb) * sentido;
+    return (va > vb ? 1 : -1) * sentido;
+  });
+}
+
+function igDesenharPlanilha(pessoas){
+  var area = document.getElementById("igAreaInter");
+  var resumo = document.getElementById("igResumoInter");
   if(!area) return;
-  if(todos.length === 0){
-    area.innerHTML = '<p class="vazio-explicacao">Nenhum contato ainda. Quem comentar a palavra de uma automação ligada aparece aqui.</p>';
+
+  if(pessoas.length === 0){
+    resumo.textContent = "";
+    area.innerHTML = '<p class="vazio-explicacao">Nenhum lead ainda. Quem comentar a palavra de uma automação ligada aparece aqui, com origem, palavra, contato e histórico de interações.</p>';
     return;
   }
-  var lista = igFiltrarContatos(todos, texto);
-  if(lista.length === 0){
-    area.innerHTML = '<p class="vazio-explicacao">Nenhum contato encontrado com essa busca.</p>';
+  var filtradas = igOrdenarPessoas(igFiltrarPessoas(pessoas));
+  var totalInteracoes = filtradas.reduce(function(soma, p){ return soma + p.interacoes; }, 0);
+  resumo.textContent = filtradas.length + (filtradas.length === 1 ? " lead" : " leads") +
+    (filtradas.length !== pessoas.length ? " (de " + pessoas.length + ")" : "") + " · " + totalInteracoes + (totalInteracoes === 1 ? " interação" : " interações");
+  if(filtradas.length === 0){
+    area.innerHTML = '<p class="vazio-explicacao">Nenhum lead encontrado com esses filtros.</p>';
     return;
   }
-  var tabela = el('<table><thead><tr><th>Pessoa</th><th>Como chegou</th><th>Palavra</th><th>E-mail / telefone</th><th>Última interação</th><th></th></tr></thead><tbody></tbody></table>');
+
+  var cabecalho = IG_COLUNAS_INTER.map(function(c){
+    var ativa = igOrdemInter.chave === c.chave;
+    return '<th class="ordenavel ' + (ativa ? "ativa" : "") + '" data-ordem="' + c.chave + '" scope="col" title="Ordenar por ' + igAttr(c.rotulo) + '">' + escapa(c.rotulo) +
+      '<span class="seta">' + (ativa ? (igOrdemInter.asc ? "▲" : "▼") : "↕") + '</span></th>';
+  }).join("");
+  var tabela = el('<table><thead><tr>' + cabecalho + '<th scope="col"></th></tr></thead><tbody></tbody></table>');
+  tabela.querySelectorAll("th[data-ordem]").forEach(function(th){
+    th.addEventListener("click", function(){
+      var chave = th.getAttribute("data-ordem");
+      var colunaNumerica = IG_COLUNAS_INTER.filter(function(c){ return c.chave === chave; })[0].numerico;
+      if(igOrdemInter.chave === chave) igOrdemInter.asc = !igOrdemInter.asc;
+      else { igOrdemInter.chave = chave; igOrdemInter.asc = !(colunaNumerica || chave === "primeira" || chave === "ultima"); }
+      igDesenharPlanilha(pessoas);
+    });
+  });
+
   var corpo = tabela.querySelector("tbody");
-  lista.forEach(function(l){
-    var arroba = l.username ? "@" + l.username : "(sem @)";
-    var nomeLink = l.username
-      ? '<a href="https://instagram.com/' + igAttr(l.username) + '" target="_blank" rel="noopener"><strong>' + escapa(arroba) + '</strong></a>'
+  filtradas.slice(0, igLinhasInter).forEach(function(p){
+    var arroba = p.username ? "@" + p.username : "(sem @)";
+    var pessoa = p.username
+      ? '<a href="https://instagram.com/' + igAttr(p.username) + '" target="_blank" rel="noopener"><strong>' + escapa(arroba) + '</strong></a>'
       : '<strong>' + escapa(arroba) + '</strong>';
-    var contato = [l.email, l.telefone].filter(Boolean).map(escapa).join("<br>") || "-";
-    var tags = (l.tags || []).length ? ' <span class="pilula" style="background:#efe9db;">' + escapa(l.tags.join(", ")) + '</span>' : "";
-    var tr = el('<tr><td>' + nomeLink + tags + '<div style="font-size:.66rem; color:#8a8272;">ID ' + escapa(l.ig_user_id) + '</div></td>' +
-      '<td>' + escapa(igRotuloOrigem(l.last_source)) + '</td>' +
-      '<td>' + escapa(l.last_keyword || "-") + '</td>' +
+    var contato = [p.email, p.telefone].filter(Boolean).map(escapa).join("<br>") || '<span style="color:#b7ae98;">-</span>';
+    var etiquetas = (p.tags || []).map(function(t){ return '<span class="pilula" style="background:#efe9db; margin:1px 3px 1px 0;">' + escapa(t) + '</span>'; }).join("") ||
+      '<span style="color:#b7ae98;">+ etiqueta</span>';
+
+    var tr = el('<tr>' +
+      '<td>' + pessoa + '<div class="ig-id">ID ' + escapa(p.ig_user_id) + '</div></td>' +
+      '<td>' + escapa(igRotuloOrigem(p.last_source)) + '</td>' +
+      '<td>' + escapa(p.last_keyword || "-") + '</td>' +
+      '<td>' + escapa(p.automacaoNome || "-") + '</td>' +
       '<td>' + contato + '</td>' +
-      '<td style="white-space:nowrap;">' + escapa(formatarDataHora(l.updated_at)) + '</td>' +
-      '<td><button class="btn btn-icone btn-perigo" title="Apagar todos os dados desta pessoa">' + icone("lixeira") + '</button></td></tr>');
-    tr.querySelector("button").addEventListener("click", function(){ igConfirmarApagarPessoa(l); });
+      '<td><button type="button" class="ig-celula-etiquetas" title="Editar etiquetas">' + etiquetas + '</button></td>' +
+      '<td class="ig-num-cel"><strong>' + p.interacoes + '</strong></td>' +
+      '<td class="ig-num-cel">' + p.enviadas + '</td>' +
+      '<td>' + (p.link_sent ? "Sim" : "Não") + '</td>' +
+      '<td>' + (p.flow_step ? "Mensagem " + escapa(p.flow_step) : "-") + '</td>' +
+      '<td style="white-space:nowrap;">' + escapa(formatarDataHora(p.created_at)) + '</td>' +
+      '<td style="white-space:nowrap;">' + escapa(formatarDataHora(p.updated_at)) + '<div class="ig-id">' + escapa(igHa(p.updated_at)) + '</div></td>' +
+      '<td><button type="button" class="btn btn-icone btn-perigo" title="Apagar todos os dados desta pessoa">' + icone("lixeira") + '</button></td>' +
+    '</tr>');
+    tr.querySelector(".ig-celula-etiquetas").addEventListener("click", function(){ igEditarEtiquetas(p, pessoas); });
+    tr.querySelector(".btn-perigo").addEventListener("click", function(){ igConfirmarApagarPessoa(p); });
     corpo.appendChild(tr);
   });
+
   area.innerHTML = "";
   area.appendChild(tabela);
+  if(filtradas.length > igLinhasInter){
+    var mais = el('<div style="text-align:center; padding:12px;"><button type="button" class="btn">Mostrar mais ' + Math.min(IG_PAGINA_INTER, filtradas.length - igLinhasInter) + ' (de ' + (filtradas.length - igLinhasInter) + ' restantes)</button></div>');
+    mais.querySelector("button").addEventListener("click", function(){ igLinhasInter += IG_PAGINA_INTER; igDesenharPlanilha(pessoas); });
+    area.appendChild(mais);
+  }
+}
+
+/* ---------- etiquetas de uma pessoa ---------- */
+function igEditarEtiquetas(pessoa, todas){
+  var arroba = pessoa.username ? "@" + pessoa.username : "esta pessoa";
+  var existentes = [];
+  todas.forEach(function(p){ (p.tags || []).forEach(function(t){ if(existentes.indexOf(t) === -1) existentes.push(t); }); });
+  existentes.sort();
+
+  abrirModal(
+    '<p class="form-titulo">Etiquetas de ' + escapa(arroba) + '</p>' +
+    '<div class="campo"><label for="igCampoEtiquetas">Etiquetas (separe por vírgula)</label>' +
+      '<input id="igCampoEtiquetas" placeholder="Ex: quente, cliente, pediu orçamento" value="' + igAttr((pessoa.tags || []).join(", ")) + '"></div>' +
+    (existentes.length ? '<p class="ig-ajuda" style="margin:-6px 0 6px;">Já usadas (clique pra adicionar):</p><div id="igSugestoesEtiquetas" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;"></div>' : '') +
+    '<div class="form-acoes"><button type="button" class="btn" id="btnCancelarEtiquetas">Cancelar</button><button type="button" class="btn btn-principal" id="btnSalvarEtiquetas">Salvar</button></div>' +
+    '<p class="aviso erro oculto" id="igErroEtiquetas" style="margin-top:12px;"></p>'
+  );
+  var campo = document.getElementById("igCampoEtiquetas");
+  var lerCampo = function(){
+    var vistas = {}, lista = [];
+    campo.value.split(",").forEach(function(t){
+      var limpa = t.trim();
+      if(limpa && !vistas[limpa.toLowerCase()]){ vistas[limpa.toLowerCase()] = true; lista.push(limpa.slice(0, 30)); }
+    });
+    return lista;
+  };
+  var caixaSugestoes = document.getElementById("igSugestoesEtiquetas");
+  if(caixaSugestoes) existentes.forEach(function(t){
+    var b = el('<button type="button" class="chip">' + escapa(t) + '</button>');
+    b.addEventListener("click", function(){
+      var atuais = lerCampo();
+      if(atuais.map(function(x){ return x.toLowerCase(); }).indexOf(t.toLowerCase()) === -1) atuais.push(t);
+      campo.value = atuais.join(", ");
+    });
+    caixaSugestoes.appendChild(b);
+  });
+
+  document.getElementById("btnCancelarEtiquetas").addEventListener("click", fecharModal);
+  document.getElementById("btnSalvarEtiquetas").addEventListener("click", async function(e){
+    var botao = e.currentTarget;
+    var areaErro = document.getElementById("igErroEtiquetas");
+    var novas = lerCampo();
+    botao.disabled = true;
+    areaErro.classList.add("oculto");
+    // ".select()" devolve a linha alterada: se vier vazio, o banco não deixou editar.
+    var r = await buscarSeguro(banco.from("ig_leads").update({ tags: novas }).eq("ig_user_id", pessoa.ig_user_id).select("ig_user_id"));
+    if(!r.ok || r.dados.length === 0){
+      areaErro.textContent = "Não consegui salvar as etiquetas" + (r.mensagem ? ": " + r.mensagem : "") + ". Rode o arquivo instagram.sql de novo no Supabase (ele libera a edição) e tente outra vez.";
+      areaErro.classList.remove("oculto");
+      botao.disabled = false;
+      return;
+    }
+    pessoa.tags = novas;
+    fecharModal();
+    igDesenharPlanilha(todas);
+  });
 }
 
 function igConfirmarApagarPessoa(lead){
@@ -415,7 +573,7 @@ async function igRenderAutomacoes(area){
     html += '<div class="vazio-explicacao">Você ainda não criou nenhuma automação. Clique em "Nova automação" para criar a primeira. O editor mostra, ao lado, uma prévia de como a DM chega no celular da pessoa.</div>';
   } else {
     html += '<div class="painel-branco"><div class="tabela-scroll"><table><thead><tr>' +
-      '<th>Automação</th><th>Palavras</th><th>Posts</th><th>Ativa</th><th></th>' +
+      '<th>Automação</th><th>Palavras</th><th>Ativa</th><th></th>' +
       '</tr></thead><tbody id="igCorpoLista"></tbody></table></div></div>';
   }
 
@@ -431,6 +589,49 @@ async function igRenderAutomacoes(area){
 
   igCarregarAvisoFreio();
   igCarregarUltimosEnvios();
+  if(corpo) igPreencherFotosDosPosts(corpo);
+}
+
+// Troca o desenho de reserva pela foto do post vinculado a cada automação. A foto vem
+// do Instagram na hora (os endereços das imagens vencem depois de uns dias, por isso
+// não são guardados no banco). Se o Instagram não estiver ligado, fica o desenho.
+async function igPreencherFotosDosPosts(corpo){
+  var marcadores = Array.prototype.slice.call(corpo.querySelectorAll(".ig-thumb"));
+  var todosOsIds = [];
+  marcadores.forEach(function(m){
+    (m.getAttribute("data-ig-posts") || "").split(",").filter(Boolean).forEach(function(id){ if(todosOsIds.indexOf(id) === -1) todosOsIds.push(id); });
+  });
+  if(todosOsIds.length === 0) return;
+
+  var dados = await igCarregarPosts();
+  var mapa = {};
+  (dados.posts || []).forEach(function(p){ mapa[p.id] = p; });
+
+  // Post antigo, que já saiu da lista dos 50 mais recentes: busca pelo número.
+  var faltam = todosOsIds.filter(function(id){ return !mapa[id]; });
+  if(dados.conectado && faltam.length > 0){
+    var extra = await igChamarFuncao("ig-media", { ids: faltam });
+    if(extra.ok) (extra.dados.posts || []).forEach(function(p){ mapa[p.id] = p; });
+  }
+
+  marcadores.forEach(function(marcador){
+    if(!document.body.contains(marcador)) return;                  // a tela mudou enquanto carregava
+    var ids = (marcador.getAttribute("data-ig-posts") || "").split(",").filter(Boolean);
+    if(ids.length === 0) return;
+    var achados = ids.map(function(id){ return mapa[id]; }).filter(function(p){ return p && p.miniatura; });
+    if(achados.length === 0){
+      marcador.title = dados.conectado
+        ? "Não achei a foto deste post (ele pode ter sido apagado)."
+        : "Conecte o Instagram pra ver a foto do post (INSTAGRAM-LEIA-ME.md).";
+      return;
+    }
+    marcador.innerHTML = '<img src="' + igAttr(achados[0].miniatura) + '" alt="" loading="lazy">' +
+      (ids.length > 1 ? '<span class="ig-thumb-mais">+' + (ids.length - 1) + '</span>' : "");
+    marcador.title = ids.length === 1
+      ? (achados[0].legenda || "Post sem legenda")
+      : ids.length + " posts: " + achados.map(function(p){ return p.legenda || "sem legenda"; }).join(" | ");
+    marcador.classList.add("com-foto");
+  });
 }
 
 function igLinhaAutomacao(a){
@@ -444,9 +645,11 @@ function igLinhaAutomacao(a){
 
   var tr = el(
     '<tr class="clicavel">' +
-      '<td><strong>' + escapa(nome) + '</strong></td>' +
+      '<td><div class="ig-auto-nome">' +
+        '<span class="ig-thumb" data-ig-posts="' + igAttr((a.media_ids || []).join(",")) + '" title="' + igAttr(qtdPosts === 0 ? "Vale para todos os posts" : "Carregando a foto do post...") + '">' + icone("instagram") + '</span>' +
+        '<div><strong>' + escapa(nome) + '</strong><div class="ig-auto-sub">' + (qtdPosts === 0 ? "Todos os posts" : qtdPosts + (qtdPosts === 1 ? " post" : " posts")) + '</div></div>' +
+      '</div></td>' +
       '<td>' + (palavras || "-") + '</td>' +
-      '<td>' + (qtdPosts === 0 ? "Todos os posts" : qtdPosts + (qtdPosts === 1 ? " post" : " posts")) + '</td>' +
       '<td><label class="interruptor" title="Ligar ou desligar"><input type="checkbox" ' + (a.active ? "checked" : "") + '><span class="trilho"></span></label></td>' +
       '<td><div class="acoes-linha">' +
         '<button class="btn btn-icone" data-acao="editar" title="Editar">' + icone("editar") + '</button>' +
