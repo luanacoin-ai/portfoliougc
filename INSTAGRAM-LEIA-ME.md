@@ -60,7 +60,7 @@ No Supabase: **Edge Functions > Secrets** (link direto: https://supabase.com/das
 | Nome | O que colocar |
 |---|---|
 | `IG_ACCESS_TOKEN` | o token do Instagram (Passo 2) |
-| `IG_ACCOUNT_ID` | o ID numérico da sua conta do Instagram (Passo 2) |
+| `IG_ACCOUNT_ID` | o ID numérico da sua conta do Instagram (Passo 2). **Não é o ID do app**: o ID do app aparece como `client_id` no link do login da empresa, e o ID da conta é o número que aparece ao lado da sua conta, onde você gera o token (costuma começar com 17841). O envio das DMs não depende mais dele (usa a conta dona do token), mas ele ajuda a reconhecer as suas próprias mensagens |
 | `APP_SECRET` | o App Secret do Instagram (Passo 2) |
 | `APP_SECRET_ENFORCE` | `false` por enquanto (depois de testar tudo, vira `true`) |
 | `VERIFY_TOKEN` | uma senha que VOCÊ inventa (ex: umas 20 letras e números sem sentido). Vai ser colada também no Meta, no Passo 6 |

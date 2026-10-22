@@ -158,7 +158,9 @@ async function tentarEnviar(
   mensagem: Qualquer,
   formato: "botao" | "pilula" | "texto",
 ): Promise<ResultadoEnvio> {
-  const r = await chamarGraph("/" + (Deno.env.get("IG_ACCOUNT_ID") ?? "me") + "/messages", { recipient: destino, message: mensagem });
+  // "me" = a conta dona do token. Assim o envio funciona mesmo se o segredo
+  // IG_ACCOUNT_ID estiver com o número errado (por exemplo, o ID do app no lugar do ID da conta).
+  const r = await chamarGraph("/me/messages", { recipient: destino, message: mensagem });
   if (!r.ok) return { ok: false, formato, erro: erroDoGraph(r) };
   const mid: string | null = r.dados?.message_id ?? null;
   if (mid) {
