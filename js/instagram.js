@@ -169,7 +169,9 @@ function igCartaoConexao(ig){
   }
   return '<div class="aviso erro"><strong>' + titulo + ':</strong> ' + linhaConta +
     'O Instagram <strong>não está avisando</strong> o sistema sobre: ' + faltando.map(function(p){ return escapa(p.rotulo); }).join(", ") + '. ' +
-    'Sem isso, ninguém recebe DM. Ligue a assinatura de webhooks da sua conta no app do Meta e cadastre os campos <code>comments</code>, <code>messages</code> e <code>messaging_postbacks</code> (INSTAGRAM-LEIA-ME.md, Passo 6).</div>';
+    'Sem isso, ninguém recebe DM. Clique no botão abaixo pra eu ligar esses avisos na sua conta. Se não resolver, ligue a assinatura de webhooks no app do Meta e cadastre os campos <code>comments</code>, <code>messages</code> e <code>messaging_postbacks</code> (INSTAGRAM-LEIA-ME.md, Passo 6).' +
+    '<div style="margin-top:10px;"><button type="button" class="btn btn-principal" id="btnAssinarWebhooks">Ligar os avisos agora</button></div>' +
+    '<div id="igResultadoAssinar"></div></div>';
 }
 
 function igCartaoMetrica(numero, rotulo){

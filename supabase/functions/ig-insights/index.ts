@@ -107,6 +107,39 @@ async function renovarToken() {
   }
 }
 
+// Liga, na conta do Instagram, os 3 avisos (webhooks) que o sistema precisa:
+// comentários, mensagens e toques nos botões. É o que a chave "Assinar webhooks"
+// do Meta deveria fazer, mas ela às vezes marca só as mensagens. Aqui a gente
+// marca os três e confere de volta o que ficou ligado.
+const CAMPOS_WEBHOOK = ["comments", "messages", "messaging_postbacks"];
+
+async function assinarWebhooks() {
+  const versao = Deno.env.get("GRAPH_API_VERSION") || "v21.0";
+  const token = (Deno.env.get("IG_ACCESS_TOKEN") ?? "").trim();
+  try {
+    const r = await fetch(
+      "https://graph.instagram.com/" + versao + "/me/subscribed_apps?subscribed_fields=" + encodeURIComponent(CAMPOS_WEBHOOK.join(",")),
+      { method: "POST", headers: { "Authorization": "Bearer " + token } },
+    );
+    const dados = await r.json().catch(() => ({}));
+    if (!r.ok || dados?.error) {
+      return { ok: false, erro: String(dados?.error?.message ?? ("Erro HTTP " + r.status)) };
+    }
+    const conferido = await lerGraph("/me/subscribed_apps");
+    const campos: string[] = [];
+    if (conferido.ok) {
+      for (const app of (conferido.dados?.data ?? [])) {
+        for (const campo of (app?.subscribed_fields ?? [])) {
+          if (!campos.includes(String(campo))) campos.push(String(campo));
+        }
+      }
+    }
+    return { ok: true, assinado: true, campos };
+  } catch (erro) {
+    return { ok: false, erro: erro instanceof Error ? erro.message : "erro desconhecido" };
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   if (req.method !== "POST") return resposta({ erro: "Método não permitido." }, 405);
@@ -131,6 +164,7 @@ Deno.serve(async (req: Request) => {
   try { corpo = await req.json(); } catch { corpo = {}; }
 
   if (corpo?.acao === "renovar_token") return resposta(await renovarToken());
+  if (corpo?.acao === "assinar_webhooks") return resposta(await assinarWebhooks());
 
   const perfil = await lerGraph("/me?fields=username,name,followers_count,follows_count,media_count");
   if (!perfil.ok) {

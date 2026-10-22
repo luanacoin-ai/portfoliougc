@@ -153,6 +153,33 @@ async function igRenovarToken(){
   irParaAba("instagram");
 }
 
+// Liga na conta do Instagram os avisos de comentário, mensagem e toque no botão.
+async function igAssinarWebhooks(){
+  var botao = document.getElementById("btnAssinarWebhooks");
+  var resultado = document.getElementById("igResultadoAssinar");
+  botao.disabled = true;
+  botao.textContent = "Ligando...";
+  var r = await igChamarFuncao("ig-insights", { acao: "assinar_webhooks" });
+  var funcaoForaDoAr = !r.ok && /Failed to send|non-2xx|Edge Function|not found|FunctionsFetchError/i.test(r.mensagem || "");
+  if(funcaoForaDoAr){
+    botao.disabled = false; botao.textContent = "Ligar os avisos agora";
+    resultado.innerHTML = faixaAviso(igTextoFuncaoIndisponivel("ig-insights", r.mensagem), "erro");
+    return;
+  }
+  if(!r.ok){
+    botao.disabled = false; botao.textContent = "Ligar os avisos agora";
+    resultado.innerHTML = faixaAviso("O Instagram não aceitou ligar os avisos: " + (r.mensagem || "motivo desconhecido"), "erro");
+    return;
+  }
+  if(!r.dados.assinado){
+    // a função respondeu, mas é a versão antiga (que não conhece este botão)
+    botao.disabled = false; botao.textContent = "Ligar os avisos agora";
+    resultado.innerHTML = faixaAviso("A função ig-insights ainda é a versão antiga. Publique a versão nova no Supabase (arquivo supabase/functions/ig-insights/index.ts) e tente de novo.", "erro");
+    return;
+  }
+  irParaAba("instagram");
+}
+
 async function igRenderVisaoGeral(area){
   area.innerHTML = '<p class="vazio-explicacao">Carregando a visão geral...</p>';
   var ontem = new Date(Date.now() - 86400000).toISOString();
@@ -212,6 +239,8 @@ async function igRenderVisaoGeral(area){
 
   var botaoRenovar = document.getElementById("btnRenovarToken");
   if(botaoRenovar) botaoRenovar.addEventListener("click", igRenovarToken);
+  var botaoAssinar = document.getElementById("btnAssinarWebhooks");
+  if(botaoAssinar) botaoAssinar.addEventListener("click", igAssinarWebhooks);
   igIniciarRelogioToken();
   igCarregarAvisoFreio();
   igCarregarUltimosEnvios();

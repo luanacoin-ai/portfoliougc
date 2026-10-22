@@ -197,7 +197,7 @@ Observação: a política descreve a prática da Luana, mas não substitui a opi
 |---|---|
 | A aba Instagram mostra "Não consegui carregar as automações" | Você rodou o `instagram.sql` (Passo 1)? |
 | "Conecte seu Instagram pra ver as análises" ou "Falta ligar o Instagram" | As funções `ig-insights` e `ig-analise` estão publicadas e o `IG_ACCESS_TOKEN` está nos segredos? A lista "Falta ligar o Instagram", na Visão geral, mostra o que falta |
-| O cartão "Conexão com o Instagram" (aba Visão geral) está vermelho | Falta ligar a assinatura de webhooks da conta e/ou assinar os 3 campos (Passo 6) |
+| O cartão "Conexão com o Instagram" (aba Visão geral) está vermelho | Clique em **Ligar os avisos agora** (dentro do próprio cartão): ele liga na sua conta os 3 avisos (`comments`, `messages` e `messaging_postbacks`). Precisa da função `ig-insights` publicada na versão nova. Se não resolver, confira a assinatura de webhooks e os 3 campos no Meta (Passo 6) |
 | O Meta não aceita o webhook | A função `instagram-webhook` está publicada, com Verify JWT desligado, e o `VERIFY_TOKEN` é o mesmo nos dois lugares? |
 | Comentei e não aconteceu nada | Os 3 campos (`comments`, `messages`, `messaging_postbacks`) estão assinados? A conta que comentou tem papel no app (testador)? A automação está ligada? Veja "Últimos envios" |
 | "Pulado: já recebeu uma DM nas últimas 24h" | É a regra de 1 por dia. Ponha o ID da conta de teste em `TEST_IG_ACCOUNTS` |
