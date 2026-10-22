@@ -188,7 +188,7 @@ async function igRenderVisaoGeral(area){
       { feito: false, texto: "Webhook ligado no Meta, com a assinatura da conta" }
     ];
     html += '<div class="painel-branco"><p class="painel-titulo">Falta ligar o Instagram</p>' +
-      '<p style="font-size:.82rem; color:#6b6353; margin-bottom:10px;">Enquanto isso não estiver pronto, o painel mostra "-" nos números do Instagram e as automações não disparam.</p>' +
+      '<p style="font-size:.82rem; color:#6F554B; margin-bottom:10px;">Enquanto isso não estiver pronto, o painel mostra "-" nos números do Instagram e as automações não disparam.</p>' +
       '<ul class="ig-checklist">' + passos.map(function(p){
         return '<li class="' + (p.feito ? "feito" : "falta") + '"><span>' + (p.feito ? "Feito" : "Falta") + '</span>' + escapa(p.texto) + '</li>';
       }).join("") + '</ul>' +
@@ -284,7 +284,7 @@ async function igCarregarContaAnalise(){
     alvo = document.getElementById("igAnaliseConta");
     if(!alvo) return;
     if(!r.ok){
-      alvo.innerHTML = '<div class="painel-branco"><p class="painel-titulo">Conecte seu Instagram pra ver as análises</p><p style="font-size:.82rem; color:#6b6353;">' + escapa(igTextoFuncaoIndisponivel("ig-analise", r.mensagem)) + '</p></div>';
+      alvo.innerHTML = '<div class="painel-branco"><p class="painel-titulo">Conecte seu Instagram pra ver as análises</p><p style="font-size:.82rem; color:#6F554B;">' + escapa(igTextoFuncaoIndisponivel("ig-analise", r.mensagem)) + '</p></div>';
       return;
     }
     dados = r.dados;
@@ -296,7 +296,7 @@ async function igCarregarContaAnalise(){
       igCartaoMetrica("-", "seguidores") + igCartaoMetrica("-", "novos seguidores") + igCartaoMetrica("-", "alcance") +
       igCartaoMetrica("-", "contas engajadas") + igCartaoMetrica("-", "interações") + '</div>' +
       '<div class="painel-branco"><p class="painel-titulo">Conecte seu Instagram pra ver as análises</p>' +
-      '<p style="font-size:.82rem; color:#6b6353;">Os números de seguidores, alcance e interações vêm direto do Instagram. Quando você terminar a configuração (INSTAGRAM-LEIA-ME.md), eles aparecem aqui.</p>' +
+      '<p style="font-size:.82rem; color:#6F554B;">Os números de seguidores, alcance e interações vêm direto do Instagram. Quando você terminar a configuração (INSTAGRAM-LEIA-ME.md), eles aparecem aqui.</p>' +
       (dados.motivo ? '<p class="ig-ajuda">' + escapa(dados.motivo) + '</p>' : '') + '</div>';
     return;
   }
@@ -325,7 +325,7 @@ async function igAtualizarAnalise(area){
   var alvo = document.getElementById("igAnalisePosts");
   botao.disabled = true;
   botao.textContent = "Analisando...";
-  alvo.innerHTML = '<div class="painel-branco"><p class="painel-titulo">Analisando seus posts...</p><p style="font-size:.82rem; color:#6b6353;">O Instagram precisa ser consultado post por post, então isso pode levar até 1 minuto. Pode esperar nesta tela.</p></div>';
+  alvo.innerHTML = '<div class="painel-branco"><p class="painel-titulo">Analisando seus posts...</p><p style="font-size:.82rem; color:#6F554B;">O Instagram precisa ser consultado post por post, então isso pode levar até 1 minuto. Pode esperar nesta tela.</p></div>';
   igCacheConta = {};
 
   var r = await igChamarFuncao("ig-analise", { acao: "posts" });
@@ -443,7 +443,7 @@ async function igRenderMarcas(area){
 
   area.innerHTML =
     '<div class="painel-branco"><p class="painel-titulo">Como funciona</p>' +
-      '<p style="font-size:.82rem; color:#6b6353;">Aqui ficam os leads que você marcou com a etiqueta <strong>marca</strong>: marcas e empresas que chegaram pelo Instagram. Pra marcar alguém, use a caixa abaixo ou clique nas etiquetas da pessoa na aba Leads. Dali você manda a marca pra aba <strong>Marcas</strong> do painel, que é a sua base de contatos.</p>' +
+      '<p style="font-size:.82rem; color:#6F554B;">Aqui ficam os leads que você marcou com a etiqueta <strong>marca</strong>: marcas e empresas que chegaram pelo Instagram. Pra marcar alguém, use a caixa abaixo ou clique nas etiquetas da pessoa na aba Leads. Dali você manda a marca pra aba <strong>Marcas</strong> do painel, que é a sua base de contatos.</p>' +
       '<div class="barra-acoes" style="margin:12px 0 0;"><div class="campo-busca">' + icone("busca") + '<input id="igCampoNovaMarca" list="igListaCandidatos" placeholder="Digite o @ de um lead pra marcar como marca"></div>' +
       '<datalist id="igListaCandidatos">' + candidatos.slice(0, 500).map(function(l){ return '<option value="@' + igAttr(l.username) + '"></option>'; }).join("") + '</datalist>' +
       '<button class="btn btn-principal" id="btnMarcarMarca">Marcar como marca</button></div>' +
@@ -457,7 +457,7 @@ async function igRenderMarcas(area){
     var t = el('<table><thead><tr><th>Marca</th><th>Palavra</th><th>Contato</th><th>Última vez</th><th>Na sua base</th><th></th></tr></thead><tbody></tbody></table>');
     marcas.sort(function(a, b){ return String(b.updated_at).localeCompare(String(a.updated_at)); }).forEach(function(l){
       var arroba = l.username ? "@" + l.username : "(sem @)";
-      var contato = [l.email, l.telefone].filter(Boolean).map(escapa).join("<br>") || '<span style="color:#b7ae98;">-</span>';
+      var contato = [l.email, l.telefone].filter(Boolean).map(escapa).join("<br>") || '<span style="color:#7C645A;">-</span>';
       var estaNaBase = l.username && jaNaBase[String(l.username).toLowerCase()];
       var tr = el('<tr><td>' + (l.username ? '<a href="https://instagram.com/' + igAttr(l.username) + '" target="_blank" rel="noopener"><strong>' + escapa(arroba) + '</strong></a>' : '<strong>(sem @)</strong>') + '</td>' +
         '<td>' + escapa(l.last_keyword || "-") + '</td><td>' + contato + '</td>' +
@@ -516,10 +516,10 @@ async function igEnviarParaBaseDeMarcas(lead, botao, area){
    PROPOSTAS (controle das propostas de parceria que chegam pelo Instagram)
 ============================================================================ */
 var IG_STATUS_PROPOSTA = [
-  { valor: "nova", rotulo: "Nova", cor: "#2b6fff" },
-  { valor: "em_conversa", rotulo: "Em conversa", cor: "#ff6a2b" },
-  { valor: "fechada", rotulo: "Fechada", cor: "#7ea600" },
-  { valor: "recusada", rotulo: "Recusada", cor: "#8a8a8a" }
+  { valor: "nova", rotulo: "Nova", cor: "#B5543C" },
+  { valor: "em_conversa", rotulo: "Em conversa", cor: "#C98A55" },
+  { valor: "fechada", rotulo: "Fechada", cor: "#6E7F52" },
+  { valor: "recusada", rotulo: "Recusada", cor: "#8A7B70" }
 ];
 var igFiltroProposta = "todas";
 
@@ -571,11 +571,11 @@ async function igRenderPropostas(area){
     var arroba = p.instagram ? String(p.instagram).replace(/^@/, "") : "";
     var tr = el('<tr class="clicavel"><td><strong>' + escapa(p.marca) + '</strong>' +
       (arroba ? '<div class="ig-id"><a href="https://instagram.com/' + igAttr(arroba) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">@' + escapa(arroba) + '</a></div>' : '') + '</td>' +
-      '<td>' + (p.valor !== null && p.valor !== undefined && p.valor !== "" ? escapa(formatarDinheiro(p.valor)) : '<span style="color:#b7ae98;">-</span>') + '</td>' +
+      '<td>' + (p.valor !== null && p.valor !== undefined && p.valor !== "" ? escapa(formatarDinheiro(p.valor)) : '<span style="color:#7C645A;">-</span>') + '</td>' +
       '<td><select class="select-status" style="background:' + st.cor + '22; color:' + st.cor + '">' +
         IG_STATUS_PROPOSTA.map(function(s){ return '<option value="' + s.valor + '" ' + (s.valor === p.status ? "selected" : "") + '>' + s.rotulo + '</option>'; }).join("") + '</select></td>' +
       '<td style="white-space:nowrap;">' + (p.data ? escapa(formatarData(p.data)) : "-") + '</td>' +
-      '<td style="max-width:280px; color:#6b6353;">' + escapa(p.observacao || "") + '</td>' +
+      '<td style="max-width:280px; color:#6F554B;">' + escapa(p.observacao || "") + '</td>' +
       '<td><button type="button" class="btn btn-icone btn-perigo" title="Apagar">' + icone("lixeira") + '</button></td></tr>');
     var seletor = tr.querySelector("select");
     seletor.addEventListener("click", function(e){ e.stopPropagation(); });
@@ -716,7 +716,7 @@ async function igRenderSorteio(area){
 
   var html = '<div class="painel-branco"><p class="painel-titulo">1. Escolha o post do sorteio</p>';
   if(!dados.conectado){
-    html += '<p style="font-size:.84rem; color:#6b6353;">Conecte o Instagram pra escolher um post' + (dados.motivo ? " (" + escapa(dados.motivo) + ")" : "") + '. Passo a passo em INSTAGRAM-LEIA-ME.md.</p></div>';
+    html += '<p style="font-size:.84rem; color:#6F554B;">Conecte o Instagram pra escolher um post' + (dados.motivo ? " (" + escapa(dados.motivo) + ")" : "") + '. Passo a passo em INSTAGRAM-LEIA-ME.md.</p></div>';
     area.innerHTML = html;
     return;
   }
@@ -768,7 +768,7 @@ async function igBuscarParticipantes(){
   var r = await igChamarFuncao("ig-analise", { acao: "comentarios", media_id: igSorteio.postId });
   botao.disabled = false;
   if(!r.ok || r.dados.conectado === false){
-    resumo.innerHTML = '<span style="color:#8f1d20;">' + escapa(!r.ok ? igTextoFuncaoIndisponivel("ig-analise", r.mensagem) : (r.dados.motivo || "Não consegui ler os comentários.")) + '</span>';
+    resumo.innerHTML = '<span style="color:#8A2A1E;">' + escapa(!r.ok ? igTextoFuncaoIndisponivel("ig-analise", r.mensagem) : (r.dados.motivo || "Não consegui ler os comentários.")) + '</span>';
     return;
   }
   igSorteio.comentarios = r.dados.comentarios || [];

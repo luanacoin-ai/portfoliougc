@@ -5,40 +5,51 @@
 <title>Política de Privacidade | Luana Coin</title>
 <meta name="description" content="Política de Privacidade de Luana Coin (@luanacoin): como trato os dados de quem interage pelo Instagram (comentários e mensagens diretas), pelo site e por e-mail, conforme a LGPD, e como pedir a exclusão dos seus dados.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F3E9DA">
 <link rel="canonical" href="https://luanacoin.com/politica-de-privacidade/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f3f4f2;
-    --card:#ffffff;
-    --black:#111111;
-    --lime:#c6f24e;
-    --lime-strong:#aede2e;
-    --gray-line:rgba(17,17,17,.12);
-    --gray-text:#55574f;
-    --radius:18px;
-    --ff:'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* Guia de Marca Luana Coin 2026: terracota chama atencao, creme areia e o respiro,
+       marrom cafe e o texto. Salvia e rosa po so em detalhes. */
+    --bg:#F3E9DA;
+    --card:#FBF6EC;
+    --cafe:#4A2E26;
+    --terracota:#B5543C;
+    --terracota-escura:#9A4430;
+    --rosa-po:#E8B4B0;
+    --rosa-clara:#F4DAD6;
+    --salvia:#8A9A6E;
+    --sobre-terracota:#FFF8EE;
+    --sobre-escuro:#F3E9DA;
+    --gray-line:rgba(74,46,38,.14);
+    --gray-text:#6F554B;
+    --radius:20px;
+    --ff:'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --ff-titulo:'Fraunces', Georgia, serif;
+    --ff-assinatura:'Caveat', cursive;
   }
   *,*::before,*::after{ box-sizing:border-box; }
   html{ scroll-padding-top:20px; }
   body{
     margin:0;
     background:var(--bg);
-    color:var(--black);
+    color:var(--cafe);
     font-family:var(--ff);
     font-size:1.0625rem;
+    font-weight:400;
     line-height:1.75;
     -webkit-font-smoothing:antialiased;
   }
-  a{ color:var(--black); text-decoration-thickness:2px; text-underline-offset:3px; text-decoration-color:var(--lime-strong); }
-  a:hover{ background:var(--lime); text-decoration-color:var(--black); }
-  a:focus-visible, summary:focus-visible{ outline:3px solid var(--black); outline-offset:3px; border-radius:4px; }
+  a{ color:var(--cafe); text-decoration-thickness:2px; text-underline-offset:3px; text-decoration-color:var(--terracota); }
+  a:hover{ background:var(--rosa-clara); text-decoration-color:var(--terracota); }
+  a:focus-visible, summary:focus-visible{ outline:3px solid var(--cafe); outline-offset:3px; border-radius:4px; }
 
   .pular{
     position:absolute; left:-9999px; top:8px;
-    background:var(--black); color:var(--lime); padding:10px 16px; border-radius:10px; font-weight:700; z-index:10;
+    background:var(--cafe); color:var(--sobre-escuro); padding:10px 16px; border-radius:10px; font-weight:600; z-index:10;
   }
   .pular:focus{ left:12px; }
 
@@ -46,13 +57,13 @@
     max-width:820px; margin:0 auto; padding:22px 20px 0;
     display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
   }
-  .marca{ font-weight:800; font-size:1.05rem; text-decoration:none; }
+  .marca{ font-family:var(--ff-titulo); font-weight:600; font-size:1.25rem; text-decoration:none; }
   .marca:hover{ background:none; }
   .voltar{
-    font-size:.9rem; font-weight:700; text-decoration:none;
-    border:2px solid var(--black); border-radius:999px; padding:7px 16px; background:var(--card);
+    font-size:.9rem; font-weight:500; text-decoration:none;
+    border:1.5px solid var(--gray-line); border-radius:999px; padding:7px 18px; background:var(--card);
   }
-  .voltar:hover{ background:var(--lime); }
+  .voltar:hover{ background:var(--rosa-clara); }
 
   main{ max-width:820px; margin:0 auto; padding:18px 20px 70px; }
   .folha{
@@ -60,21 +71,21 @@
     border:1px solid var(--gray-line);
     border-radius:var(--radius);
     padding:clamp(22px, 5vw, 48px);
-    box-shadow:0 18px 40px -22px rgba(17,17,17,.2);
+    box-shadow:0 18px 40px -22px rgba(74,46,38,.28);
   }
   .selo{
-    display:inline-block; background:var(--lime); font-weight:800; font-size:.78rem;
-    letter-spacing:.06em; text-transform:uppercase; padding:5px 12px; border-radius:999px; margin:0 0 14px;
+    display:inline-block; background:var(--terracota); color:var(--sobre-terracota); font-weight:500; font-size:.78rem;
+    letter-spacing:.06em; text-transform:uppercase; padding:5px 14px; border-radius:999px; margin:0 0 14px;
   }
-  h1{ font-size:clamp(1.9rem, 6vw, 2.7rem); line-height:1.15; margin:0 0 10px; font-weight:800; letter-spacing:-.02em; }
+  h1{ font-family:var(--ff-titulo); font-size:clamp(2rem, 6vw, 2.9rem); line-height:1.1; margin:0 0 10px; font-weight:500; letter-spacing:-.02em; }
   .atualizacao{ color:var(--gray-text); font-size:.95rem; margin:0 0 22px; }
   .resumo{
-    border-left:5px solid var(--lime-strong); background:#f7f9f1; border-radius:0 12px 12px 0;
+    border-left:4px solid var(--terracota); background:#F6E7D6; border-radius:0 14px 14px 0;
     padding:14px 18px; margin:0 0 26px; font-size:1rem;
   }
   .resumo p{ margin:0; }
 
-  .indice{ border:1px solid var(--gray-line); border-radius:14px; padding:16px 20px; margin:0 0 34px; background:#fbfbfa; }
+  .indice{ border:1px solid var(--gray-line); border-radius:16px; padding:16px 20px; margin:0 0 34px; background:var(--card); }
   .indice h2{ font-size:.82rem; letter-spacing:.07em; text-transform:uppercase; color:var(--gray-text); margin:0 0 8px; border:none; padding:0; }
   .indice ol{ margin:0; padding-left:1.3rem; columns:2; column-gap:30px; font-size:.96rem; line-height:1.9; }
   @media (max-width:640px){ .indice ol{ columns:1; } }
@@ -82,24 +93,24 @@
   .indice a:hover{ text-decoration:underline; }
 
   section{ margin:0 0 34px; }
-  h2{ font-size:1.35rem; line-height:1.3; margin:0 0 12px; font-weight:800; letter-spacing:-.01em; padding-top:6px; }
-  h3{ font-size:1.05rem; margin:20px 0 6px; font-weight:800; }
+  h2{ font-family:var(--ff-titulo); font-size:1.5rem; line-height:1.25; margin:0 0 12px; font-weight:500; letter-spacing:-.015em; padding-top:6px; }
+  h3{ font-family:var(--ff-titulo); font-size:1.12rem; margin:20px 0 6px; font-weight:600; }
   p{ margin:0 0 14px; }
   ul, ol{ margin:0 0 14px; padding-left:1.3rem; }
   li{ margin:0 0 6px; }
-  strong{ font-weight:800; }
+  strong{ font-weight:600; }
 
   .destaque-exclusao{
-    background:#f7f9f1; border:2px solid var(--black); border-radius:16px; padding:20px 22px;
-    box-shadow:5px 5px 0 var(--black);
+    background:#F6E7D6; border:1.5px solid var(--terracota); border-radius:20px; padding:22px 24px;
+    box-shadow:0 14px 34px -20px rgba(74,46,38,.35);
   }
   .destaque-exclusao h2{ margin-top:0; padding-top:0; }
   .botao-email{
-    display:inline-block; background:var(--lime); border:2px solid var(--black); border-radius:999px;
-    padding:10px 22px; font-weight:800; text-decoration:none; margin:4px 0 6px;
+    display:inline-block; background:var(--terracota); color:var(--sobre-terracota); border-radius:999px;
+    padding:11px 24px; font-weight:500; text-decoration:none; margin:4px 0 6px;
     line-height:1.4; text-align:center;
   }
-  .botao-email:hover{ background:var(--lime-strong); }
+  .botao-email:hover{ background:var(--terracota-escura); color:var(--sobre-terracota); }
 
   .tabela-rolagem{ overflow-x:auto; margin:0 0 14px; }
   table{ width:100%; border-collapse:collapse; font-size:.95rem; line-height:1.55; }
@@ -112,6 +123,7 @@
   }
   .rodape-meta p{ margin:0 0 10px; }
   footer{ max-width:820px; margin:0 auto; padding:0 20px 40px; font-size:.88rem; color:var(--gray-text); text-align:center; }
+  .assinatura{ font-family:var(--ff-assinatura); font-size:1.9rem; font-weight:600; color:var(--terracota); line-height:1.1; margin:0 0 6px; }
 </style>
 </head>
 <body>
@@ -305,6 +317,7 @@
 </main>
 
 <footer>
+  <p class="assinatura">com carinho, Luana</p>
   <p>© <span id="ano">2026</span> Luana Coin. Todos os direitos reservados.</p>
 </footer>
 

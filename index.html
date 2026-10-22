@@ -5,25 +5,37 @@
 <title>Luana Coin | Portfólio UGC Creator</title>
 <meta name="description" content="Portfólio de Luana Coin, criadora de conteúdo UGC para marcas de beleza, skincare, casa, maternidade, pet e tech.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F3E9DA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500;1,9..144,600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   /* ====== TOKENS (Editor Flutuante) ====== */
   :root{
-    --bg:#f3f4f2;
-    --bg-alt:#eceeea;
-    --card:#ffffff;
-    --black:#111111;
-    --lime:#c6f24e;
-    --lime-strong:#aede2e;
-    --gray-line:rgba(17,17,17,.10);
-    --gray-text:#65675f;
-    --radius:18px;
-    --radius-sm:12px;
-    --shadow-soft: 0 18px 40px -16px rgba(17,17,17,.18);
-    --shadow-soft-sm: 0 8px 20px -10px rgba(17,17,17,.16);
-    --ff:'Manrope', sans-serif;
+    /* ====== TOKENS (Guia de Marca Luana Coin 2026) ======
+       Terracota chama atencao, creme areia e o respiro, marrom cafe e o texto.
+       Salvia e rosa po so entram em detalhes (no maximo duas cores fortes por peca). */
+    --bg:#F3E9DA;               /* creme areia: o fundo */
+    --bg-alt:#EADBC4;           /* um tom mais fundo do creme, pra alternar as secoes */
+    --card:#FBF6EC;             /* creme bem claro, dos cartoes */
+    --cafe:#4A2E26;             /* marrom cafe: o texto (nunca preto puro) */
+    --terracota:#B5543C;        /* destaque */
+    --terracota-escura:#9A4430; /* destaque quando passa o mouse */
+    --salvia:#8A9A6E;           /* detalhe */
+    --salvia-clara:#DEE4CE;
+    --rosa-po:#E8B4B0;          /* detalhe */
+    --rosa-clara:#F4DAD6;
+    --sobre-terracota:#FFF8EE;  /* texto em cima da terracota (precisa ser bem claro pra ler) */
+    --sobre-escuro:#F3E9DA;     /* texto em cima do marrom cafe */
+    --gray-line:rgba(74,46,38,.14);
+    --gray-text:#6F554B;        /* marrom suave, pros textos de apoio */
+    --radius:20px;
+    --radius-sm:14px;
+    --shadow-soft: 0 18px 40px -18px rgba(74,46,38,.28);
+    --shadow-soft-sm: 0 8px 20px -12px rgba(74,46,38,.24);
+    --ff:'Poppins', system-ui, sans-serif;               /* texto corrido */
+    --ff-titulo:'Fraunces', Georgia, serif;              /* titulos e destaques */
+    --ff-assinatura:'Caveat', cursive;                   /* assinaturas e toques pessoais, com moderacao */
   }
 
   *,*::before,*::after{ box-sizing:border-box; }
@@ -35,9 +47,10 @@
   body{
     margin:0;
     background:var(--bg);
-    color:var(--black);
+    color:var(--cafe);
     font-family:var(--ff);
-    line-height:1.55;
+    font-weight:400;
+    line-height:1.6;
     overflow-x:hidden;
     -webkit-font-smoothing:antialiased;
   }
@@ -45,7 +58,7 @@
   img, svg{ display:block; max-width:100%; }
   a{ color:inherit; text-decoration:none; }
   ul{ margin:0; padding:0; list-style:none; }
-  h1,h2,h3,h4{ font-family:var(--ff); line-height:1.15; margin:0; font-weight:800; letter-spacing:-.01em; }
+  h1,h2,h3,h4{ font-family:var(--ff-titulo); line-height:1.12; margin:0; font-weight:500; letter-spacing:-.015em; }
   p{ margin:0; }
   button{ font-family:inherit; cursor:pointer; }
   input, textarea{ font-family:inherit; font-size:1rem; }
@@ -63,7 +76,7 @@
   button:focus-visible,
   input:focus-visible,
   textarea:focus-visible{
-    outline: 3px solid var(--black);
+    outline: 3px solid var(--cafe);
     outline-offset: 3px;
     border-radius: 4px;
   }
@@ -72,8 +85,8 @@
     position:absolute;
     left:-999px;
     top:0;
-    background:var(--black);
-    color:#fff;
+    background:var(--cafe);
+    color:var(--sobre-escuro);
     padding:12px 18px;
     z-index:1000;
     border-radius:0 0 8px 0;
@@ -85,10 +98,10 @@
     align-items:center;
     gap:6px;
     font-size:.72rem;
-    font-weight:700;
+    font-weight:600;
     text-transform:uppercase;
     letter-spacing:.06em;
-    color:var(--black);
+    color:var(--cafe);
     background:var(--card);
     padding:7px 14px;
     border-radius:999px;
@@ -103,7 +116,7 @@
 
   .section-sub{
     font-size:.85rem;
-    font-weight:700;
+    font-weight:600;
     text-transform:uppercase;
     letter-spacing:.08em;
     color:var(--gray-text);
@@ -117,12 +130,9 @@
   }
 
   .hl{
-    display:inline-block;
-    background:var(--lime);
-    color:var(--black);
-    padding:2px 10px;
-    border-radius:8px;
-    transform:rotate(-1.5deg);
+    font-style:italic;
+    color:var(--terracota);
+    font-weight:500;
   }
 
   .btn{
@@ -131,13 +141,13 @@
     justify-content:center;
     gap:8px;
     font-family:var(--ff);
-    font-weight:700;
+    font-weight:600;
     font-size:.92rem;
     padding:15px 26px;
     border-radius:999px;
     border:none;
-    background:var(--black);
-    color:#fff;
+    background:var(--cafe);
+    color:var(--sobre-escuro);
     box-shadow:var(--shadow-soft-sm);
     transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
     white-space:nowrap;
@@ -146,9 +156,9 @@
     transform:translateY(-3px);
     box-shadow:var(--shadow-soft);
   }
-  .btn-lime{ background:var(--lime); color:var(--black); }
-  .btn-lime:hover{ background:var(--lime-strong); }
-  .btn-outline{ background:var(--card); color:var(--black); border:1.5px solid var(--gray-line); box-shadow:none; }
+  .btn-terracota{ background:var(--terracota); color:var(--sobre-terracota); }
+  .btn-terracota:hover{ background:var(--terracota-escura); }
+  .btn-outline{ background:var(--card); color:var(--cafe); border:1.5px solid var(--gray-line); box-shadow:none; }
   .btn-outline:hover{ box-shadow:var(--shadow-soft-sm); }
   .btn-block{ width:100%; }
 
@@ -162,7 +172,7 @@
     position:fixed;
     top:0; left:0; right:0;
     z-index:500;
-    background:rgba(243,244,242,.9);
+    background:rgba(243,233,218,.92);
     backdrop-filter:blur(10px);
     border-bottom:1px solid var(--gray-line);
   }
@@ -175,11 +185,12 @@
     margin:0 auto;
   }
   .nav-logo{
-    font-weight:800;
-    font-size:1.05rem;
-    background:var(--black);
-    color:#fff;
-    padding:8px 16px;
+    font-family:var(--ff-titulo);
+    font-weight:600;
+    font-size:1.1rem;
+    background:var(--cafe);
+    color:var(--sobre-escuro);
+    padding:8px 18px;
     border-radius:999px;
   }
   .nav-links{
@@ -194,7 +205,7 @@
   }
   .nav-links a:hover,
   .nav-links a:focus-visible{
-    background:var(--lime);
+    background:var(--rosa-clara);
   }
   .nav-toggle{
     display:none;
@@ -212,7 +223,7 @@
     position:absolute;
     left:11px; right:11px;
     height:2px;
-    background:var(--black);
+    background:var(--cafe);
     transition:transform .2s ease, opacity .2s ease;
     border-radius:2px;
   }
@@ -264,7 +275,8 @@
     font-size:1.08rem;
     max-width:520px;
     margin-bottom:30px;
-    color:#2b2b28;
+    color:var(--cafe);
+    font-weight:300;
   }
   .hero-actions{
     display:flex;
@@ -286,8 +298,9 @@
     text-align:center;
   }
   .stat-num{
-    font-weight:800;
-    font-size:1.6rem;
+    font-family:var(--ff-titulo);
+    font-weight:600;
+    font-size:1.7rem;
   }
   .stat-label{
     font-size:.76rem;
@@ -306,7 +319,7 @@
     position:relative;
     aspect-ratio:4/5;
     border-radius:var(--radius);
-    background:linear-gradient(150deg, #eef0ec, #ffffff);
+    background:linear-gradient(150deg, #EADBC4, #FBF6EC);
     box-shadow:var(--shadow-soft);
     overflow:hidden;
     z-index:2;
@@ -321,16 +334,16 @@
   .select-frame{
     position:absolute;
     inset:14px;
-    border:2px dashed var(--lime-strong);
+    border:2px dashed var(--rosa-po);
     border-radius:12px;
     pointer-events:none;
   }
   .select-frame i{
     position:absolute;
     width:9px; height:9px;
-    background:var(--lime);
-    border:2px solid var(--black);
-    border-radius:2px;
+    background:var(--card);
+    border:2px solid var(--terracota);
+    border-radius:50%;
   }
   .select-frame i:nth-child(1){ top:-5px; left:-5px; }
   .select-frame i:nth-child(2){ top:-5px; right:-5px; }
@@ -357,13 +370,13 @@
     border-radius:8px;
     background:var(--bg-alt);
   }
-  .float-toolbar span.on{ background:var(--lime); }
+  .float-toolbar span.on{ background:var(--terracota); }
   .float-balloon{
     top:-6%;
     right:-4%;
     padding:10px 16px;
     font-size:.82rem;
-    font-weight:700;
+    font-weight:600;
     display:flex;
     align-items:center;
     gap:6px;
@@ -372,11 +385,11 @@
   .float-chip{
     bottom:14%;
     left:-10%;
-    background:var(--black);
-    color:#fff;
+    background:var(--cafe);
+    color:var(--sobre-escuro);
     padding:10px 16px;
     font-size:.84rem;
-    font-weight:700;
+    font-weight:600;
     border-radius:999px 999px 999px 4px;
   }
   .float-cursor{
@@ -410,10 +423,11 @@
   }
   .timeline .clip{
     height:22px;
-    background:var(--lime);
-    border-radius:6px;
+    background:var(--rosa-po);
+    border-radius:8px;
     flex:1;
   }
+  .timeline .clip:nth-child(4){ background:var(--salvia); }
   .timeline .clip:nth-child(2){ flex:1.6; }
   .timeline .clip:nth-child(4){ flex:.7; }
   .timeline .playhead{
@@ -421,7 +435,7 @@
     top:6px;
     bottom:6px;
     width:2px;
-    background:var(--black);
+    background:var(--cafe);
     border-radius:2px;
     animation:playheadMove 6s linear infinite;
   }
@@ -433,7 +447,7 @@
     transform:translateX(-50%);
     width:10px; height:10px;
     border-radius:50%;
-    background:var(--black);
+    background:var(--cafe);
   }
   @keyframes playheadMove{
     0%{ left:4%; }
@@ -457,7 +471,7 @@
     margin-top:64px;
     border-top:1px solid var(--gray-line);
     border-bottom:1px solid var(--gray-line);
-    background:var(--black);
+    background:var(--cafe);
     padding:16px 0;
     overflow:hidden;
   }
@@ -475,10 +489,12 @@
     .brand-track{ animation:none; flex-wrap:wrap; }
   }
   .brand-track span{
-    color:#fff;
-    font-size:1rem;
-    font-weight:700;
-    opacity:.8;
+    color:var(--sobre-escuro);
+    font-family:var(--ff-titulo);
+    font-style:italic;
+    font-size:1.1rem;
+    font-weight:500;
+    opacity:.9;
     white-space:nowrap;
   }
 
@@ -495,7 +511,7 @@
     width:100%;
     aspect-ratio:1/1;
     border-radius:var(--radius);
-    background:linear-gradient(160deg, #eef0ec, #ffffff);
+    background:linear-gradient(160deg, #EADBC4, #FBF6EC);
     box-shadow:var(--shadow-soft);
     overflow:hidden;
   }
@@ -522,11 +538,11 @@
     border-radius:var(--radius-sm);
     padding:12px 16px;
     box-shadow:var(--shadow-soft-sm);
-    font-weight:600;
+    font-weight:500;
   }
   .promises li .mark{
-    background:var(--lime);
-    color:var(--black);
+    background:var(--salvia);
+    color:var(--cafe);
     border-radius:8px;
     width:26px;
     height:26px;
@@ -535,12 +551,14 @@
     align-items:center;
     justify-content:center;
     font-size:.85rem;
-    font-weight:800;
+    font-weight:600;
   }
-  .signature{
-    font-size:1.5rem;
-    font-weight:800;
-    color:var(--black);
+  .about-text p.signature{
+    font-family:var(--ff-assinatura);
+    font-size:2.2rem;
+    font-weight:600;
+    line-height:1.1;
+    color:var(--terracota);
     margin-top:12px;
   }
 
@@ -586,9 +604,10 @@
     display:block;
     padding:16px 18px 0;
     font-size:.7rem;
-    font-weight:800;
+    font-weight:600;
     text-transform:uppercase;
     letter-spacing:.05em;
+    color:var(--terracota);
   }
   .destaque-cover{
     aspect-ratio:9/16;
@@ -597,7 +616,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    background:linear-gradient(160deg, #eef0ec, #ffffff);
+    background:linear-gradient(160deg, #EADBC4, #FBF6EC);
   }
   .destaque-capa-img{
     position:absolute;
@@ -609,14 +628,14 @@
   .destaque-cover .frame-mini{
     position:absolute;
     inset:10px;
-    border:2px dashed var(--lime-strong);
+    border:2px dashed var(--rosa-po);
     border-radius:10px;
   }
   .play-btn{
     width:60px;
     height:60px;
     border-radius:50%;
-    background:var(--lime);
+    background:var(--terracota);
     box-shadow:var(--shadow-soft-sm);
     display:flex;
     align-items:center;
@@ -627,22 +646,23 @@
     content:'';
     border-style:solid;
     border-width:10px 0 10px 16px;
-    border-color:transparent transparent transparent var(--black);
+    border-color:transparent transparent transparent var(--sobre-terracota);
     margin-left:4px;
   }
   .destaque-body{ padding:16px 18px 18px; }
   .destaque-formato{
     display:block;
     font-size:.7rem;
-    font-weight:700;
+    font-weight:600;
     text-transform:uppercase;
     letter-spacing:.04em;
     color:var(--gray-text);
     margin-bottom:10px;
   }
   .destaque-title{
-    font-size:1.02rem;
-    font-weight:800;
+    font-family:var(--ff-titulo);
+    font-size:1.1rem;
+    font-weight:600;
     margin-bottom:6px;
   }
   .destaque-legenda{
@@ -665,7 +685,7 @@
   }
   .filter-btn{
     font-size:.78rem;
-    font-weight:700;
+    font-weight:500;
     padding:9px 16px;
     border-radius:999px;
     border:1.5px solid var(--gray-line);
@@ -674,9 +694,9 @@
   }
   .filter-btn:hover{ transform:translateY(-2px); }
   .filter-btn[aria-pressed="true"]{
-    background:var(--black);
-    color:#fff;
-    border-color:var(--black);
+    background:var(--terracota);
+    color:var(--sobre-terracota);
+    border-color:var(--terracota);
   }
   @media (prefers-reduced-motion: reduce){
     .filter-btn{ transition:none; }
@@ -718,10 +738,11 @@
     padding:24px;
   }
   .service-num{
-    font-weight:800;
+    font-family:var(--ff-titulo);
+    font-weight:600;
     font-size:1.4rem;
-    color:#fff;
-    background:var(--black);
+    color:var(--sobre-terracota);
+    background:var(--terracota);
     display:inline-flex;
     align-items:center;
     justify-content:center;
@@ -730,8 +751,8 @@
     border-radius:12px;
     margin-bottom:16px;
   }
-  .service-card:nth-child(even) .service-num{ background:var(--lime); color:var(--black); }
-  .service-title{ font-size:1.02rem; font-weight:800; margin-bottom:10px; }
+  .service-card:nth-child(even) .service-num{ background:var(--salvia); color:var(--cafe); }
+  .service-title{ font-family:var(--ff-titulo); font-size:1.15rem; font-weight:600; margin-bottom:10px; }
   .service-desc{ font-size:.9rem; color:var(--gray-text); }
 
   /* ====== NUMEROS E DEPOIMENTOS ====== */
@@ -746,23 +767,24 @@
   }
   .metric-card{
     text-align:center;
-    background:var(--black);
-    color:#fff;
+    background:var(--cafe);
+    color:var(--sobre-escuro);
     border-radius:var(--radius);
     padding:26px 14px;
     box-shadow:var(--shadow-soft-sm);
   }
   .metric-num{
-    font-weight:800;
-    font-size:2.2rem;
-    color:var(--lime);
+    font-family:var(--ff-titulo);
+    font-weight:600;
+    font-size:2.3rem;
+    color:var(--rosa-po);
   }
   .metric-label{ font-size:.8rem; margin-top:6px; font-weight:600; opacity:.85; }
 
   .resultados-bloco[hidden], .depoimentos-bloco[hidden]{ display:none; }
   .results-title, .testimonials-title{
     font-size:.85rem;
-    font-weight:700;
+    font-weight:600;
     text-transform:uppercase;
     letter-spacing:.06em;
     color:var(--gray-text);
@@ -786,15 +808,16 @@
   }
   .result-brand{
     font-size:.72rem;
-    font-weight:700;
+    font-weight:600;
     text-transform:uppercase;
-    background:var(--lime);
+    background:var(--rosa-po);
+    color:var(--cafe);
     display:inline-block;
     padding:4px 10px;
     border-radius:999px;
     margin-bottom:12px;
   }
-  .result-goal{ font-weight:800; margin-bottom:8px; }
+  .result-goal{ font-weight:600; margin-bottom:8px; }
   .result-outcome{ font-size:.9rem; color:var(--gray-text); }
 
   .testimonial-grid{
@@ -817,7 +840,7 @@
   }
   .testimonial-quote::before{ content:'"'; }
   .testimonial-quote::after{ content:'"'; }
-  .testimonial-author{ font-weight:800; font-size:.85rem; }
+  .testimonial-author{ font-weight:600; font-size:.85rem; }
   .testimonial-company{ font-size:.8rem; color:var(--gray-text); }
 
   /* ====== CONTATO ====== */
@@ -846,7 +869,7 @@
   .field{ margin-bottom:18px; }
   .field label{
     display:block;
-    font-weight:700;
+    font-weight:600;
     font-size:.85rem;
     margin-bottom:6px;
   }
@@ -859,16 +882,17 @@
     background:var(--bg);
   }
   .field input::placeholder,
-  .field textarea::placeholder{ color:#9a9c93; }
+  .field textarea::placeholder{ color:#8F7A6F; }
   .field input:focus-visible,
-  .field textarea:focus-visible{ outline-color:var(--black); }
+  .field textarea:focus-visible{ outline-color:var(--cafe); }
   .field textarea{ min-height:120px; resize:vertical; }
   .form-msg{
     margin-top:16px;
-    background:var(--lime);
+    background:var(--salvia-clara);
+    color:var(--cafe);
     border-radius:10px;
     padding:14px 16px;
-    font-weight:700;
+    font-weight:600;
   }
   .form-msg[hidden]{ display:none; }
 
@@ -905,21 +929,21 @@
   .contact-card .icone svg{ width:18px; height:18px; }
   .contact-card .rotulo{
     font-size:.68rem;
-    font-weight:700;
+    font-weight:600;
     text-transform:uppercase;
     letter-spacing:.06em;
     color:var(--gray-text);
   }
   .contact-card .valor{
-    font-weight:700;
+    font-weight:600;
     font-size:.95rem;
     margin-top:2px;
   }
 
   /* ====== RODAPE ====== */
   footer{
-    background:var(--black);
-    color:#fff;
+    background:var(--cafe);
+    color:var(--sobre-escuro);
     padding:44px 0 28px;
   }
   .footer-inner{
@@ -929,11 +953,12 @@
     align-items:center;
     gap:20px;
   }
-  .footer-name{ font-weight:800; font-size:1.15rem; }
+  .footer-name{ font-family:var(--ff-titulo); font-weight:600; font-size:1.3rem; }
   .footer-links{ display:flex; gap:18px; flex-wrap:wrap; }
   .footer-links a{ font-weight:600; font-size:.9rem; }
-  .footer-links a:hover{ color:var(--lime); }
-  .footer-year{ width:100%; text-align:center; font-size:.76rem; opacity:.55; margin-top:24px; }
+  .footer-links a:hover{ color:var(--rosa-po); }
+  .footer-assinatura{ width:100%; text-align:center; font-family:var(--ff-assinatura); font-size:1.8rem; font-weight:500; color:var(--rosa-po); margin-top:6px; line-height:1.1; }
+  .footer-year{ width:100%; text-align:center; font-size:.76rem; opacity:.6; margin-top:10px; }
 
   /* ====== ANIMACAO DE ENTRADA ====== */
   .reveal{
@@ -953,7 +978,7 @@
   .video-overlay{
     position:fixed;
     inset:0;
-    background:rgba(17,17,17,.78);
+    background:rgba(74,46,38,.78);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -973,7 +998,8 @@
     width:36px;
     height:36px;
     border-radius:50%;
-    background:#fff;
+    background:var(--card);
+    color:var(--cafe);
     border:none;
     box-shadow:var(--shadow-soft-sm);
     font-size:1rem;
@@ -999,7 +1025,7 @@
   .capture-overlay{
     position:fixed;
     inset:0;
-    background:rgba(17,17,17,.55);
+    background:rgba(74,46,38,.55);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -1023,8 +1049,8 @@
     width:36px;
     height:36px;
     border-radius:50%;
-    background:var(--black);
-    color:#fff;
+    background:var(--cafe);
+    color:var(--sobre-escuro);
     border:none;
     box-shadow:var(--shadow-soft-sm);
     font-size:1rem;
@@ -1035,13 +1061,13 @@
     margin-bottom:8px;
   }
   .capture-sub{
-    font-weight:700;
-    color:var(--gray-text);
-    font-size:.85rem;
-    text-transform:uppercase;
-    letter-spacing:.06em;
+    font-family:var(--ff-assinatura);
+    font-weight:600;
+    color:var(--terracota);
+    font-size:1.5rem;
+    line-height:1;
     display:block;
-    margin-bottom:16px;
+    margin-bottom:10px;
   }
   .capture-msg[hidden]{ display:none; }
 
@@ -1091,7 +1117,7 @@
           <span class="hero-tag">@luanacoin · Cabo de Santo Agostinho</span>
           <p class="hero-desc">Eu crio vídeos e fotos autênticos que fazem a sua marca parar o scroll e conquistar a confiança de quem assiste, do roteiro à entrega final.</p>
           <div class="hero-actions">
-            <a class="btn btn-lime" href="#contato">Falar comigo</a>
+            <a class="btn btn-terracota" href="#contato">Falar comigo</a>
             <a class="btn btn-outline" href="#trabalhos">Ver os trabalhos</a>
           </div>
           <div class="hero-stats" id="heroStats" hidden>
@@ -1115,7 +1141,7 @@
           <div class="float-ui float-balloon" aria-hidden="true">✨ Efeitos</div>
           <div class="float-ui float-chip" aria-hidden="true">Oi ✌️</div>
           <svg class="float-cursor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 2l16 8-7 2-2 7-7-17z" fill="#111111" stroke="#ffffff" stroke-width="1.2" stroke-linejoin="round"/>
+            <path d="M4 2l16 8-7 2-2 7-7-17z" fill="#4A2E26" stroke="#FBF6EC" stroke-width="1.2" stroke-linejoin="round"/>
           </svg>
 
           <div class="timeline" aria-hidden="true">
@@ -1250,7 +1276,7 @@
               <label for="mensagem">o que você precisa</label>
               <textarea id="mensagem" name="mensagem" required placeholder="produto, quantidade de vídeos e prazo"></textarea>
             </div>
-            <button type="submit" class="btn btn-lime btn-block">enviar recado</button>
+            <button type="submit" class="btn btn-terracota btn-block">enviar recado</button>
             <p class="form-msg" id="formMsg" role="status" hidden>Mensagem enviada! Vou te responder em breve, obrigada pelo contato.</p>
           </form>
         </div>
@@ -1273,6 +1299,7 @@
       <a href="mailto:contato@luanacoin.com">E-mail</a>
       <a href="politica-de-privacidade/">Política de Privacidade</a>
     </div>
+    <span class="footer-assinatura">com carinho, Luana</span>
     <span class="footer-year"></span>
   </div>
 </footer>
@@ -1301,7 +1328,7 @@
         <label for="captureEmail">E-mail</label>
         <input type="email" id="captureEmail" name="captureEmail" required autocomplete="email">
       </div>
-      <button type="submit" class="btn btn-lime btn-block">Quero receber</button>
+      <button type="submit" class="btn btn-terracota btn-block">Quero receber</button>
       <p class="form-msg capture-msg" id="captureMsg" role="status" hidden>Recebido! Vou te enviar o mídia kit no e-mail informado.</p>
     </form>
   </div>
@@ -1348,10 +1375,10 @@
 
   // Degrades de capa usados nos cards de video, em sequencia (nao vem do banco).
   var CAPAS_VIDEO = [
-    "linear-gradient(160deg, #eef0ec, #ffffff)",
-    "linear-gradient(150deg, #f0f2ea, #ffffff)",
-    "linear-gradient(170deg, #ecefe6, #ffffff)",
-    "linear-gradient(140deg, #eef0ec, #ffffff)"
+    "linear-gradient(160deg, #EADBC4, #FBF6EC)",
+    "linear-gradient(150deg, #F1E3CF, #FBF6EC)",
+    "linear-gradient(170deg, #E8D5BF, #FBF6EC)",
+    "linear-gradient(140deg, #EFDFC8, #FBF6EC)"
   ];
 
   // Canais de contato mostrados na seção "Bora criar juntos".

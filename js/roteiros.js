@@ -402,7 +402,7 @@ async function abaRoteiros(painel){
 
   cacheRoteiros = res.dados;
 
-  html += '<p style="font-size:.85rem; color:#6b6353; margin-bottom:16px;">Cole o link de um reel e eu transcrevo. Serve pros seus e pros das outras, com etiqueta pra você separar.</p>';
+  html += '<p style="font-size:.85rem; color:#6F554B; margin-bottom:16px;">Cole o link de um reel e eu transcrevo. Serve pros seus e pros das outras, com etiqueta pra você separar.</p>';
 
   html += '<div style="display:flex; gap:14px; flex-wrap:wrap;">' +
     '<div class="painel-branco" id="painelConfigSupadata" style="flex:1; min-width:280px;"></div>' +
@@ -501,8 +501,8 @@ async function abaRoteiros(painel){
 ============================================================================ */
 function montarPainelConfigSupadata(area, chaveAtual){
   var textoStatus = chaveAtual
-    ? '<p style="font-size:.8rem; color:#8a8272; margin-bottom:10px;">Chave salva, terminando em <strong>' + escapa(chaveAtual.slice(-4)) + '</strong>.</p>'
-    : '<p style="font-size:.8rem; color:#8a8272; margin-bottom:10px;">Você ainda não tem uma chave salva. Crie uma conta grátis em <a href="https://supadata.ai" target="_blank" rel="noopener">supadata.ai</a>, são 100 créditos por mês, sem precisar de cartão. Copie a sua API key e cole aqui embaixo.</p>';
+    ? '<p style="font-size:.8rem; color:#725A50; margin-bottom:10px;">Chave salva, terminando em <strong>' + escapa(chaveAtual.slice(-4)) + '</strong>.</p>'
+    : '<p style="font-size:.8rem; color:#725A50; margin-bottom:10px;">Você ainda não tem uma chave salva. Crie uma conta grátis em <a href="https://supadata.ai" target="_blank" rel="noopener">supadata.ai</a>, são 100 créditos por mês, sem precisar de cartão. Copie a sua API key e cole aqui embaixo.</p>';
 
   area.innerHTML =
     '<p class="painel-titulo">🔑 Chave da Supadata</p>' +
@@ -514,7 +514,7 @@ function montarPainelConfigSupadata(area, chaveAtual){
       '</div>' +
       '<button type="submit" class="btn btn-principal">Salvar</button>' +
     '</form>' +
-    '<p id="saldoSupadata" style="font-size:.76rem; color:#8a8272; margin-top:10px;"></p>' +
+    '<p id="saldoSupadata" style="font-size:.76rem; color:#725A50; margin-top:10px;"></p>' +
     '<p class="aviso erro oculto" id="erroChaveSupadata"></p>';
 
   document.getElementById("formChaveSupadata").addEventListener("submit", async function(e){
@@ -552,8 +552,8 @@ async function atualizarSaldoSupadataNaTela(chave){
 ============================================================================ */
 function montarPainelConfigIA(area, chaveAtual){
   var textoStatus = chaveAtual
-    ? '<p style="font-size:.8rem; color:#8a8272; margin-bottom:10px;">Chave salva, terminando em <strong>' + escapa(chaveAtual.slice(-4)) + '</strong>. Com ela, assim que uma transcrição termina, a Claude já separa gancho, desenvolvimento, CTA e expressões sozinha.</p>'
-    : '<p style="font-size:.8rem; color:#8a8272; margin-bottom:10px;">Opcional: cole aqui uma chave da API da Anthropic (console.anthropic.com) pra transcrição vir com o gancho, o desenvolvimento, o CTA e as expressões já separados pela Claude. Sem essa chave, o roteiro guarda só a transcrição, e você preenche o resto na mão se quiser.</p>';
+    ? '<p style="font-size:.8rem; color:#725A50; margin-bottom:10px;">Chave salva, terminando em <strong>' + escapa(chaveAtual.slice(-4)) + '</strong>. Com ela, assim que uma transcrição termina, a Claude já separa gancho, desenvolvimento, CTA e expressões sozinha.</p>'
+    : '<p style="font-size:.8rem; color:#725A50; margin-bottom:10px;">Opcional: cole aqui uma chave da API da Anthropic (console.anthropic.com) pra transcrição vir com o gancho, o desenvolvimento, o CTA e as expressões já separados pela Claude. Sem essa chave, o roteiro guarda só a transcrição, e você preenche o resto na mão se quiser.</p>';
 
   area.innerHTML =
     '<p class="painel-titulo">🧠 Chave da IA (Claude)</p>' +
@@ -832,7 +832,7 @@ function montarCardRoteiro(r){
   } else if(r.fonte === "manual" && !r.url){
     capaHtml = '<div class="capa-roteiro">' +
       '<div class="capa-icone-fonte">' + icone("roteiros") + '</div>' +
-      '<span style="font-size:.62rem; color:#8a8272;">Escrito à mão</span></div>';
+      '<span style="font-size:.62rem; color:#725A50;">Escrito à mão</span></div>';
   } else {
     capaHtml = '<div class="capa-roteiro">' +
       '<div class="capa-icone-fonte">' + icone(FONTE_ICONE_ROTEIRO[r.fonte] || "roteiros") + '</div>' +
@@ -846,10 +846,10 @@ function montarCardRoteiro(r){
   var trechinho = (r.transcricao || "").trim();
   var previa = trechinho
     ? escapa(trechinho.slice(0, 220)) + (trechinho.length > 220 ? "…" : "")
-    : '<span style="color:#b7ae98;">Sem transcrição ainda.</span>';
+    : '<span style="color:#7C645A;">Sem transcrição ainda.</span>';
 
   var tagsHtml = (r.tags || []).map(function(t){
-    return '<span class="pilula" style="background:#eee5d2; color:#6b6353;">' + escapa(t) + '</span>';
+    return '<span class="pilula" style="background:#EADFCB; color:#6F554B;">' + escapa(t) + '</span>';
   }).join(" ");
 
   return '<div class="cartao-roteiro">' +

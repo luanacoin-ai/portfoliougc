@@ -318,7 +318,7 @@ async function igRenderInteracoes(area){
       '<button class="btn" id="btnBaixarInter">' + icone("baixar") + ' Baixar planilha (CSV)</button>' +
     '</div>' +
     '<p id="igResumoInter" style="font-size:.78rem; font-weight:600; margin-bottom:6px;"></p>' +
-    '<p style="font-size:.72rem; color:#8a8272; margin-bottom:12px;">' +
+    '<p style="font-size:.72rem; color:#725A50; margin-bottom:12px;">' +
       'Clique no título de uma coluna pra ordenar. Clique nas etiquetas de uma pessoa pra editar. ' +
       '"Interações" conta cada comentário, toque em botão ou mensagem da pessoa. ' +
       'O Instagram só informa o @ (não o nome da pessoa). ' +
@@ -419,9 +419,9 @@ function igDesenharPlanilha(pessoas){
     var pessoa = p.username
       ? '<a href="https://instagram.com/' + igAttr(p.username) + '" target="_blank" rel="noopener"><strong>' + escapa(arroba) + '</strong></a>'
       : '<strong>' + escapa(arroba) + '</strong>';
-    var contato = [p.email, p.telefone].filter(Boolean).map(escapa).join("<br>") || '<span style="color:#b7ae98;">-</span>';
-    var etiquetas = (p.tags || []).map(function(t){ return '<span class="pilula" style="background:#efe9db; margin:1px 3px 1px 0;">' + escapa(t) + '</span>'; }).join("") ||
-      '<span style="color:#b7ae98;">+ etiqueta</span>';
+    var contato = [p.email, p.telefone].filter(Boolean).map(escapa).join("<br>") || '<span style="color:#7C645A;">-</span>';
+    var etiquetas = (p.tags || []).map(function(t){ return '<span class="pilula" style="background:#EFE3D0; margin:1px 3px 1px 0;">' + escapa(t) + '</span>'; }).join("") ||
+      '<span style="color:#7C645A;">+ etiqueta</span>';
 
     var tr = el('<tr>' +
       '<td>' + pessoa + '<div class="ig-id">ID ' + escapa(p.ig_user_id) + '</div></td>' +
@@ -566,7 +566,7 @@ async function igRenderAutomacoes(area){
   html += '<div id="igAvisoFreio"></div>';
   html += '<div class="barra-acoes">' +
     '<button class="btn btn-principal" id="btnNovaAutomacaoIg">' + icone("mais") + ' Nova automação</button>' +
-    '<span style="font-size:.76rem; color:#8a8272;">Quando alguém comenta a palavra escolhida num post, a pessoa recebe uma DM automática.</span>' +
+    '<span style="font-size:.76rem; color:#725A50;">Quando alguém comenta a palavra escolhida num post, a pessoa recebe uma DM automática.</span>' +
   '</div>';
 
   if(automacoes.length === 0){
@@ -636,9 +636,9 @@ async function igPreencherFotosDosPosts(corpo){
 
 function igLinhaAutomacao(a){
   var palavras = a.match_any
-    ? '<span class="pilula" style="background:#eef2ff; color:#2b6fff;">Qualquer comentário</span>'
+    ? '<span class="pilula" style="background:#F6E3DA; color:#9A4430;">Qualquer comentário</span>'
     : String(a.keyword || "").split(",").map(function(p){ return p.trim(); }).filter(Boolean).map(function(p){
-        return '<span class="pilula" style="background:#efe9db; margin:0 4px 4px 0;">' + escapa(p) + '</span>';
+        return '<span class="pilula" style="background:#EFE3D0; margin:0 4px 4px 0;">' + escapa(p) + '</span>';
       }).join("");
   var qtdPosts = (a.media_ids || []).length;
   var nome = a.nome && a.nome.trim() ? a.nome : "Automação sem nome";
@@ -751,7 +751,7 @@ async function igCarregarUltimosEnvios(){
       return '<tr><td style="white-space:nowrap;">' + escapa(formatarDataHora(d.ts)) + '</td>' +
         '<td>' + escapa(nomes[d.ig_user_id] || d.ig_user_id || "-") + '</td>' +
         '<td>' + igPillStatus(d.status) + '</td>' +
-        '<td style="color:#6b6353;">' + escapa(d.motivo || "") + '</td></tr>';
+        '<td style="color:#6F554B;">' + escapa(d.motivo || "") + '</td></tr>';
     }).join("") + '</tbody></table></div>';
 }
 
@@ -1139,7 +1139,7 @@ function igRenderVariantes(){
   area.innerHTML = "";
   e.variantes.forEach(function(texto, i){
     var linha = el('<div style="display:flex; gap:6px; margin-top:8px; align-items:flex-start;">' +
-      '<textarea rows="2" maxlength="300" placeholder="Variação ' + (i + 2) + '" style="flex:1; border:1.5px solid #e0d9c6; border-radius:8px; padding:9px 10px; background:var(--paper); resize:vertical;">' + escapa(texto) + '</textarea>' +
+      '<textarea rows="2" maxlength="300" placeholder="Variação ' + (i + 2) + '" style="flex:1; border:1.5px solid #E2D4BF; border-radius:8px; padding:9px 10px; background:var(--creme); resize:vertical;">' + escapa(texto) + '</textarea>' +
       '<button type="button" class="btn btn-icone btn-perigo" title="Remover variação">' + icone("lixeira") + '</button></div>');
     linha.querySelector("textarea").addEventListener("input", function(ev){ e.variantes[i] = ev.target.value; igMarcarSujo(); });
     linha.querySelector("button").addEventListener("click", function(){ e.variantes.splice(i, 1); igMarcarSujo(); igRenderVariantes(); });
@@ -1253,7 +1253,7 @@ function igRenderAreaAcao(){
   var html = '<div class="ig-msg-card referencia">' +
     '<div class="ig-msg-topo"><span>Mensagem 1</span></div>' +
     '<p id="igRefMsg" style="font-size:.78rem; white-space:pre-wrap; margin-bottom:6px;"></p>' +
-    '<p style="font-size:.74rem; color:#6b6353;">Botão: <strong id="igRefBotao"></strong> (leva pra Mensagem 2)</p>' +
+    '<p style="font-size:.74rem; color:#6F554B;">Botão: <strong id="igRefBotao"></strong> (leva pra Mensagem 2)</p>' +
     '<p class="ig-ajuda">Pra editar a Mensagem 1, mude "Sua mensagem" e "Texto do botão" aqui em cima.</p>' +
   '</div>';
   html += '<div id="igSequencia"></div>';
@@ -1278,7 +1278,7 @@ function igAtualizarReferencia(){
     msg.style.fontStyle = "";
   } else {
     msg.textContent = "Escreva a sua mensagem acima.";
-    msg.style.color = "#8a8272";
+    msg.style.color = "#8A7468";
     msg.style.fontStyle = "italic";
   }
   botao.textContent = e.textoBotao || "(sem texto)";

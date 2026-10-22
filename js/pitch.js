@@ -325,7 +325,7 @@ async function abaPitch(painel){
   garantirVersaoInicialPitch(pitchFormatoAtivo);
 
   var html = "";
-  html += '<p style="font-size:.85rem; color:#6b6353; margin-bottom:16px;">Responde poucas perguntas rápidas e eu escrevo o e-mail (ou a DM) pronto pra mandar pra marca nova, na estrutura que costuma funcionar. Depois é só trocar o que ficar grifado de amarelo pra cada marca nova.</p>';
+  html += '<p style="font-size:.85rem; color:#6F554B; margin-bottom:16px;">Responde poucas perguntas rápidas e eu escrevo o e-mail (ou a DM) pronto pra mandar pra marca nova, na estrutura que costuma funcionar. Depois é só trocar o que ficar grifado de amarelo pra cada marca nova.</p>';
 
   html += '<p class="painel-titulo" style="margin-bottom:10px;">A estrutura do e-mail</p>';
   html += '<div class="grade-cartoes">' + [
@@ -334,8 +334,8 @@ async function abaPitch(painel){
     ["Parágrafo 3", "A ideia", "O conteúdo que você já pensou."],
     ["Parágrafo 4", "O convite", "A pergunta e o seu portfólio."]
   ].map(function(c){
-    return '<div class="cartao-borda" style="--cor-cartao:var(--orange);">' +
-      '<p class="rotulo" style="text-transform:uppercase; letter-spacing:.03em; font-size:.68rem; font-weight:700; color:var(--orange);">' + c[0] + '</p>' +
+    return '<div class="cartao-borda" style="--cor-cartao:var(--caramelo);">' +
+      '<p class="rotulo" style="text-transform:uppercase; letter-spacing:.03em; font-size:.68rem; font-weight:700; color:#85562A;">' + c[0] + '</p>' +
       '<p style="font-weight:700; margin:2px 0 3px;">' + c[1] + '</p>' +
       '<p class="sub">' + c[2] + '</p>' +
     '</div>';
@@ -348,22 +348,22 @@ async function abaPitch(painel){
   html += '<div class="coluna-preview"><div class="painel-branco">';
   html += '<p class="painel-titulo">O seu texto</p>';
   html += '<div class="chips" id="pitchFormatos" style="margin-bottom:12px;"></div>';
-  html += '<p id="pitchStatusVersao" style="font-size:.72rem; color:#8a8272; margin-bottom:12px;"></p>';
+  html += '<p id="pitchStatusVersao" style="font-size:.72rem; color:#725A50; margin-bottom:12px;"></p>';
   html += '<div class="form-acoes" style="justify-content:flex-start; gap:8px; margin-top:0; margin-bottom:12px;">' +
     '<button type="button" class="btn botao-acao-pitch" id="btnPitchEscrever">Escrever pra mim</button>' +
     '<button type="button" class="btn botao-acao-pitch" id="btnPitchOutraVersao">Outra versão</button>' +
     '<button type="button" class="btn botao-acao-pitch" id="btnPitchOriginal">Voltar ao original</button>' +
   '</div>';
   html += '<div class="campo" id="pitchCampoAssunto"><label>Assunto</label><input id="pitchAssunto" placeholder="Assunto do e-mail"></div>';
-  html += '<div class="painel-branco" style="background:var(--paper); border-style:dashed; margin-bottom:0;"><div id="pitchCorpo" class="pitch-corpo" contenteditable="true" spellcheck="false"></div></div>';
+  html += '<div class="painel-branco" style="background:var(--creme); border-style:dashed; margin-bottom:0;"><div id="pitchCorpo" class="pitch-corpo" contenteditable="true" spellcheck="false"></div></div>';
   html += '<div class="form-acoes" style="margin-top:12px;">' +
-    '<span style="font-size:.78rem; color:#8a8272;" id="pitchContadores"></span>' +
+    '<span style="font-size:.78rem; color:#725A50;" id="pitchContadores"></span>' +
     '<button type="button" class="btn" id="btnPitchCopiar">' + icone("copiar") + ' Copiar</button>' +
   '</div>';
   html += '</div></div>'; // painel-branco / coluna-preview
 
   html += '<div class="coluna-formulario">';
-  html += '<p style="font-size:.78rem; color:#6b6353; margin-bottom:14px;" id="pitchIntroFormato"></p>';
+  html += '<p style="font-size:.78rem; color:#6F554B; margin-bottom:14px;" id="pitchIntroFormato"></p>';
 
   html += '<div class="painel-branco">';
   html += '<p class="painel-titulo">Seus dados</p>';
@@ -379,7 +379,7 @@ async function abaPitch(painel){
   html += '<p class="painel-titulo">Suas respostas</p>';
   html += '<div id="pitchCamposRespostas"></div>';
   html += '<button type="button" class="btn btn-principal" style="width:100%; justify-content:center; margin-top:6px;" id="btnPitchCriarModelo">Criar modelo de e-mail</button>';
-  html += '<p style="font-size:.72rem; color:#8a8272; margin-top:8px;" id="pitchAvisoMudou"></p>';
+  html += '<p style="font-size:.72rem; color:#725A50; margin-top:8px;" id="pitchAvisoMudou"></p>';
   html += '<button type="button" class="btn btn-pequeno" style="margin-top:10px;" id="btnPitchLimpar">Limpar minhas respostas</button>';
   html += '</div>';
 
@@ -396,9 +396,9 @@ async function abaPitch(painel){
 
 function montarCampoRespostaPitch(campo, valor){
   return '<div class="campo">' +
-    '<label><span style="color:#c98a00; font-weight:700; margin-right:4px;">' + campo.numero + '</span>' + escapa(campo.titulo) + '</label>' +
+    '<label><span style="color:#85562A; font-weight:700; margin-right:4px;">' + campo.numero + '</span>' + escapa(campo.titulo) + '</label>' +
     '<textarea id="pitchResposta-' + campo.id + '" placeholder="' + escapa(campo.placeholder || "") + '" style="min-height:60px;">' + escapa(valor) + '</textarea>' +
-    '<p style="font-size:.7rem; color:#8a8272; margin-top:4px;">' + escapa(campo.ajuda) + '</p>' +
+    '<p style="font-size:.7rem; color:#725A50; margin-top:4px;">' + escapa(campo.ajuda) + '</p>' +
   '</div>';
 }
 
