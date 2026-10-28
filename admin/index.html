@@ -1330,6 +1330,33 @@ var COR_TEXTO = {
 };
 function corTexto(cor){ return COR_TEXTO[String(cor).toUpperCase()] || cor; }
 
+// Como a parceria foi combinada: permuta (você recebe produto ou serviço) ou parceria paga (dinheiro).
+// Fica na coluna "tipo_parceria" de marcas e campanhas (arquivo parceria.sql).
+var TIPOS_PARCERIA = [
+  { valor: "permuta", rotulo: "Permuta", cor: "#6E7F52" },
+  { valor: "paga", rotulo: "Parceria paga", cor: "#B5543C" }
+];
+function rotuloParceria(valor){
+  var t = TIPOS_PARCERIA.filter(function(x){ return x.valor === valor; })[0];
+  return t ? t.rotulo : "";
+}
+function pilulaParceria(valor){
+  var t = TIPOS_PARCERIA.filter(function(x){ return x.valor === valor; })[0];
+  if(!t) return "-";
+  return '<span class="pilula" style="background:' + t.cor + '22; color:' + corTexto(t.cor) + '">' + t.rotulo + '</span>';
+}
+function opcoesParceria(atual){
+  return '<option value="">Não definido</option>' + TIPOS_PARCERIA.map(function(t){
+    return '<option value="' + t.valor + '"' + (t.valor === atual ? " selected" : "") + '>' + t.rotulo + '</option>';
+  }).join("");
+}
+// Se a coluna ainda não existe no Supabase, explica o que fazer em vez de mostrar um erro técnico.
+function textoErroSalvar(mensagem){
+  return /tipo_parceria/.test(String(mensagem))
+    ? "Falta criar a coluna \"Parceria\" no Supabase. Rode o arquivo parceria.sql no SQL Editor (uma vez só) e tente de novo."
+    : "Não consegui salvar: " + mensagem;
+}
+
 /* ============================================================================
    AJUDANTES GERAIS
 ============================================================================ */
@@ -1852,9 +1879,9 @@ async function abaMarcas(painel){
   document.getElementById("btnBaixarMarcas").addEventListener("click", function(){
     var lista = filtrarMarcas(res.dados);
     baixarCSV("marcas.csv",
-      ["Marca", "Instagram", "E-mail", "Telefone", "Situação", "Observação", "Último contato"],
+      ["Marca", "Instagram", "E-mail", "Telefone", "Situação", "Parceria", "Observação", "Último contato"],
       lista.map(function(m){
-        return [m.nome, m.instagram || "", m.email || "", m.telefone || "", rotuloSituacao(m.situacao), m.obs || "", m.ultimo_contato ? formatarData(m.ultimo_contato) : ""];
+        return [m.nome, m.instagram || "", m.email || "", m.telefone || "", rotuloSituacao(m.situacao), rotuloParceria(m.tipo_parceria), m.obs || "", m.ultimo_contato ? formatarData(m.ultimo_contato) : ""];
       })
     );
   });
@@ -1912,7 +1939,7 @@ function desenharTabelaMarcas(todasMarcas){
     return;
   }
 
-  var tabela = el('<table><thead><tr><th></th><th>Marca</th><th>Instagram</th><th>E-mail</th><th>Telefone</th><th>Situação</th><th>Último contato</th><th></th></tr></thead><tbody></tbody></table>');
+  var tabela = el('<table><thead><tr><th></th><th>Marca</th><th>Instagram</th><th>E-mail</th><th>Telefone</th><th>Situação</th><th>Parceria</th><th>Último contato</th><th></th></tr></thead><tbody></tbody></table>');
   var corpo = tabela.querySelector("tbody");
 
   lista.forEach(function(m){
@@ -1929,6 +1956,7 @@ function desenharTabelaMarcas(todasMarcas){
         '<td>' + escapa(m.email || "-") + '</td>' +
         '<td>' + escapa(m.telefone || "-") + '</td>' +
         '<td><span class="pilula" style="background:' + s.cor + '22; color:' + corTexto(s.cor) + '">' + s.rotulo + '</span></td>' +
+        '<td>' + pilulaParceria(m.tipo_parceria) + '</td>' +
         '<td>' + (m.ultimo_contato ? formatarData(m.ultimo_contato) : "-") + '</td>' +
         '<td><div class="acoes-linha">' + (linkW ? '<a class="btn btn-icone" href="' + linkW + '" target="_blank" rel="noopener" title="WhatsApp" onclick="event.stopPropagation()">' + icone("whats") + '</a>' : '') + '</div></td>' +
       '</tr>'
@@ -1974,7 +2002,10 @@ function abrirFormMarca(marca){
         '<div class="campo"><label>Telefone</label><input id="fmTelefone" value="' + (editando ? escapa(marca.telefone || "") : "") + '"></div>' +
         '<div class="campo"><label>Situação</label><select id="fmSituacao">' + opcoesSituacao + '</select></div>' +
       '</div>' +
-      '<div class="campo"><label>Último contato</label><input type="date" id="fmUltimoContato" value="' + (editando && marca.ultimo_contato ? marca.ultimo_contato : "") + '"></div>' +
+      '<div class="form-linha">' +
+        '<div class="campo"><label>Parceria</label><select id="fmParceria">' + opcoesParceria(editando ? marca.tipo_parceria : "") + '</select></div>' +
+        '<div class="campo"><label>Último contato</label><input type="date" id="fmUltimoContato" value="' + (editando && marca.ultimo_contato ? marca.ultimo_contato : "") + '"></div>' +
+      '</div>' +
       '<div class="campo"><label>Observação</label><textarea id="fmObs">' + (editando ? escapa(marca.obs || "") : "") + '</textarea></div>' +
       '<div class="form-acoes">' +
         (editando ? '<button type="button" class="btn btn-perigo" id="btnApagarMarca">Apagar</button>' : '<span></span>') +
@@ -2003,13 +2034,16 @@ function abrirFormMarca(marca){
       ultimo_contato: document.getElementById("fmUltimoContato").value || null,
       obs: document.getElementById("fmObs").value.trim()
     };
+    // só manda a parceria quando ela mudou: assim o resto continua salvando mesmo se a coluna ainda não existir
+    var parceria = document.getElementById("fmParceria").value;
+    if(parceria !== ((editando && marca.tipo_parceria) || "")) dados.tipo_parceria = parceria || null;
     var res = editando
       ? await buscarSeguro(banco.from("marcas").update(dados).eq("id", marca.id))
       : await buscarSeguro(banco.from("marcas").insert(dados));
 
     if(!res.ok){
       var erroEl = document.getElementById("fmErro");
-      erroEl.textContent = "Não consegui salvar: " + res.mensagem;
+      erroEl.textContent = textoErroSalvar(res.mensagem);
       erroEl.classList.remove("oculto");
       return;
     }
@@ -4128,8 +4162,10 @@ async function abaCampanhas(painel){
   var valorTotal = lista.reduce(function(s,c){ return s + Number(c.valor||0); }, 0);
   var qtdTotal = lista.reduce(function(s,c){ return s + Number(c.qtd||0); }, 0);
   var ticketMedio = qtdTotal > 0 ? valorTotal / qtdTotal : 0;
-  var aReceber = lista.filter(function(c){ return c.pagamento === "pendente"; }).reduce(function(s,c){ return s + Number(c.valor||0); }, 0);
-  var jaRecebido = lista.filter(function(c){ return c.pagamento === "pago"; }).reduce(function(s,c){ return s + Number(c.valor||0); }, 0);
+  // permuta não é dinheiro: não entra em "a receber" nem em "já recebido"
+  var comDinheiro = lista.filter(function(c){ return c.tipo_parceria !== "permuta"; });
+  var aReceber = comDinheiro.filter(function(c){ return c.pagamento === "pendente"; }).reduce(function(s,c){ return s + Number(c.valor||0); }, 0);
+  var jaRecebido = comDinheiro.filter(function(c){ return c.pagamento === "pago"; }).reduce(function(s,c){ return s + Number(c.valor||0); }, 0);
 
   html += '<div class="grade-cartoes">' +
     '<div class="cartao"><div class="numero">' + totalCampanhas + '</div><div class="rotulo">total de campanhas</div></div>' +
@@ -4164,9 +4200,9 @@ async function abaCampanhas(painel){
   document.getElementById("btnBaixarCampanhas").addEventListener("click", function(){
     var linhas = filtrarOrdenarCampanhas(lista);
     baixarCSV("campanhas.csv",
-      ["Campanha","Cliente","Tipo","Status","Qtd","Valor","Prazo","Pagamento","Favorita"],
+      ["Campanha","Cliente","Tipo","Parceria","Status","Qtd","Valor","Prazo","Pagamento","Favorita"],
       linhas.map(function(c){
-        return [c.campanha, c.cliente, c.tipo, c.status, c.qtd, c.valor, c.prazo ? formatarData(c.prazo) : "", c.pagamento, c.favorita ? "Sim" : "Não"];
+        return [c.campanha, c.cliente, c.tipo, rotuloParceria(c.tipo_parceria), c.status, c.qtd, c.valor, c.prazo ? formatarData(c.prazo) : "", c.pagamento, c.favorita ? "Sim" : "Não"];
       })
     );
   });
@@ -4213,6 +4249,7 @@ var COLUNAS_CAMPANHA = [
   { chave: "campanha", rotulo: "Campanha" },
   { chave: "cliente", rotulo: "Cliente" },
   { chave: "tipo", rotulo: "Tipo" },
+  { chave: "tipo_parceria", rotulo: "Parceria" },
   { chave: "status", rotulo: "Status" },
   { chave: "qtd", rotulo: "Qtd" },
   { chave: "valor", rotulo: "Valor" },
@@ -4254,6 +4291,7 @@ function desenharTabelaCampanhas(todasCampanhas){
       '<td><strong>' + escapa(c.campanha) + '</strong></td>' +
       '<td>' + escapa(c.cliente) + '</td>' +
       '<td><span class="pilula" style="background:' + tipoCor + '22;color:' + corTexto(tipoCor) + '">' + escapa(c.tipo) + '</span></td>' +
+      '<td>' + pilulaParceria(c.tipo_parceria) + '</td>' +
       '<td><span class="pilula" style="background:' + statusCor + '22;color:' + corTexto(statusCor) + '">' + escapa(c.status) + '</span></td>' +
       '<td>' + c.qtd + '</td>' +
       '<td>' + formatarDinheiro(c.valor) + '</td>' +
@@ -4316,6 +4354,8 @@ function abrirFormCampanha(campanha){
         '<div class="campo"><label>Tipo</label><select id="fcpTipo">' + opcoesTipo + '</select></div>' +
         '<div class="campo"><label>Status</label><select id="fcpStatus">' + opcoesStatus + '</select></div>' +
       '</div>' +
+      '<div class="campo"><label>Parceria</label><select id="fcpParceria">' + opcoesParceria(editando ? campanha.tipo_parceria : "") + '</select>' +
+        '<p class="ig-ajuda" style="margin-top:4px;">Permuta: você recebe produto ou serviço, sem dinheiro. Ela não entra em "a receber" nem em "já recebido".</p></div>' +
       '<div class="form-linha">' +
         '<div class="campo"><label>Quantidade de vídeos</label><input type="number" min="1" id="fcpQtd" value="' + (editando ? campanha.qtd : 1) + '"></div>' +
         '<div class="campo"><label>Valor total (R$)</label><input type="number" step="0.01" min="0" id="fcpValor" value="' + (editando ? campanha.valor : 0) + '"></div>' +
@@ -4357,13 +4397,16 @@ function abrirFormCampanha(campanha){
       ativa: document.getElementById("fcpAtiva").checked,
       favorita: document.getElementById("fcpFavorita").checked
     };
+    // só manda a parceria quando ela mudou: assim o resto continua salvando mesmo se a coluna ainda não existir
+    var parceria = document.getElementById("fcpParceria").value;
+    if(parceria !== ((editando && campanha.tipo_parceria) || "")) dados.tipo_parceria = parceria || null;
     var res = editando
       ? await buscarSeguro(banco.from("campanhas").update(dados).eq("id", campanha.id))
       : await buscarSeguro(banco.from("campanhas").insert(dados));
 
     if(!res.ok){
       var erroEl = document.getElementById("fcpErro");
-      erroEl.textContent = "Não consegui salvar: " + res.mensagem;
+      erroEl.textContent = textoErroSalvar(res.mensagem);
       erroEl.classList.remove("oculto");
       return;
     }
