@@ -1027,6 +1027,108 @@
   .ig-pilula-pulado{ background:#EAE0CF; color:#6F554B; }
 
 
+  /* ---------- financeiro ---------- */
+  .fin-topo{ display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+  .fin-titulo strong{ display:block; font-family:var(--ff-titulo); font-size:1.3rem; font-weight:500; line-height:1.15; }
+  .fin-assina{ display:block; font-family:var(--ff-assinatura); font-size:1.35rem; font-weight:600; color:var(--terracota); line-height:1; }
+  .fin-acoes-topo{ display:flex; gap:8px; flex-wrap:wrap; }
+  .fin-controles{ display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+  .fin-mes{ display:flex; align-items:center; gap:6px; }
+  .btn.fin-sel{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none; padding-right:28px;
+    background-repeat:no-repeat; background-position:right 10px center; background-size:12px;
+    background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%234A2E26" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>');
+  }
+  .fin-kpis{ display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+  .fin-kpi{ background:var(--card); border:1.5px solid #E6D8C4; border-radius:16px; padding:15px 16px; min-width:0; }
+  .fin-kpi.saldo{ background:var(--terracota); border-color:var(--terracota); }
+  .fin-kpi.saldo .fin-kpi-rotulo, .fin-kpi.saldo .fin-kpi-sub, .fin-kpi.saldo .fin-kpi-num{ color:var(--sobre-terracota); }
+  .fin-kpi-rotulo{ font-size:.64rem; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#725A50; margin-bottom:6px; }
+  .fin-kpi-num{ font-family:var(--ff-titulo); font-size:1.45rem; font-weight:600; line-height:1.1; overflow-wrap:anywhere; }
+  .fin-kpi-sub{ font-size:.72rem; color:#725A50; margin-top:6px; display:flex; flex-direction:column; gap:4px; align-items:flex-start; }
+  .fin-kpi-sub .aberto{ color:#7A4A1E; font-weight:600; }
+  .fin-kpi-sub .positivo{ color:#4F5E38; font-weight:600; }
+  .fin-kpi-sub .negativo{ color:#8A2A1E; font-weight:600; }
+  .fin-barra-meta{ width:100%; height:7px; background:#EFE3D0; border-radius:99px; overflow:hidden; }
+  .fin-barra-meta i{ display:block; height:100%; background:var(--terracota); border-radius:99px; }
+  .fin-link{ border:none; background:none; padding:0; font:inherit; font-size:.74rem; font-weight:600; color:var(--terracota-escura); text-decoration:underline; cursor:pointer; text-align:left; }
+  .fin-duas{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+  .fin-card{ margin-bottom:0; border-radius:16px; min-width:0; }
+  .fin-duas > *{ min-width:0; }
+  .fin-card-titulo{ font-size:.84rem; font-weight:600; margin-bottom:8px; }
+  .fin-card-titulo span{ font-weight:400; font-size:.72rem; color:#725A50; margin-left:4px; }
+  .fin-scroll{ overflow-x:auto; }
+  .fin-svg{ width:100%; height:auto; min-width:420px; display:block; }
+  .fin-legenda-linhas{ display:flex; gap:14px; font-size:.72rem; margin-bottom:6px; }
+  .fin-legenda-linhas span::before{ content:""; display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; }
+  .fin-legenda-linhas .rec::before{ background:#6E7F52; }
+  .fin-legenda-linhas .des::before{ background:#B5543C; }
+  .fin-legenda-linhas .luc::before{ background:#C98A55; }
+  .fin-rosca-linha{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .fin-rosca{ width:150px; height:150px; flex-shrink:0; }
+  .fin-legenda{ list-style:none; margin:0; padding:0; flex:1; min-width:150px; }
+  .fin-legenda li{ display:grid; grid-template-columns:12px 1fr auto; gap:8px; align-items:center; padding:5px 0; font-size:.78rem; border-bottom:1px solid #F2E8D8; }
+  .fin-legenda li:last-child{ border-bottom:none; }
+  .fin-legenda li i{ width:10px; height:10px; border-radius:50%; display:block; }
+  .fin-contas-mini{ list-style:none; margin:0 0 10px; padding:0; }
+  .fin-contas-mini li{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid #F2E8D8; font-size:.82rem; }
+  .fin-contas-mini li:last-child{ border-bottom:none; }
+  .fin-pilula-pago{ background:#E3E8D3; color:#4F5E38; }
+  .fin-pilula-aberta{ background:#F8EBD2; color:#7A5A22; }
+  .fin-pilula-atrasada{ background:#F8E1DC; color:#8A2A1E; }
+  .fin-pilula-neutra{ background:#EAE0CF; color:#6F554B; }
+  button.fin-situacao, button.fin-tipo-pilula{ border:none; cursor:pointer; font-family:inherit; }
+  .fin-cat{ display:inline-flex; align-items:center; gap:6px; }
+  .fin-cat i{ width:8px; height:8px; border-radius:50%; display:block; }
+  .fin-entrada{ color:#4F5E38; }
+  .fin-saida{ color:#8A2A1E; }
+  .etiqueta.fin-parcela{ background:#F6E4BD; color:#6B4E1C; }
+  .etiqueta.fin-dup{ background:#EAE0CF; color:#5E4A44; }
+  .fin-passos{ margin:0 0 10px 18px; font-size:.84rem; line-height:1.7; }
+  .fin-importar-intro{ text-align:center; max-width:560px; margin:8px auto 18px; }
+  .fin-importar-intro h2{ font-size:1.7rem; line-height:1.2; margin-bottom:8px; }
+  .fin-importar-intro em{ font-style:italic; color:var(--terracota-escura); }
+  .fin-importar-intro p{ font-size:.92rem; color:#6F554B; }
+  .fin-escolhas{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px; margin:16px 0 10px; }
+  .fin-escolha{
+    display:flex; gap:14px; align-items:flex-start; text-align:left; background:var(--card); border:1.5px solid #E6D8C4;
+    border-radius:18px; padding:18px; cursor:pointer; font-family:inherit; color:var(--cafe);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .fin-escolha:hover{ border-color:var(--terracota); box-shadow:0 14px 30px -22px rgba(74,46,38,.5); }
+  .fin-escolha-icone{ width:46px; height:46px; border-radius:14px; background:#F6E3DA; color:var(--terracota-escura); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .fin-escolha-icone svg{ width:22px; height:22px; }
+  .fin-escolha strong{ display:block; font-family:var(--ff-titulo); font-size:1.05rem; font-weight:600; }
+  .fin-escolha small{ display:block; font-size:.78rem; color:#725A50; margin-top:4px; line-height:1.45; }
+  .fin-formatos{ font-size:.78rem; color:#725A50; margin-bottom:14px; text-align:center; }
+  .fin-nota-segura{ display:flex; gap:12px; align-items:flex-start; background:#E3E8D3; color:#3F4D2B; border-radius:14px; padding:14px 16px; font-size:.8rem; line-height:1.5; }
+  .fin-nota-segura svg{ width:20px; height:20px; flex-shrink:0; }
+  .fin-revisao{ padding:20px; }
+  .fin-rev-topo{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+  .fin-rev-topo h3{ font-size:1.15rem; }
+  .fin-rev-arquivo{ font-size:.78rem; color:#725A50; }
+  .fin-lendo{ border:1.5px dashed #D0C0A8; border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:12px; background:#F6E3DA; font-size:.86rem; }
+  .fin-lendo svg{ width:20px; height:20px; display:block; }
+  .fin-lendo-barra{ flex:1; height:8px; background:#EFE3D0; border-radius:99px; overflow:hidden; }
+  .fin-lendo-barra i{ display:block; height:100%; background:var(--terracota); border-radius:99px; transition:width .3s; }
+  .fin-rev-tabela td{ vertical-align:top; }
+  .fin-rev-off{ opacity:.55; }
+  .fin-sel-cat{ border:1.5px solid #E2D4BF; border-radius:8px; padding:4px 6px; background:var(--creme); font-size:.74rem; max-width:150px; }
+  .fin-rev-rodape{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:14px; padding-top:14px; border-top:1px solid #EFE3D0; font-size:.8rem; }
+  .fin-rev-botoes{ display:flex; gap:8px; }
+  .fin-perfil-form{ border:1.5px solid #E6D8C4; border-radius:12px; padding:14px; margin-bottom:12px; }
+  .fin-tipo-chips{ margin-bottom:14px; }
+  @media (max-width:1100px){ .fin-kpis{ grid-template-columns:repeat(3, minmax(0,1fr)); } }
+  @media (max-width:900px){
+    .fin-duas, .fin-escolhas{ grid-template-columns:1fr; }
+    .fin-kpis{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+  }
+  @media (max-width:600px){
+    .fin-kpi{ padding:13px 14px; }
+    .fin-kpi-num{ font-size:1.12rem; white-space:nowrap; }
+    .fin-importar-intro h2{ font-size:1.4rem; }
+  }
+
   /* ---------- marca: Fraunces abre, Poppins explica, Caveat assina ---------- */
   h1,h2,h3{ font-family:var(--ff-titulo); font-weight:500; letter-spacing:-.01em; }
   .cabecalho-aba h1{ font-size:1.55rem; }
@@ -1082,6 +1184,13 @@
         <button class="item-menu" data-tab="checklist"></button>
         <button class="item-menu" data-tab="roteiros"></button>
         <button class="item-menu" data-tab="instagram"></button>
+      </div>
+      <button type="button" class="grupo-menu" aria-expanded="false" aria-controls="itensFinanceiro">
+        <span>Financeiro</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="grupo-itens" id="itensFinanceiro" hidden>
+        <button class="item-menu" data-tab="financeiro"></button>
       </div>
     </nav>
     <div class="sidebar-rodape">
@@ -1148,7 +1257,11 @@ var ICONES = {
   relogio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
   alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2L12 3z" stroke-linejoin="round"/><path d="M12 9v5M12 17h.01"/></svg>',
   tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 2c.4 2.2 1.9 3.8 4 4.1v3a7 7 0 0 1-4-1.3v6.7a5.9 5.9 0 1 1-5-5.8v3.1a2.9 2.9 0 1 0 2 2.7V2h3z"/></svg>',
-  youtube: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg>'
+  youtube: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg>',
+  financeiro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.5 0-2.5.8-2.5 1.9 0 2.6 5 1.4 5 4.1 0 1.1-1.1 2-2.6 2-1.2 0-2.2-.5-2.7-1.4M12 6.5V8M12 16v1.5" stroke-linecap="round"/></svg>',
+  cadeado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  banco: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',
+  cartao: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg>'
 };
 
 function icone(nome){ return ICONES[nome] || ""; }
@@ -1353,7 +1466,8 @@ var ABAS = {
   campanhas: { titulo: "Campanhas", icone: "campanhas" },
   checklist: { titulo: "Brainstorm", icone: "checklist" },
   roteiros: { titulo: "Roteiros", icone: "roteiros" },
-  instagram: { titulo: "Instagram", icone: "instagram" }
+  instagram: { titulo: "Instagram", icone: "instagram" },
+  financeiro: { titulo: "Financeiro", icone: "financeiro" }
 };
 
 var botoesMenu = document.querySelectorAll(".item-menu");
@@ -1412,6 +1526,7 @@ async function renderizarAba(nome){
     else if(nome === "checklist") await abaChecklist(painel);
     else if(nome === "roteiros") await abaRoteiros(painel);
     else if(nome === "instagram") await abaInstagram(painel);
+    else if(nome === "financeiro") await abaFinanceiro(painel);
   }catch(erro){
     console.error(erro);
     painel.innerHTML = faixaAviso("Essa aba encontrou um problema para carregar. Tente clicar em outra aba e voltar aqui.", "erro");
@@ -4792,5 +4907,7 @@ iniciar();
 <script src="../js/pitch.js?v=20260924b"></script>
 <script src="../js/instagram.js?v=20261022e"></script>
 <script src="../js/instagram-analises.js?v=20261022e"></script>
+<script src="../js/financeiro-leitura.js?v=20261028a"></script>
+<script src="../js/financeiro.js?v=20261028a"></script>
 </body>
 </html>
