@@ -513,6 +513,8 @@ function finFiltrarLinhas(){
 function finDesenharLancamentos(area){
   var periodo = finNoPeriodo(finLinhas);
   var todasCategorias = FIN_CATEGORIAS_DESPESA.concat(FIN_CATEGORIAS_RECEITA.filter(function(c){ return FIN_CATEGORIAS_DESPESA.indexOf(c) < 0; }));
+  // categorias antigas que ainda estão em lançamentos (ex: "Mercado", que virou "Internet") continuam no filtro
+  finLinhas.forEach(function(l){ if(todasCategorias.indexOf(l.categoria) < 0) todasCategorias.push(l.categoria); });
   var chips = [{ v: "todos", r: "Todos" }, { v: "receita", r: "Entradas" }, { v: "despesa", r: "Saídas" }, { v: "abertos", r: "A pagar ou receber" }];
 
   area.innerHTML =
@@ -775,6 +777,14 @@ function finAbrirFormConta(conta){
       '<button type="submit" class="btn btn-principal">Salvar</button></div>' +
       '<p class="aviso erro oculto" id="finCErro"></p>' +
     '</form>', true);
+  // numa conta nova, o nome sugere a categoria (ex: "Internet" ou "Claro" -> Internet)
+  if(!editando){
+    document.getElementById("finCNome").addEventListener("blur", function(e){
+      var sugestao = finCategorizar(e.target.value, "despesa");
+      var sel = document.getElementById("finCCat");
+      if(sugestao !== "Outros" && sel.value === "Casa") sel.value = sugestao;
+    });
+  }
   if(editando){
     document.getElementById("finCApagar").addEventListener("click", async function(){
       if(!window.confirm('Apagar a conta "' + conta.nome + '"? Os pagamentos que você já marcou continuam nos lançamentos.')) return;
@@ -963,12 +973,20 @@ async function finLinhasDoPDF(arquivo, aoProgredir){
       var grupo = null;
       for(var i = 0; i < porY.length; i++){ if(Math.abs(porY[i].y - y) <= 3){ grupo = porY[i]; break; } }
       if(!grupo){ grupo = { y: y, itens: [] }; porY.push(grupo); }
-      grupo.itens.push({ x: it.transform[4], texto: it.str });
+      grupo.itens.push({ x: it.transform[4], largura: it.width || 0, altura: it.height || 8, texto: it.str });
     });
     porY.sort(function(a, b){ return b.y - a.y; });
     porY.forEach(function(g){
       g.itens.sort(function(a, b){ return a.x - b.x; });
-      linhas.push(g.itens.map(function(i){ return i.texto; }).join(" "));
+      // Alguns PDFs cortam uma palavra no meio ("P" + "ARCELA"): só põe espaço entre dois pedaços
+      // quando existe um vão de verdade entre eles.
+      var texto = "", fimAnterior = null;
+      g.itens.forEach(function(i){
+        if(fimAnterior !== null && i.x - fimAnterior > Math.max(1, i.altura * 0.15) && !/\s$/.test(texto) && !/^\s/.test(i.texto)) texto += " ";
+        texto += i.texto;
+        fimAnterior = i.x + i.largura;
+      });
+      linhas.push(texto);
     });
     if(aoProgredir) aoProgredir(n / doc.numPages);
   }

@@ -12,13 +12,14 @@
 "use strict";
 
 /* ---------- categorias e cores ---------- */
-var FIN_CATEGORIAS_DESPESA = ["Casa", "Mercado", "Alimentação", "Transporte", "Assinaturas", "Saúde", "Lazer",
+var FIN_CATEGORIAS_DESPESA = ["Casa", "Internet", "Alimentação", "Transporte", "Assinaturas", "Saúde", "Lazer",
   "Compras", "Beleza", "Educação", "Ferramentas", "Marketing", "Impostos e taxas", "Cartão", "Outros"];
 var FIN_CATEGORIAS_RECEITA = ["Clientes", "Pix recebido", "Reembolso", "Outros"];
 
-// tons da marca (terracota, sálvia, caramelo, rosa, café) pra os gráficos
+// tons da marca (terracota, sálvia, caramelo, rosa, café) pra os gráficos.
+// "Mercado" não está mais na lista, mas a cor fica pra lançamentos antigos que ainda usam essa categoria.
 var FIN_CORES = {
-  "Casa": "#B5543C", "Mercado": "#8A9A6E", "Alimentação": "#C98A55", "Transporte": "#8A6F63",
+  "Casa": "#B5543C", "Internet": "#8A9A6E", "Mercado": "#8A9A6E", "Alimentação": "#C98A55", "Transporte": "#8A6F63",
   "Assinaturas": "#C9807B", "Saúde": "#6E7F52", "Lazer": "#D9B36C", "Compras": "#9A4430",
   "Beleza": "#E8B4B0", "Educação": "#5E6E45", "Ferramentas": "#7A6458", "Marketing": "#D49A3C",
   "Impostos e taxas": "#A08E82", "Cartão": "#4A2E26", "Outros": "#CDBFAA",
@@ -29,19 +30,19 @@ function finCor(categoria){ return FIN_CORES[categoria] || "#CDBFAA"; }
 // Palavras que aparecem na descrição e dizem a categoria. A primeira regra que bater vale.
 var FIN_REGRAS_DESPESA = [
   { cat: "Cartão", re: /pagamento (de )?fatura|pgto fatura|fatura (do )?cart/ },
-  { cat: "Mercado", re: /supermerc|mercadinho|atacad|assa[ií]\b|carrefour|p[aã]o de a[cç][uú]car|hortifruti|sacol[aã]o|bompre[cç]o|nordestao|mateus|guanabara|mercantil|a[cç]ougue|\bfeira\b/ },
-  { cat: "Alimentação", re: /ifood|rappi|uber ?eats|restaurante|lanchonete|pizza|hamburg|burger|sushi|padaria|cafeteria|sorvet|a[cç]a[ií]|mcdonald|subway|outback|delivery|habib|bk brasil/ },
+  { cat: "Internet", re: /internet|fibra|provedor|wi-?fi|\bclaro\b|\bvivo\b|\btim\b|\boi\b|net ?combo|telecom|telefon/ },
+  { cat: "Alimentação", re: /super ?mer|mercado(?! ?livre)|mercadinho|atacad|assa[ií]\b|carrefour|p[aã]o de a[cç][uú]car|hortifruti|sacol[aã]o|bompre[cç]o|nordestin|mateus|guanabara|mercantil|a[cç]ougue|\bfeira\b|ifood|rappi|uber ?eats|restaurante|lanchonete|pizza|hamburg|burger|sushi|padaria|cafeteria|sorvet|a[cç]a[ií]|mcdonald|subway|outback|delivery|habib|bk brasil|bebida|adega|conveni[eê]ncia/ },
   { cat: "Transporte", re: /\buber\b|\b99 ?pop\b|\b99\b|cabify|\bposto\b|combust|\bshell\b|ipiranga|petrobras|estaciona|ped[aá]gio|sem parar|conectcar|metr[oô]|cptm|passagem/ },
-  { cat: "Assinaturas", re: /netflix|spotify|prime video|amazon prime|disney|\bhbo\b|youtube|apple\.com|icloud|google (one|storage)|deezer|globoplay|paramount|canva|adobe|chatgpt|openai|notion|dropbox|microsoft|assinatura/ },
+  { cat: "Assinaturas", re: /netflix|spotify|prime video|amazon ?prime|anthropic|claude|google g\d|disney|\bhbo\b|youtube|apple\.com|icloud|google (one|storage)|deezer|globoplay|paramount|canva|adobe|chatgpt|openai|notion|dropbox|microsoft|assinatura/ },
   { cat: "Saúde", re: /farm[aá]cia|drogaria|drogasil|droga ?raia|pacheco|pague menos|cl[ií]nica|hospital|laborat[oó]rio|unimed|dentista|psic[oó]log|consulta|exame|plano de sa[uú]de|hapvida/ },
-  { cat: "Casa", re: /alugue|condom[ií]nio|energia|\benel\b|celpe|neoenergia|cemig|[aá]gua|compesa|sabesp|\bg[aá]s\b|comg[aá]s|internet|\bclaro\b|\bvivo\b|\btim\b|\boi\b|iptu|leroy|tok ?stok|m[oó]veis/ },
+  { cat: "Casa", re: /alugue|condom[ií]nio|energia|\benel\b|celpe|neoenergia|cemig|[aá]gua|compesa|sabesp|\bg[aá]s\b|comg[aá]s|iptu|leroy|tok ?stok|m[oó]veis/ },
   { cat: "Lazer", re: /cinema|ingresso|sympla|\bshow\b|teatro|parque|viagem|hotel|airbnb|booking|latam|gol linhas|azul linhas|decolar|balada/ },
   { cat: "Compras", re: /shopee|mercado ?livre|amazon|magalu|magazine|americanas|shein|renner|\bc ?& ?a\b|riachuelo|zara|aliexpress|\bloja\b|casas bahia|kabum|fast shop|centauro|netshoes/ },
   { cat: "Beleza", re: /sal[aã]o|est[eé]tica|cabelo|barbearia|\bunha|manicure|sobrancelha|c[ií]lios|botic[aá]rio|natura|sephora|\bavon\b|beleza/ },
   { cat: "Educação", re: /\bcurso|escola|faculdade|udemy|hotmart|alura|col[eé]gio|livraria|saraiva|duolingo/ },
   { cat: "Ferramentas", re: /capcut|hostinger|registro\.br|dom[ií]nio|hospedagem|godaddy|\bwix\b|figma|zapier|elementor|vercel|supabase|github|resend/ },
   { cat: "Marketing", re: /meta ads|facebook ?ads|fb ?ads|google ?ads|tiktok ?ads|an[uú]ncio|impulsion|instagram ads/ },
-  { cat: "Impostos e taxas", re: /\bdas\b|\bmei\b|darf|imposto|\biof\b|tarifa|anuidade|\btaxa\b|juros|multa|encargos|\binss\b|\biss\b/ }
+  { cat: "Impostos e taxas", re: /\bdas\b|\bmei\b|darf|imposto|\biof\b|tarifa|anuidade|\btaxa\b|juros|rotativo|multa|encargos|\binss\b|\biss\b/ }
 ];
 var FIN_REGRAS_RECEITA = [
   { cat: "Reembolso", re: /reembolso|estorno|devolu[cç][aã]o|cashback/ },
@@ -106,7 +107,7 @@ function finParseData(texto, anoRef){
   else if((m = s.match(/^(\d{4})(\d{2})(\d{2})/))){ ano = +m[1]; mes = +m[2]; dia = +m[3]; }
   else if((m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/))){ dia = +m[1]; mes = +m[2]; ano = +m[3]; if(ano < 100) ano += 2000; }
   else if((m = s.match(/^(\d{1,2})[\/.](\d{1,2})$/))){ dia = +m[1]; mes = +m[2]; ano = null; }
-  else if((m = s.match(/^(\d{1,2})\s+(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-z]*\.?(?:\s+(\d{4}))?$/))){
+  else if((m = s.match(/^(\d{1,2})\s+(?:de\s+)?(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-z]*\.?(?:\s+(?:de\s+)?(\d{4}))?$/))){
     dia = +m[1]; mes = FIN_MESES_ABREV[m[2]]; ano = m[3] ? +m[3] : null;
   } else return null;
   if(!(mes >= 1 && mes <= 12 && dia >= 1 && dia <= 31)) return null;
@@ -174,6 +175,10 @@ function finMontarSugestao(dataISO, descricao, valorComSinal, tipoImportacao){
   if(ehPagamentoFatura){
     sugestao.marcada = false;
     sugestao.aviso = "Pagamento ou crédito da fatura: já está nas suas contas, por isso vem desmarcado.";
+  } else if(tipoImportacao === "fatura" && tipo === "receita"){
+    // qualquer crédito numa fatura é pagamento (ou débito automático) ou estorno de uma compra
+    sugestao.marcada = false;
+    sugestao.aviso = "Crédito na fatura (pagamento ou estorno de uma compra). Vem desmarcado: pagamento já está nas suas contas. Se for estorno, marque.";
   } else if(ehPagamentoDaFaturaNoExtrato){
     sugestao.categoria = "Cartão";
     sugestao.marcada = false;
@@ -313,8 +318,12 @@ function finLerOFX(texto, tipoImportacao){
 }
 
 /* ---------- PDF: recebe as linhas de texto que o leitor de PDF tirou ---------- */
-var FIN_RE_VALOR_FIM = /(?:^|\s)((?:[-−]\s*)?(?:R\$\s*)?\d{1,3}(?:\.\d{3})*,\d{2}|(?:[-−]\s*)?(?:R\$\s*)?\d+,\d{2})\s*([-−]|CR|DB|C|D)?\s*$/i;
-var FIN_RE_DATA_INICIO = /^\s*(\d{2}[\/.]\d{2}(?:[\/.]\d{2,4})?|\d{1,2}\s+(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-z]*\.?(?:\s+\d{4})?)\s+(.+)$/i;
+// O valor no fim da linha. Grupos: 1 = sinal antes ("+" ou um "-" colado no número), 2 = "R$",
+// 3 = "-" depois do "R$", 4 = o número, 5 = sinal depois (-, CR, DB, C, D).
+// Um "-" solto (com espaço depois) NÃO é sinal: no Inter ele marca "sem beneficiário".
+var FIN_RE_VALOR_FIM = /(?:^|\s)(\+\s*|[-−](?=\S))?(R\$\s*)?([-−](?=\d))?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2})\s*([-−]|CR|DB|C|D)?\s*$/i;
+// A data no começo da linha: 15/10, 15/10/2026, "15 out", "15 out 2026" e o jeito do Inter: "23 de set. 2026".
+var FIN_RE_DATA_INICIO = /^\s*(\d{2}[\/.]\d{2}(?:[\/.]\d{2,4})?|\d{1,2}\s+(?:de\s+)?(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-z]*\.?(?:\s+(?:de\s+)?\d{4})?)\s+(.+)$/i;
 
 // Acha o ano do documento (ex: vencimento 10/11/2026) pra datas que vêm só com dia e mês.
 function finAcharAnoDoDocumento(linhas){
@@ -340,28 +349,28 @@ function finLerLinhasPDF(linhas, tipoImportacao){
     var data = finParseData(m[1].replace(/\s+/g, " "), ano);
     if(!data) return;
     var resto = m[2];
-    // pode ter dois valores no fim (valor e saldo): o primeiro é o lançamento
+    // pode ter dois valores no fim (valor e saldo): no extrato o primeiro é o lançamento
     var achou = resto.match(FIN_RE_VALOR_FIM);
     if(!achou) return;
     var depois = resto.slice(0, achou.index);
     var segundo = depois.match(FIN_RE_VALOR_FIM);
-    var alvo = achou, sinalTexto = achou[2] || "";
-    if(segundo && tipoImportacao === "extrato"){ alvo = segundo; sinalTexto = segundo[2] || ""; }
-    var valorNum = finParseValor(alvo[1]);
-    if(isNaN(valorNum) || valorNum === 0) return;
+    var alvo = achou;
+    if(segundo && tipoImportacao === "extrato") alvo = segundo;
+    var valorAbs = finParseValor(alvo[4]);
+    if(isNaN(valorAbs) || valorAbs === 0) return;
     var descricao = resto.slice(0, alvo.index).trim();
     if(!descricao || descricao.length < 2) return;
     if(FIN_IGNORAR.test(finNormalizar(descricao))) return;
 
-    var negativo = valorNum < 0 || /^[-−]|^db$|^d$/i.test(sinalTexto) || /^[-−]$/.test(sinalTexto);
-    var credito = /^cr$|^c$/i.test(sinalTexto);
-    var valorAbs = Math.abs(valorNum);
+    var antes = (alvo[1] || "").trim(), depoisDoRS = alvo[3] || "", sufixo = (alvo[5] || "").toLowerCase();
+    var negativo = /^[-−]/.test(antes) || depoisDoRS !== "" || sufixo === "-" || sufixo === "−" || sufixo === "db" || sufixo === "d";
+    var credito = antes === "+" || sufixo === "cr" || sufixo === "c";
     var valorComSinal;
     if(tipoImportacao === "fatura"){
-      // fatura: sem sinal = compra (positivo). Com "-" ou CR = crédito/estorno (negativo)
+      // fatura: sem sinal = compra (positivo). Com "+", "-" colado ou CR = crédito, pagamento ou estorno (negativo)
       valorComSinal = (negativo || credito) ? -valorAbs : valorAbs;
     } else {
-      // extrato: "-" ou D = saída. Sem sinal = entrada, a não ser que a descrição diga que foi saída
+      // extrato: "-" ou D = saída. Sem sinal (ou com "+" ou C) = entrada
       valorComSinal = (negativo && !credito) ? -valorAbs : valorAbs;
     }
     brutos.push({ data: data, descricao: descricao, valor: valorComSinal });
@@ -369,7 +378,33 @@ function finLerLinhasPDF(linhas, tipoImportacao){
   if(!brutos.length){
     return { itens: [], erro: "Não consegui achar lançamentos no texto desse PDF. Se ele for uma foto (escaneado), o texto não dá pra ler. Tente baixar o CSV ou o OFX no app do banco." };
   }
-  var itens = brutos.map(function(b){ return finMontarSugestao(b.data, b.descricao, b.valor, tipoImportacao); });
+
+  // Parcela de uma compra antiga (ex: compra de fevereiro, parcela 8 de 10 cobrada agora): a data
+  // original cairia no mês errado, então ela vai pra data mais recente dessa fatura.
+  if(tipoImportacao === "fatura"){
+    var ref = null;
+    brutos.forEach(function(b){
+      var p = finAcharParcela(b.descricao);
+      if((!p || /^1\//.test(p)) && (ref === null || b.data > ref)) ref = b.data;
+    });
+    if(ref){
+      var corte = finSomarDiasISO(ref, -40);
+      brutos.forEach(function(b){
+        var p = finAcharParcela(b.descricao);
+        if(p && !/^1\//.test(p) && b.data < corte){ b.dataOriginal = b.data; b.data = ref; }
+      });
+    }
+  }
+
+  var itens = brutos.map(function(b){
+    var sug = finMontarSugestao(b.data, b.descricao, b.valor, tipoImportacao);
+    if(b.dataOriginal){
+      sug.dataOriginal = b.dataOriginal;
+      var dd = b.dataOriginal.slice(8, 10) + "/" + b.dataOriginal.slice(5, 7) + "/" + b.dataOriginal.slice(0, 4);
+      sug.aviso = (sug.aviso ? sug.aviso + " " : "") + "Parcela de uma compra de " + dd + ": a data foi movida pra data dessa fatura, pra cair no mês em que você pagou.";
+    }
+    return sug;
+  });
   return { itens: finNumerarChaves(itens), erro: null };
 }
 

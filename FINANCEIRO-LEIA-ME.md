@@ -50,6 +50,18 @@ Cuidados que o painel já toma por você:
 - Errou? Em **Importar > Importações recentes**, o botão **Desfazer esta importação** apaga só o
   que veio daquele arquivo.
 
+O que o painel entende numa fatura de cartão:
+
+- Crédito na fatura (um "+ R$", pagamento ou débito automático, ou estorno) vem **desmarcado**: o pagamento
+  já está nas suas contas. Se for estorno de uma compra, é só marcar.
+- **Parcela de compra antiga** (ex: compra de fevereiro, parcela 8 de 10, cobrada agora): a data vai pra
+  data mais recente da fatura, pra cair no mês em que você pagou. Um aviso na linha mostra a data original.
+- Linhas sem data (resumo, "próxima fatura", limites) são ignoradas.
+
+Categorias: a categoria "Mercado" foi trocada por **"Internet"** (provedor, Claro, Vivo, TIM...). Compras
+de supermercado agora entram em **Alimentação**. Lançamentos antigos que ainda estavam em "Mercado" continuam
+com essa etiqueta até você editar.
+
 Sobre o PDF: o painel lê o texto do PDF e procura linhas com data e valor. Funciona bem na
 maioria dos extratos e faturas, mas cada banco escreve de um jeito, então **sempre revise**. Se o
 PDF for uma foto (escaneado) não dá pra ler: use o CSV ou o OFX.
