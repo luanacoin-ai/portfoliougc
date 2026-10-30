@@ -1573,7 +1573,6 @@
   var destaquesGrid = document.getElementById("destaquesGrid");
   var filterBar = document.getElementById("filterBar");
   var workGrid = document.getElementById("workGrid");
-  var todosOs = ["Todos"].concat(nichos);
   var videosCarregados = [];
 
   // Constroi um card de video (mesmo visual usado nos destaques e nos
@@ -1641,25 +1640,40 @@
     });
   }
 
-  todosOs.forEach(function(nicho, index){
-    var btn = el("button", "filter-btn", nicho);
-    btn.type = "button";
-    btn.setAttribute("aria-pressed", index === 0 ? "true" : "false");
-    btn.addEventListener("click", function(){
-      Array.prototype.forEach.call(filterBar.children, function(b){
-        b.setAttribute("aria-pressed", "false");
+  // Os botões de nicho só aparecem para nichos que têm pelo menos um vídeo visível.
+  // Quando você publicar o primeiro vídeo de um nicho (ex: Pet), o botão dele
+  // aparece sozinho. A ordem segue a lista "nichos"; nichos que não estão na lista
+  // entram no fim. Sem nenhum vídeo, a barra inteira fica escondida.
+  function montarFiltros(){
+    filterBar.innerHTML = "";
+    var comVideo = {};
+    videosCarregados.forEach(function(v){ if(v.nicho) comVideo[v.nicho] = true; });
+    var visiveis = nichos.filter(function(n){ return comVideo[n]; });
+    Object.keys(comVideo).forEach(function(n){ if(visiveis.indexOf(n) < 0) visiveis.push(n); });
+    filterBar.style.display = visiveis.length === 0 ? "none" : "";
+    if(visiveis.length === 0) return;
+
+    ["Todos"].concat(visiveis).forEach(function(nicho, index){
+      var btn = el("button", "filter-btn", nicho);
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", index === 0 ? "true" : "false");
+      btn.addEventListener("click", function(){
+        Array.prototype.forEach.call(filterBar.children, function(b){
+          b.setAttribute("aria-pressed", "false");
+        });
+        btn.setAttribute("aria-pressed", "true");
+        renderWorkGrid(nicho);
       });
-      btn.setAttribute("aria-pressed", "true");
-      renderWorkGrid(nicho);
+      filterBar.appendChild(btn);
     });
-    filterBar.appendChild(btn);
-  });
+  }
 
   // Busca os videos visiveis no banco. Se der qualquer problema (banco fora
   // do ar, tabela ainda nao criada, etc), o site continua funcionando e so
   // mostra um aviso simples no lugar dos videos, sem quebrar o resto.
   function carregarVideosDoPortfolio(){
     if(!window.banco){
+      montarFiltros();
       renderDestaques([]);
       renderWorkGrid("Todos");
       return;
@@ -1668,12 +1682,14 @@
       .then(function(resultado){
         if(resultado.error) throw resultado.error;
         videosCarregados = resultado.data || [];
+        montarFiltros();
         renderDestaques(videosCarregados);
         renderWorkGrid("Todos");
       })
       .catch(function(erro){
         console.error("Não consegui carregar os vídeos do banco:", erro);
         videosCarregados = [];
+        montarFiltros();
         renderDestaques([]);
         renderWorkGrid("Todos");
       });
