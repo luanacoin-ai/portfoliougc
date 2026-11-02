@@ -75,6 +75,7 @@ var EST_ICONES = {
   proibido: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>',
   lapis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
+  lampada: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg>',
   mais: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
 };
 
@@ -158,7 +159,8 @@ function estDesenhar(painel, aviso){
   var completos = passos.filter(function(p){ return p.ok; }).length;
 
   var html = (aviso || "") + '<div class="est-topo"><p class="est-sub">O retrato que orienta tudo o que você cria.</p>' +
-    '<button type="button" class="btn btn-principal" data-calendario="">' + EST_ICONES.mais + 'Adicionar ao calendário</button></div>';
+    '<div class="est-topo-botoes"><button type="button" class="btn" id="estBtnBrainstorm">' + EST_ICONES.lampada + 'Brainstorm</button>' +
+    '<button type="button" class="btn btn-principal" data-calendario="">' + EST_ICONES.mais + 'Adicionar ao calendário</button></div></div>';
 
   // ---- contexto + preferências de roteiro ----
   html += '<div class="est-grade est-g2">';
@@ -264,6 +266,7 @@ function estDesenhar(painel, aviso){
       irParaAba("calendario");
     });
   });
+  document.getElementById("estBtnBrainstorm").addEventListener("click", estPerguntarFunil);
   painel.querySelectorAll("[data-tirar]").forEach(function(b){
     b.addEventListener("click", async function(){
       var antes = estCopia(estDados.evitar);
@@ -409,4 +412,172 @@ function estEditarPilares(){
     });
   }
   montar();
+}
+
+/* ============================================================================
+   BRAINSTORM: pergunta o nível do funil e pede ideias pra IA, usando tudo o
+   que está guardado na estratégia. Usa a chave da IA salva na aba Roteiros
+   (chamarIAPitch, do pitch.js). Cada ideia pode ir direto pro calendário.
+============================================================================ */
+var EST_FUNIL = {
+  topo: { nome: "Topo", explica: "Atrair gente nova: conteúdo de identificação e alcance, pra quem ainda não te conhece.", etapas: ["🪞 Identificação", "🤔 Curiosidade"] },
+  meio: { nome: "Meio", explica: "Criar conexão e autoridade: mostrar o que você sabe e por que vale te seguir.", etapas: ["🏆 Autoridade", "✨ Desejo"] },
+  fundo: { nome: "Fundo", explica: "Converter: levar marcas e seguidoras a agir (fechar parceria, comprar, chamar no direct).", etapas: ["✨ Desejo", "👉 Ação"] }
+};
+var EST_QTD_IDEIAS = 5;
+var estIdeias = null;   // { nivel, lista: [{ titulo, formato, estilo, pilar, etapa, ideia, porque, data, estado }] }
+
+function estPerguntarFunil(){
+  abrirModal('<h2 class="form-titulo" id="modalTituloLabel">Brainstorm</h2>' +
+    '<p class="est-texto" style="margin-bottom:14px">Qual o nível do funil dessas ideias?</p>' +
+    '<div class="est-funil">' + Object.keys(EST_FUNIL).map(function(k){
+      var f = EST_FUNIL[k];
+      return '<button type="button" class="est-funil-op" data-nivel="' + k + '"><span class="est-funil-barra est-funil-' + k + '"></span>' +
+        '<span><b>' + f.nome + ' de funil</b><small>' + escapa(f.explica) + '</small></span></button>';
+    }).join("") + '</div>');
+  modalConteudo.querySelectorAll("[data-nivel]").forEach(function(b){
+    b.addEventListener("click", function(){ estGerarIdeias(b.dataset.nivel); });
+  });
+}
+
+function estDataISO(d){
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function estResumoParaIA(){
+  var d = estDados;
+  return [
+    "Perfil: @" + d.perfil.usuario + " (" + d.perfil.tipo + ")",
+    "Nicho: " + d.nicho.nome + " | hashtags: " + d.nicho.hashtags.join(" "),
+    "Objetivo: " + d.objetivo,
+    "Formatos: " + d.formatos.join(", "),
+    "Tom de voz: " + d.tomVoz.join(", "),
+    "Pilares:\n" + d.pilares.map(function(p){ return "- " + p.titulo + ": " + p.texto; }).join("\n"),
+    "Público: " + d.publico.descricao,
+    "Dor principal: " + d.publico.dor,
+    "Oferta: " + (d.oferta.oferta || "-"),
+    "Promessa: " + (d.oferta.promessa || "-"),
+    "Tópicos que gosta de abordar: " + d.roteiro.topicos.join("; "),
+    "Formatos de roteiro preferidos: " + d.roteiro.formatos.join(", "),
+    "Duração padrão: " + (d.roteiro.duracao || "-"),
+    "Ganchos que gosta: " + (d.roteiro.ganchos || "-"),
+    "História e origem: " + (d.contexto.historia || "-"),
+    "Meta dos 90 dias: " + (d.contexto.meta90 || "-"),
+    "Conteúdo que funciona: " + (d.contexto.funciona || "-"),
+    "Travas atuais: " + (d.contexto.travas || "-"),
+    "Temas que NUNCA devem aparecer: " + (d.evitar.length ? d.evitar.join("; ") : "-")
+  ].join("\n");
+}
+
+async function estGerarIdeias(nivel){
+  var funil = EST_FUNIL[nivel];
+  abrirModal('<h2 class="form-titulo" id="modalTituloLabel">Brainstorm: ' + funil.nome + ' de funil</h2>' +
+    '<p class="vazio-explicacao">Pensando em ' + EST_QTD_IDEIAS + ' ideias com base na sua estratégia... isso leva uns segundos.</p>', true);
+
+  // títulos que já estão no calendário, pra IA não repetir
+  var jaTem = await buscarSeguro(banco.from("calendario").select("titulo").order("data", { ascending: false }).limit(40));
+  var titulosAntigos = jaTem.ok ? jaTem.dados.map(function(c){ return c.titulo; }).filter(Boolean) : [];
+
+  var pedido = "Você é estrategista de conteúdo de uma criadora UGC brasileira. Crie " + EST_QTD_IDEIAS + " ideias de conteúdo para o Instagram dela, em português do Brasil.\n\n" +
+    "Nível do funil: " + funil.nome.toUpperCase() + " (" + funil.explica + ")\n\n" +
+    "Estratégia dela:\n" + estResumoParaIA() + "\n\n" +
+    (titulosAntigos.length ? "Conteúdos que já estão no calendário (não repita):\n- " + titulosAntigos.join("\n- ") + "\n\n" : "") +
+    "Regras: distribua as ideias entre os pilares; use só formatos da lista dela; títulos curtos e específicos, na voz dela (primeira pessoa quando fizer sentido); não invente marcas, números ou fatos que não estão acima; nunca use travessão.\n" +
+    "Responda SÓ com um JSON válido, sem nada antes ou depois, neste formato:\n" +
+    '[{"titulo": "...", "formato": "Reels ou Carrossel ou Stories ou Post", "estilo": "um dos formatos de roteiro dela, ex: Storytelling", "pilar": "nome do pilar", "etapa": "' + funil.etapas.join('" ou "') + '", "ideia": "2 ou 3 frases dizendo o que gravar e mostrar", "porque": "1 ou 2 frases explicando por que esse conteúdo funciona nesse nível do funil e pro objetivo dela"}]';
+
+  var r = await chamarIAPitch([{ papel: "user", texto: pedido }]);
+  if(!r.ok) return estMostrarErroIdeias(nivel, r.mensagem);
+
+  var lista = null;
+  try{ lista = JSON.parse(r.texto.slice(r.texto.indexOf("["), r.texto.lastIndexOf("]") + 1)); }catch(erro){ lista = null; }
+  if(!Array.isArray(lista) || !lista.length) return estMostrarErroIdeias(nivel, "A IA respondeu num formato que eu não entendi. Tenta de novo.");
+
+  // datas sugeridas: uma por dia a partir de amanhã (dá pra trocar em cada ideia)
+  var dia = new Date();
+  estIdeias = { nivel: nivel, lista: lista.slice(0, EST_QTD_IDEIAS).map(function(i){
+    dia.setDate(dia.getDate() + 1);
+    return {
+      titulo: String(i.titulo || "").trim(), formato: String(i.formato || "").trim(), estilo: String(i.estilo || "").trim(),
+      pilar: String(i.pilar || "").trim(), etapa: funil.etapas.indexOf(i.etapa) !== -1 ? i.etapa : funil.etapas[0],
+      ideia: String(i.ideia || "").trim(), porque: String(i.porque || "").trim(),
+      data: estDataISO(dia), estado: ""
+    };
+  }) };
+  estMostrarIdeias();
+}
+
+function estMostrarErroIdeias(nivel, mensagem){
+  abrirModal('<h2 class="form-titulo" id="modalTituloLabel">Brainstorm</h2>' + faixaAviso(mensagem, "erro") +
+    '<div class="form-acoes"><button type="button" class="btn" id="estOutroNivel">Escolher outro nível</button>' +
+    '<button type="button" class="btn btn-principal" id="estTentarDeNovo">Tentar de novo</button></div>');
+  document.getElementById("estOutroNivel").addEventListener("click", estPerguntarFunil);
+  document.getElementById("estTentarDeNovo").addEventListener("click", function(){ estGerarIdeias(nivel); });
+}
+
+function estMostrarIdeias(){
+  var funil = EST_FUNIL[estIdeias.nivel];
+  var visiveis = estIdeias.lista.filter(function(i){ return i.estado !== "dispensada"; });
+  var algumaAdicionada = estIdeias.lista.some(function(i){ return i.estado === "adicionada"; });
+  var html = '<p class="est-ideias-topo">' + visiveis.length + ' ideias geradas · ' + funil.nome + ' de funil</p>' +
+    '<h2 class="form-titulo est-ideias-titulo" id="modalTituloLabel">Conteúdos pra testar</h2>' +
+    '<div class="est-ideias">' + estIdeias.lista.map(function(i, n){
+      if(i.estado === "dispensada") return "";
+      return '<article class="est-ideia' + (i.estado === "adicionada" ? " feita" : "") + '">' +
+        '<div class="est-ideia-meta"><span class="est-ideia-num">' + String(n + 1).padStart(2, "0") + '</span>' +
+          '<span class="est-funil-barra est-funil-' + estIdeias.nivel + '"></span><b>' + funil.nome.toUpperCase() + '</b>' +
+          (i.formato ? '<span class="est-ideia-sep">' + escapa(i.formato) + (i.estilo ? " · " + escapa(i.estilo) : "") + '</span>' : "") +
+          (i.pilar ? '<em>' + escapa(i.pilar) + '</em>' : "") + '</div>' +
+        '<h3>' + escapa(i.titulo) + '</h3>' +
+        '<p class="est-rotulo est-ideia-rot">Ideia</p><p class="est-texto">' + escapa(i.ideia) + '</p>' +
+        (i.porque ? '<details class="est-porque"><summary>Por que esse conteúdo?</summary><p>' + escapa(i.porque) + '</p></details>' : "") +
+        '<div class="est-ideia-acoes">' +
+          (i.estado === "adicionada"
+            ? '<span class="est-ativo">No calendário em ' + escapa(formatarData(i.data)) + '</span>'
+            : '<label class="est-ideia-data">Data <input type="date" data-data="' + n + '" value="' + i.data + '"></label>' +
+              '<button type="button" class="btn btn-pequeno est-dispensar" data-dispensar="' + n + '">Dispensar</button>' +
+              '<button type="button" class="btn btn-pequeno btn-principal" data-add="' + n + '">' + icone("calendario") + 'Adicionar ao calendário</button>') +
+        '</div></article>';
+    }).join("") + '</div>' +
+    (visiveis.length ? "" : '<p class="vazio-explicacao">Você dispensou todas. Gere de novo pra ver outras.</p>') +
+    '<div class="est-ideias-rodape"><span>Não gostou? Gere de novo ou troque o nível.</span>' +
+      '<button type="button" class="btn btn-pequeno" id="estTrocarNivel">Trocar nível</button>' +
+      '<button type="button" class="btn btn-pequeno" id="estGerarDeNovo">Gerar de novo</button>' +
+      (algumaAdicionada ? '<button type="button" class="btn btn-pequeno btn-principal" id="estVerCal">Ver no calendário</button>' : "") +
+    '</div>';
+  abrirModal(html, true);
+  modalBox.style.maxWidth = "780px";
+
+  modalConteudo.querySelectorAll("[data-data]").forEach(function(c){
+    c.addEventListener("change", function(){ estIdeias.lista[+c.dataset.data].data = c.value; });
+  });
+  modalConteudo.querySelectorAll("[data-dispensar]").forEach(function(b){
+    b.addEventListener("click", function(){ estIdeias.lista[+b.dataset.dispensar].estado = "dispensada"; estMostrarIdeias(); });
+  });
+  modalConteudo.querySelectorAll("[data-add]").forEach(function(b){
+    b.addEventListener("click", async function(){
+      var i = estIdeias.lista[+b.dataset.add];
+      if(!i.data){ alert("Escolha uma data antes de adicionar."); return; }
+      b.disabled = true;
+      b.textContent = "Salvando...";
+      var res = await buscarSeguro(banco.from("calendario").insert({
+        titulo: i.titulo, data: i.data, marca: "", formato: i.formato, etapa: i.etapa,
+        ideia: i.ideia + (i.pilar ? "\n\nPilar: " + i.pilar : "") + (i.estilo ? "\nEstilo: " + i.estilo : ""),
+        legenda: "", tipo: "gravar", status: "a_fazer"
+      }));
+      if(!res.ok){ alert("Não consegui salvar no calendário: " + res.mensagem); estMostrarIdeias(); return; }
+      i.estado = "adicionada";
+      estMostrarIdeias();
+    });
+  });
+  document.getElementById("estTrocarNivel").addEventListener("click", estPerguntarFunil);
+  document.getElementById("estGerarDeNovo").addEventListener("click", function(){ estGerarIdeias(estIdeias.nivel); });
+  var verCal = document.getElementById("estVerCal");
+  if(verCal) verCal.addEventListener("click", function(){
+    var primeira = estIdeias.lista.find(function(i){ return i.estado === "adicionada"; });
+    calMesAtual = new Date(primeira.data + "T12:00:00");
+    calMesAtual.setDate(1);
+    fecharModal();
+    irParaAba("calendario");
+  });
 }

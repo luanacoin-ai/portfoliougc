@@ -1032,6 +1032,37 @@
   .est-topo{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 16px; margin:-12px 0 20px; }
   .est-sub{ font-family:var(--ff-titulo); font-style:italic; font-size:.92rem; color:#725A50; }
   .est-pilar .btn{ margin-top:12px; }
+  .est-topo-botoes{ display:flex; gap:8px; flex-wrap:wrap; }
+  .est-funil{ display:flex; flex-direction:column; gap:10px; }
+  .est-funil-op{ display:flex; align-items:center; gap:14px; text-align:left; border:1.5px solid #E6D8C4; background:var(--creme); border-radius:14px; padding:14px 16px; font:inherit; color:inherit; cursor:pointer; }
+  .est-funil-op:hover{ border-color:var(--terracota); background:#F8EFE2; }
+  .est-funil-op b{ display:block; font-size:.9rem; }
+  .est-funil-op small{ display:block; font-size:.76rem; color:#725A50; margin-top:2px; line-height:1.45; }
+  .est-funil-barra{ display:inline-block; height:6px; border-radius:99px; background:var(--terracota); flex-shrink:0; }
+  .est-funil-topo{ width:24px; }
+  .est-funil-meio{ width:16px; background:var(--caramelo); }
+  .est-funil-fundo{ width:9px; background:var(--salvia-escura); }
+  .est-ideias-topo{ font-size:.66rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--terracota-escura); margin-bottom:4px; }
+  .est-ideias-titulo{ font-family:var(--ff-titulo); font-size:1.4rem; font-weight:500; }
+  .est-ideias{ display:flex; flex-direction:column; gap:14px; }
+  .est-ideia{ border:1.5px solid #E6D8C4; border-radius:16px; padding:18px 20px; background:var(--card); }
+  .est-ideia.feita{ border-color:#C9D2B6; background:#F6F7EE; }
+  .est-ideia-meta{ display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:.72rem; }
+  .est-ideia-meta b{ font-size:.66rem; letter-spacing:.1em; }
+  .est-ideia-num{ color:#8A7B70; font-variant-numeric:tabular-nums; }
+  .est-ideia-sep{ border-left:1px solid #E6D8C4; padding-left:8px; font-weight:600; }
+  .est-ideia-meta em{ font-family:var(--ff-titulo); color:#725A50; }
+  .est-ideia h3{ font-family:var(--ff-titulo); font-size:1.15rem; font-weight:500; line-height:1.3; margin:10px 0 4px; }
+  .est-ideia-rot{ color:var(--terracota-escura); }
+  .est-porque{ margin-top:12px; background:#F8EBE4; border-radius:10px; padding:10px 14px; font-size:.8rem; }
+  .est-porque summary{ cursor:pointer; font-size:.68rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--terracota-escura); }
+  .est-porque p{ margin-top:8px; line-height:1.55; }
+  .est-ideia-acoes{ display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; border-top:1px solid #EFE3D0; margin-top:14px; padding-top:12px; }
+  .est-ideia-data{ font-size:.74rem; font-weight:600; display:flex; align-items:center; gap:6px; margin-right:auto; }
+  .est-ideia-data input{ border:1.5px solid #E2D4BF; border-radius:8px; padding:5px 8px; background:var(--creme); }
+  .btn.est-dispensar{ border-color:transparent; background:none; }
+  .est-ideias-rodape{ display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid #EFE3D0; }
+  .est-ideias-rodape span{ flex:1; min-width:180px; font-family:var(--ff-titulo); font-style:italic; font-size:.82rem; color:#725A50; }
   .est-grade{ display:grid; gap:14px; margin-bottom:14px; }
   .est-g2{ grid-template-columns:repeat(2, minmax(0,1fr)); }
   .est-g3{ grid-template-columns:repeat(3, minmax(0,1fr)); }
@@ -5024,6 +5055,6 @@ iniciar();
 <script src="../js/instagram-analises.js?v=20261022e"></script>
 <script src="../js/financeiro-leitura.js?v=20261028b"></script>
 <script src="../js/financeiro.js?v=20261028b"></script>
-<script src="../js/estrategia.js?v=20261102b"></script>
+<script src="../js/estrategia.js?v=20261102c"></script>
 </body>
 </html>
