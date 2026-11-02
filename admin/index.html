@@ -1027,6 +1027,62 @@
   .ig-pilula-pulado{ background:#EAE0CF; color:#6F554B; }
 
 
+
+  /* ---------- estratégia ---------- */
+  .est-sub{ font-family:var(--ff-titulo); font-style:italic; font-size:.92rem; color:#725A50; margin:-12px 0 20px; }
+  .est-grade{ display:grid; gap:14px; margin-bottom:14px; }
+  .est-g2{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .est-g3{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+  .est-g-marca{ grid-template-columns:minmax(0,1fr) minmax(0,1.5fr); }
+  .est-secao{ font-size:.66rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:#725A50; margin:24px 0 10px; }
+  .est-card{ background:var(--card); border:1.5px solid #E6D8C4; border-radius:16px; padding:18px 20px; min-width:0; }
+  .est-card-topo{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .est-card-icone{ width:34px; height:34px; border-radius:10px; background:var(--rosa-clara); color:var(--terracota-escura); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .est-card-icone svg{ width:17px; height:17px; }
+  .est-card-nome{ flex:1; min-width:0; font-size:.9rem; font-weight:600; line-height:1.2; }
+  .est-card-nome small{ display:block; font-size:.72rem; font-weight:400; color:#725A50; margin-top:2px; }
+  .est-lapis{ border:none; background:none; color:#8A7B70; padding:6px; border-radius:8px; display:flex; }
+  .est-lapis:hover{ background:#F1E6D4; color:var(--cafe); }
+  .est-lapis svg{ width:16px; height:16px; }
+  .est-rotulo{ font-size:.62rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#725A50; margin:12px 0 5px; }
+  .est-texto{ font-size:.86rem; line-height:1.55; white-space:pre-line; }
+  .est-forte{ font-size:.95rem; font-weight:600; line-height:1.5; }
+  .est-vazio{ font-size:.8rem; color:#8A7B70; }
+  .est-linha{ border-top:1px solid #EFE3D0; margin:14px 0 0; padding-top:4px; }
+  .est-pilulas{ display:flex; flex-wrap:wrap; gap:6px; }
+  .est-pilula{ display:inline-flex; align-items:center; padding:5px 12px; border-radius:999px; border:1.5px solid #E6D8C4; background:var(--creme); font-size:.75rem; font-weight:600; }
+  .est-pilula.cheia{ background:var(--terracota); border-color:var(--terracota); color:var(--sobre-terracota); }
+  .est-pilula button{ border:none; background:none; padding:0 0 0 6px; color:inherit; opacity:.6; display:flex; }
+  .est-pilula button svg{ width:12px; height:12px; }
+  .est-ativo{ font-size:.68rem; font-weight:600; color:#4F5E38; background:#E6EBDA; border-radius:999px; padding:3px 10px; }
+  .est-destaque{ font-family:var(--ff-titulo); font-size:1.15rem; font-weight:500; margin-bottom:6px; }
+  .est-destaque em{ color:var(--terracota); }
+  .est-checks{ display:flex; flex-wrap:wrap; gap:6px 16px; font-size:.76rem; margin:14px 0; }
+  .est-checks span{ display:inline-flex; align-items:center; gap:5px; color:#8A7B70; }
+  .est-checks span.ok{ color:var(--cafe); }
+  .est-checks svg{ width:13px; height:13px; }
+  .est-checks span.ok svg{ color:var(--salvia-escura); }
+  .est-tres{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; }
+  .est-tres.est-prefs{ grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr); }
+  .est-perfil{ display:flex; align-items:center; gap:12px; padding-bottom:14px; border-bottom:1px solid #EFE3D0; }
+  .est-avatar{ width:44px; height:44px; border-radius:50%; background:var(--terracota); color:var(--sobre-terracota); display:flex; align-items:center; justify-content:center; font-family:var(--ff-titulo); font-weight:600; flex-shrink:0; }
+  .est-cores{ display:flex; height:44px; border-radius:12px; overflow:hidden; border:1.5px solid #E6D8C4; margin-bottom:14px; }
+  .est-cores i{ flex:1; }
+  .est-ident-linha{ display:flex; flex-wrap:wrap; gap:8px 26px; align-items:baseline; font-size:.82rem; }
+  .est-ident-linha b{ font-size:.62rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#725A50; margin-right:8px; }
+  .est-pilar{ background:var(--creme); border:1.5px solid #EAD9C2; border-radius:14px; padding:16px; }
+  .est-pilar .est-card-icone{ margin-bottom:12px; }
+  .est-pilar h4{ font-size:.86rem; font-weight:600; margin-bottom:6px; }
+  .est-pilar p{ font-size:.78rem; line-height:1.55; color:#5E4A41; white-space:pre-line; }
+  .est-promessa{ font-family:var(--ff-titulo); font-size:1rem; line-height:1.55; }
+  .est-add{ display:flex; gap:8px; margin-top:12px; }
+  .est-add input{ flex:1; min-width:0; border:1.5px solid #E2D4BF; border-radius:999px; padding:8px 14px; background:var(--creme); }
+  .est-pilar-form{ border:1.5px solid #EAD9C2; border-radius:10px; padding:12px; margin-bottom:10px; }
+  .est-cor-linha{ display:flex; gap:8px; flex-wrap:wrap; }
+  .est-cor-linha input[type=color]{ width:44px; height:36px; padding:2px; }
+  @media (max-width:980px){ .est-g3, .est-tres{ grid-template-columns:1fr; } }
+  @media (max-width:800px){ .est-g2, .est-g-marca{ grid-template-columns:1fr; } }
+
   /* ---------- financeiro ---------- */
   .fin-topo{ display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
   .fin-titulo strong{ display:block; font-family:var(--ff-titulo); font-size:1.3rem; font-weight:500; line-height:1.15; }
@@ -1179,6 +1235,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="grupo-itens" id="itensConteudos" hidden>
+        <button class="item-menu" data-tab="estrategia"></button>
         <button class="item-menu" data-tab="calendario"></button>
         <button class="item-menu" data-tab="campanhas"></button>
         <button class="item-menu" data-tab="checklist"></button>
@@ -1259,6 +1316,7 @@ var ICONES = {
   tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 2c.4 2.2 1.9 3.8 4 4.1v3a7 7 0 0 1-4-1.3v6.7a5.9 5.9 0 1 1-5-5.8v3.1a2.9 2.9 0 1 0 2 2.7V2h3z"/></svg>',
   youtube: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg>',
   financeiro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.5 0-2.5.8-2.5 1.9 0 2.6 5 1.4 5 4.1 0 1.1-1.1 2-2.6 2-1.2 0-2.2-.5-2.7-1.4M12 6.5V8M12 16v1.5" stroke-linecap="round"/></svg>',
+  estrategia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>',
   cadeado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   banco: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',
   cartao: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg>'
@@ -1489,6 +1547,7 @@ var ABAS = {
   prospeccao: { titulo: "Prospecção", icone: "prospeccao" },
   disparo: { titulo: "Disparo de E-mails", icone: "disparo" },
   pitch: { titulo: "Pitch", icone: "envelope" },
+  estrategia: { titulo: "Estratégia", icone: "estrategia" },
   calendario: { titulo: "Calendário", icone: "calendario" },
   campanhas: { titulo: "Campanhas", icone: "campanhas" },
   checklist: { titulo: "Brainstorm", icone: "checklist" },
@@ -1548,6 +1607,7 @@ async function renderizarAba(nome){
     else if(nome === "prospeccao") await abaProspeccao(painel);
     else if(nome === "disparo") await abaDisparo(painel);
     else if(nome === "pitch") await abaPitch(painel);
+    else if(nome === "estrategia") await abaEstrategia(painel);
     else if(nome === "calendario") await abaCalendario(painel);
     else if(nome === "campanhas") await abaCampanhas(painel);
     else if(nome === "checklist") await abaChecklist(painel);
@@ -4952,5 +5012,6 @@ iniciar();
 <script src="../js/instagram-analises.js?v=20261022e"></script>
 <script src="../js/financeiro-leitura.js?v=20261028b"></script>
 <script src="../js/financeiro.js?v=20261028b"></script>
+<script src="../js/estrategia.js?v=20261102a"></script>
 </body>
 </html>
