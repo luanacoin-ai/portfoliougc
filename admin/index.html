@@ -1029,7 +1029,9 @@
 
 
   /* ---------- estratégia ---------- */
-  .est-sub{ font-family:var(--ff-titulo); font-style:italic; font-size:.92rem; color:#725A50; margin:-12px 0 20px; }
+  .est-topo{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 16px; margin:-12px 0 20px; }
+  .est-sub{ font-family:var(--ff-titulo); font-style:italic; font-size:.92rem; color:#725A50; }
+  .est-pilar .btn{ margin-top:12px; }
   .est-grade{ display:grid; gap:14px; margin-bottom:14px; }
   .est-g2{ grid-template-columns:repeat(2, minmax(0,1fr)); }
   .est-g3{ grid-template-columns:repeat(3, minmax(0,1fr)); }
@@ -3927,6 +3929,9 @@ function atualizarRotuloBotaoDisparar(){
 var calMesAtual = new Date();
 calMesAtual.setDate(1);
 var filtroCalTipo = "todos";
+// Outra aba (ex: Estratégia) pode pedir pra abrir o "Adicionar" assim que o
+// calendário carregar, já com a ideia preenchida: { ideia: "..." }.
+var calAbrirFormAoEntrar = null;
 
 async function abaCalendario(painel){
   var resCal = await buscarSeguro(banco.from("calendario").select("*"));
@@ -3969,6 +3974,13 @@ async function abaCalendario(painel){
 
   desenharCalendario(resCal.dados, resCamp.dados);
   desenharAtrasados(resCal.dados);
+
+  if(calAbrirFormAoEntrar){
+    var pedido = calAbrirFormAoEntrar;
+    calAbrirFormAoEntrar = null;
+    abrirFormCalendario(null, null);
+    if(pedido.ideia) document.getElementById("fcIdeia").value = pedido.ideia;
+  }
 }
 
 function itensDoDia(dataISO, listaCal, listaCamp){
@@ -5012,6 +5024,6 @@ iniciar();
 <script src="../js/instagram-analises.js?v=20261022e"></script>
 <script src="../js/financeiro-leitura.js?v=20261028b"></script>
 <script src="../js/financeiro.js?v=20261028b"></script>
-<script src="../js/estrategia.js?v=20261102a"></script>
+<script src="../js/estrategia.js?v=20261102b"></script>
 </body>
 </html>

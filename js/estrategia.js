@@ -157,7 +157,8 @@ function estDesenhar(painel, aviso){
   ];
   var completos = passos.filter(function(p){ return p.ok; }).length;
 
-  var html = (aviso || "") + '<p class="est-sub">O retrato que orienta tudo o que você cria.</p>';
+  var html = (aviso || "") + '<div class="est-topo"><p class="est-sub">O retrato que orienta tudo o que você cria.</p>' +
+    '<button type="button" class="btn btn-principal" data-calendario="">' + EST_ICONES.mais + 'Adicionar ao calendário</button></div>';
 
   // ---- contexto + preferências de roteiro ----
   html += '<div class="est-grade est-g2">';
@@ -220,7 +221,8 @@ function estDesenhar(painel, aviso){
     (d.pilares.length
       ? '<div class="est-tres">' + d.pilares.map(function(p, i){
           return '<div class="est-pilar"><span class="est-card-icone">' + (i % 2 ? EST_ICONES.grade : EST_ICONES.raio) + '</span>' +
-            '<h4>' + escapa(p.titulo || "-") + '</h4><p>' + escapa(p.texto || "") + '</p></div>';
+            '<h4>' + escapa(p.titulo || "-") + '</h4><p>' + escapa(p.texto || "") + '</p>' +
+            '<button type="button" class="btn btn-pequeno" data-calendario="' + estAttr(p.titulo ? "Pilar: " + p.titulo : "") + '">' + EST_ICONES.mais + 'Adicionar ao calendário</button></div>';
         }).join("") + '</div>'
       : '<p class="est-vazio">Nenhum pilar ainda.</p>') +
   '</section>';
@@ -254,6 +256,13 @@ function estDesenhar(painel, aviso){
 
   painel.querySelectorAll("[data-editar]").forEach(function(b){
     b.addEventListener("click", function(){ estAbrirEdicao(b.dataset.editar); });
+  });
+  // Leva pro Calendário de conteúdos e já abre o "Adicionar" (com o pilar na ideia, quando vem de um pilar).
+  painel.querySelectorAll("[data-calendario]").forEach(function(b){
+    b.addEventListener("click", function(){
+      calAbrirFormAoEntrar = { ideia: b.dataset.calendario };
+      irParaAba("calendario");
+    });
   });
   painel.querySelectorAll("[data-tirar]").forEach(function(b){
     b.addEventListener("click", async function(){
