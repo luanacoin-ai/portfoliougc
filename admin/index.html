@@ -200,7 +200,9 @@
       box-shadow:6px 0 20px rgba(74,46,38,.22);
     }
     #sidebar.aberta{ left:0; }
-    #conteudo{ padding-top:64px !important; }
+    /* no celular: margens menores nas laterais, e o conteúdo nunca alarga a página (o que sobrar é cortado, não empurra) */
+    #conteudo{ padding:64px 16px 48px !important; overflow-x:clip; }
+    .cabecalho-aba h1{ font-size:1.35rem; }
   }
 
   #conteudo{
@@ -473,6 +475,17 @@
     min-height:2px;
   }
   .grafico-barras .rotulo-dia{ font-size:.6rem; color:#725A50; white-space:nowrap; }
+  /* a coluna de cada dia pode encolher (senão 14 datas empurravam a página pra fora da tela no celular) */
+  .grafico-barras .barra-dia{ min-width:0; }
+  .grafico-barras .rotulo-dia{ display:flex; justify-content:center; width:100%; }
+  .bloco-graficos{ display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:24px; }
+  @media (max-width:800px){
+    .bloco-graficos{ grid-template-columns:minmax(0,1fr); gap:20px; }
+  }
+  @media (max-width:520px){
+    .grafico-barras{ gap:3px; }
+    .grafico-barras.dias14 .barra-dia:nth-child(even) .rotulo-dia{ visibility:hidden; }
+  }
 
   /* ---------- calendário ---------- */
   .cal-topo{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
@@ -1116,6 +1129,49 @@
   @media (max-width:980px){ .est-g3, .est-tres{ grid-template-columns:1fr; } }
   @media (max-width:800px){ .est-g2, .est-g-marca{ grid-template-columns:1fr; } }
 
+  /* ---------- celular: tabelas que viram lista de cartões (os botões ficam sempre à vista) ---------- */
+  .so-celular{ display:none; }
+  @media (max-width:700px){
+    .so-celular{ display:inline; }
+    .tabela-videos thead, .tabela-lanc thead, .tabela-contas thead{ display:none; }
+    .tabela-videos, .tabela-videos tbody, .tabela-lanc, .tabela-lanc tbody, .tabela-contas, .tabela-contas tbody{ display:block; }
+    .tabela-videos td, .tabela-lanc td, .tabela-contas td{ border:none; padding:0; min-width:0; }
+    .tabela-videos tr{
+      display:grid; grid-template-columns:22px minmax(0,1fr) auto auto; column-gap:8px; row-gap:2px; align-items:center;
+      grid-template-areas:"alca titulo olho acoes" "alca nicho nicho acoes"; padding:11px 2px; border-bottom:1px solid #EFE3D0;
+    }
+    .tabela-videos .c-alca{ grid-area:alca; }
+    .tabela-videos .c-titulo{ grid-area:titulo; }
+    .tabela-videos .c-nicho{ grid-area:nicho; font-size:.74rem; color:#725A50; }
+    .tabela-videos .c-olho{ grid-area:olho; }
+    .tabela-videos .c-acoes{ grid-area:acoes; }
+    .tabela-videos .c-marca, .tabela-videos .c-destaque{ display:none; }
+    .tabela-lanc tr{
+      display:grid; grid-template-columns:auto auto minmax(0,1fr) auto; column-gap:8px; row-gap:6px; align-items:center;
+      grid-template-areas:"desc desc desc valor" "data cat sit acoes"; padding:11px 2px; border-bottom:1px solid #EFE3D0;
+    }
+    .tabela-lanc .c-desc{ grid-area:desc; font-weight:600; }
+    .tabela-lanc .c-valor{ grid-area:valor; text-align:right !important; }
+    .tabela-lanc .c-data{ grid-area:data; font-size:.74rem; color:#725A50; }
+    .tabela-lanc .c-cat{ grid-area:cat; }
+    .tabela-lanc .c-sit{ grid-area:sit; }
+    .tabela-lanc .c-acoes{ grid-area:acoes; }
+    .tabela-contas tr{
+      display:grid; grid-template-columns:auto minmax(0,1fr) auto; column-gap:10px; row-gap:6px; align-items:center;
+      grid-template-areas:"nome nome valor" "venc cat sit" "acoes acoes acoes"; padding:12px 2px; border-bottom:1px solid #EFE3D0;
+    }
+    .tabela-contas .c-nome{ grid-area:nome; }
+    .tabela-contas .c-valor{ grid-area:valor; text-align:right !important; }
+    .tabela-contas .c-venc{ grid-area:venc; font-size:.74rem; color:#725A50; }
+    .tabela-contas .c-cat{ grid-area:cat; }
+    .tabela-contas .c-sit{ grid-area:sit; }
+    .tabela-contas .c-acoes{ grid-area:acoes; }
+  }
+  @media (max-width:520px){
+    /* se sobrar um cartão sozinho na última linha, ele ocupa a linha toda */
+    .grade-cartoes .cartao:last-child:nth-child(odd){ grid-column:1 / -1; }
+  }
+
   /* ---------- financeiro ---------- */
   .fin-topo{ display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
   .fin-titulo strong{ display:block; font-family:var(--ff-titulo); font-size:1.3rem; font-weight:500; line-height:1.15; }
@@ -1725,7 +1781,7 @@ async function abaPortfolio(painel){
     '</div>';
 
   // ---- gráfico 14 dias + origens ----
-  html += '<div class="painel-branco" style="display:grid; grid-template-columns:1.4fr 1fr; gap:24px;" id="blocoGraficos">';
+  html += '<div class="painel-branco bloco-graficos" id="blocoGraficos">';
   html += '<div><p class="painel-titulo">Visitas nos últimos 14 dias</p><div id="areaGrafico"></div></div>';
   html += '<div><p class="painel-titulo">De onde as pessoas chegaram</p><div id="areaOrigens"></div></div>';
   html += '</div>';
@@ -1736,7 +1792,7 @@ async function abaPortfolio(painel){
   if(videos.length === 0){
     html += '<div class="vazio-explicacao">Você ainda não tem vídeos cadastrados. Clique em "Adicionar vídeo" para criar o primeiro.</div>';
   } else {
-    html += '<div class="painel-branco"><div class="tabela-scroll"><table><thead><tr>' +
+    html += '<div class="painel-branco"><div class="tabela-scroll"><table class="tabela-videos"><thead><tr>' +
       '<th></th><th>Vídeo</th><th>Nicho</th><th>Marca</th><th>Destaque</th><th>Visível</th><th></th>' +
       '</tr></thead><tbody id="corpoTabelaVideos"></tbody></table></div></div>';
   }
@@ -1760,7 +1816,7 @@ async function abaPortfolio(painel){
       if(qtd > maiorContagem) maiorContagem = qtd;
       return qtd;
     });
-    var svgBarras = '<div class="grafico-barras">';
+    var svgBarras = '<div class="grafico-barras dias14">';
     dias.forEach(function(d, idx){
       var altura = Math.round((contagensPorDia[idx] / maiorContagem) * 90) + 4;
       svgBarras += '<div class="barra-dia" title="' + contagensPorDia[idx] + ' visita(s)"><div class="barra" style="height:' + altura + 'px"></div><div class="rotulo-dia">' + d.getDate() + '/' + (d.getMonth()+1) + '</div></div>';
@@ -1788,13 +1844,13 @@ async function abaPortfolio(painel){
     videos.forEach(function(v){
       var tr = el(
         '<tr draggable="false" data-id="' + v.id + '">' +
-          '<td><span class="alcinha" title="Arraste para reordenar">' + icone("alca") + '</span></td>' +
-          '<td><strong>' + escapa(v.titulo) + '</strong><br><span style="color:#725A50;font-size:.7rem;">' + escapa(v.formato || "") + '</span></td>' +
-          '<td>' + escapa(v.nicho) + '</td>' +
-          '<td>' + escapa(v.marca || "-") + '</td>' +
-          '<td>' + escapa(v.destaque || "-") + '</td>' +
-          '<td><button class="icone-olho" data-acao="visivel" title="Mostrar ou esconder do site">' + icone(v.visivel ? "olhoAberto" : "olhoFechado") + '</button></td>' +
-          '<td><div class="acoes-linha">' +
+          '<td class="c-alca"><span class="alcinha" title="Arraste para reordenar">' + icone("alca") + '</span></td>' +
+          '<td class="c-titulo"><strong>' + escapa(v.titulo) + '</strong><br><span style="color:#725A50;font-size:.7rem;">' + escapa(v.formato || "") + '</span></td>' +
+          '<td class="c-nicho">' + escapa(v.nicho) + (v.marca ? '<span class="so-celular"> · ' + escapa(v.marca) + '</span>' : "") + '</td>' +
+          '<td class="c-marca">' + escapa(v.marca || "-") + '</td>' +
+          '<td class="c-destaque">' + escapa(v.destaque || "-") + '</td>' +
+          '<td class="c-olho"><button class="icone-olho" data-acao="visivel" title="Mostrar ou esconder do site">' + icone(v.visivel ? "olhoAberto" : "olhoFechado") + '</button></td>' +
+          '<td class="c-acoes"><div class="acoes-linha">' +
             '<button class="btn btn-icone" data-acao="editar" title="Editar">' + icone("editar") + '</button>' +
             '<button class="btn btn-icone btn-perigo" data-acao="apagar" title="Apagar">' + icone("lixeira") + '</button>' +
           '</div></td>' +
@@ -5054,7 +5110,7 @@ iniciar();
 <script src="../js/instagram.js?v=20261022e"></script>
 <script src="../js/instagram-analises.js?v=20261022e"></script>
 <script src="../js/financeiro-leitura.js?v=20261028b"></script>
-<script src="../js/financeiro.js?v=20261028b"></script>
+<script src="../js/financeiro.js?v=20261102b"></script>
 <script src="../js/estrategia.js?v=20261102c"></script>
 </body>
 </html>

@@ -564,22 +564,29 @@ function finDesenharTabela(){
     return;
   }
   var linhas = todas.slice(0, finFiltro.limite);
-  alvo.innerHTML = '<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th style="text-align:right">Valor</th><th>Situação</th><th></th></tr></thead><tbody>' +
+  alvo.innerHTML = '<table class="tabela-lanc"><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th style="text-align:right">Valor</th><th>Situação</th><th></th></tr></thead><tbody>' +
     linhas.map(function(l){
       var sinal = l.tipo === "receita" ? "+" : "-";
-      return '<tr data-id="' + finAttr(l.id) + '">' +
-        '<td>' + finDataCurta(l.data) + '</td>' +
-        '<td>' + escapa(l.descricao || "(sem descrição)") + (l.parcela ? ' <span class="etiqueta fin-parcela">parcela ' + escapa(l.parcela) + '</span>' : "") + '</td>' +
-        '<td>' + finPilulaCategoria(l.categoria) + '</td>' +
-        '<td style="text-align:right; white-space:nowrap;"><strong class="' + (l.tipo === "receita" ? "fin-entrada" : "fin-saida") + '">' + sinal + ' ' + finMoeda(l.valor) + '</strong></td>' +
-        '<td><button type="button" class="pilula fin-situacao ' + (l.pago ? "fin-pilula-pago" : "fin-pilula-aberta") + '" data-alternar="' + finAttr(l.id) + '" title="Clique pra trocar">' +
+      return '<tr data-id="' + finAttr(l.id) + '" class="clicavel">' +
+        '<td class="c-data">' + finDataCurta(l.data) + '</td>' +
+        '<td class="c-desc">' + escapa(l.descricao || "(sem descrição)") + (l.parcela ? ' <span class="etiqueta fin-parcela">parcela ' + escapa(l.parcela) + '</span>' : "") + '</td>' +
+        '<td class="c-cat">' + finPilulaCategoria(l.categoria) + '</td>' +
+        '<td class="c-valor" style="text-align:right; white-space:nowrap;"><strong class="' + (l.tipo === "receita" ? "fin-entrada" : "fin-saida") + '">' + sinal + ' ' + finMoeda(l.valor) + '</strong></td>' +
+        '<td class="c-sit"><button type="button" class="pilula fin-situacao ' + (l.pago ? "fin-pilula-pago" : "fin-pilula-aberta") + '" data-alternar="' + finAttr(l.id) + '" title="Clique pra trocar">' +
           (l.pago ? (l.tipo === "receita" ? "Recebido" : "Pago") : (l.tipo === "receita" ? "A receber" : "A pagar")) + '</button></td>' +
-        '<td><div class="acoes-linha"><button type="button" class="btn btn-icone" data-editar="' + finAttr(l.id) + '" aria-label="Editar">' + icone("editar") + '</button>' +
+        '<td class="c-acoes"><div class="acoes-linha"><button type="button" class="btn btn-icone" data-editar="' + finAttr(l.id) + '" aria-label="Editar">' + icone("editar") + '</button>' +
         '<button type="button" class="btn btn-icone btn-perigo" data-apagar="' + finAttr(l.id) + '" aria-label="Apagar">' + icone("lixeira") + '</button></div></td></tr>';
     }).join("") + '</tbody></table>' +
     (todas.length > linhas.length ? '<p style="text-align:center; margin-top:12px;"><button type="button" class="btn" id="finMaisLinhas">Mostrar mais (' + (todas.length - linhas.length) + ' restantes)</button></p>' : "");
 
   var achar = function(id){ return finLinhas.filter(function(l){ return l.id === id; })[0]; };
+  // tocar na linha também abre a edição (fora dos botões)
+  alvo.querySelectorAll("tr.clicavel").forEach(function(tr){
+    tr.addEventListener("click", function(e){
+      if(e.target.closest("button")) return;
+      finAbrirFormLancamento(achar(tr.getAttribute("data-id")));
+    });
+  });
   alvo.querySelectorAll("[data-editar]").forEach(function(b){ b.addEventListener("click", function(){ finAbrirFormLancamento(achar(b.getAttribute("data-editar"))); }); });
   alvo.querySelectorAll("[data-apagar]").forEach(function(b){
     b.addEventListener("click", async function(){
@@ -719,7 +726,7 @@ function finDesenharContas(area){
     alvo.innerHTML = '<div class="vazio-explicacao">Você ainda não cadastrou contas fixas. Clique em "Nova conta fixa".</div>';
     return;
   }
-  alvo.innerHTML = '<table><thead><tr><th>Conta</th><th>Vencimento</th><th>Categoria</th><th style="text-align:right">Valor</th><th>Situação</th><th></th></tr></thead><tbody>' +
+  alvo.innerHTML = '<div class="tabela-scroll"><table class="tabela-contas"><thead><tr><th>Conta</th><th>Vencimento</th><th>Categoria</th><th style="text-align:right">Valor</th><th>Situação</th><th></th></tr></thead><tbody>' +
     finContas.map(function(c){
       var sit = c.ativa ? finSituacaoDaConta(c, finMes) : "pausada";
       var pilula = sit === "pago" ? '<span class="pilula fin-pilula-pago">Pago</span>'
@@ -728,10 +735,10 @@ function finDesenharContas(area){
       var botao = !c.ativa ? "" : (sit === "pago"
         ? '<button type="button" class="btn btn-pequeno" data-desfazer="' + finAttr(c.id) + '">Desfazer</button>'
         : '<button type="button" class="btn btn-pequeno btn-principal" data-pagar="' + finAttr(c.id) + '">Marcar como paga</button>');
-      return '<tr><td><strong>' + escapa(c.nome) + '</strong></td><td>dia ' + c.dia_vencimento + '</td><td>' + finPilulaCategoria(c.categoria) + '</td>' +
-        '<td style="text-align:right; white-space:nowrap;">' + finMoeda(c.valor) + '</td><td>' + pilula + '</td>' +
-        '<td><div class="acoes-linha">' + botao + '<button type="button" class="btn btn-icone" data-editar-conta="' + finAttr(c.id) + '" aria-label="Editar">' + icone("editar") + '</button></div></td></tr>';
-    }).join("") + '</tbody></table>';
+      return '<tr><td class="c-nome"><strong>' + escapa(c.nome) + '</strong></td><td class="c-venc">vence dia ' + c.dia_vencimento + '</td><td class="c-cat">' + finPilulaCategoria(c.categoria) + '</td>' +
+        '<td class="c-valor" style="text-align:right; white-space:nowrap;">' + finMoeda(c.valor) + '</td><td class="c-sit">' + pilula + '</td>' +
+        '<td class="c-acoes"><div class="acoes-linha">' + botao + '<button type="button" class="btn btn-icone" data-editar-conta="' + finAttr(c.id) + '" aria-label="Editar">' + icone("editar") + '</button></div></td></tr>';
+    }).join("") + '</tbody></table></div>';
 
   var achar = function(id){ return finContas.filter(function(c){ return c.id === id; })[0]; };
   alvo.querySelectorAll("[data-editar-conta]").forEach(function(b){ b.addEventListener("click", function(){ finAbrirFormConta(achar(b.getAttribute("data-editar-conta"))); }); });
@@ -906,10 +913,10 @@ function finDesenharImportar(area){
     '<p class="fin-formatos">Funciona com <strong>PDF</strong>, <strong>CSV</strong> e <strong>OFX</strong> (o arquivo que o app do seu banco deixa baixar). Se o PDF for uma foto (escaneado), use o CSV ou o OFX.</p>' +
     '<div class="fin-nota-segura">' + icone("cadeado") +
       '<span>Você mesma importa o arquivo. Nunca pedimos login, senha ou acesso ao seu banco. O arquivo é lido aqui no seu navegador, e só o que você confirmar vai pro seu banco de dados.</span></div>' +
-    (lista.length ? '<div class="painel-branco" style="margin-top:18px;"><p class="painel-titulo">Importações recentes</p><table><tbody>' + lista.map(function(l){
+    (lista.length ? '<div class="painel-branco" style="margin-top:18px;"><p class="painel-titulo">Importações recentes</p><div class="tabela-scroll"><table><tbody>' + lista.map(function(l){
       return '<tr><td>' + escapa(l.arquivo || "arquivo") + '</td><td>' + (l.origem === "fatura" ? "Fatura" : "Extrato") + '</td><td>' + l.qtd + ' lançamentos</td>' +
         '<td style="text-align:right;"><button type="button" class="btn btn-pequeno btn-perigo" data-desfazer-lote="' + finAttr(l.lote) + '">Desfazer esta importação</button></td></tr>';
-    }).join("") + '</tbody></table></div>' : "");
+    }).join("") + '</tbody></table></div></div>' : "");
 
   area.querySelectorAll("[data-importar]").forEach(function(b){
     b.addEventListener("click", function(){ finEscolherArquivo(b.getAttribute("data-importar")); });
