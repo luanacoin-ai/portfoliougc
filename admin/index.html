@@ -2312,6 +2312,7 @@ async function abaProspeccao(painel){
     '<span id="textoResumoSelecaoProsp" style="font-size:.82rem; font-weight:600;"></span>' +
     '<button type="button" class="btn btn-pequeno" id="btnSelecionarVisiveisProsp">Selecionar visíveis</button>' +
     '<button type="button" class="btn btn-pequeno" id="btnLimparSelecaoProsp">Limpar seleção</button>' +
+    '<button type="button" class="btn btn-pequeno btn-principal" id="btnEnviarEmailProsp">' + icone("envelope") + ' Enviar e-mail</button>' +
     '<button type="button" class="btn btn-pequeno btn-perigo" id="btnExcluirSelecionadasProsp">' + icone("lixeira") + ' Excluir selecionadas</button>' +
   '</div>';
   html += '<div id="avisoSelecaoProsp"></div>';
@@ -2370,6 +2371,20 @@ async function abaProspeccao(painel){
     var r = await salvarSelecaoProsp(idsSelecionados, false);
     if(r.ok) irParaAba("prospeccao");
     else mostrarAvisoSelecaoProsp("Não consegui limpar a seleção: " + r.mensagem);
+  });
+  // Leva as marcas selecionadas pro Disparo de E-mails (igual a seleção da aba Marcas).
+  document.getElementById("btnEnviarEmailProsp").addEventListener("click", function(){
+    var selecionadas = todas.filter(function(m){ return m.selecionada; });
+    if(selecionadas.length === 0){
+      mostrarAvisoSelecaoProsp("Nenhuma marca selecionada. Marque as caixinhas das marcas que quer mandar e-mail.");
+      return;
+    }
+    if(!selecionadas.some(function(m){ return temEmailValido(m.email); })){
+      mostrarAvisoSelecaoProsp("As marcas selecionadas não têm e-mail cadastrado, então não dá pra mandar. Abra a marca e preencha o campo E-mail.");
+      return;
+    }
+    origemDisparoAtual = "selecionadas";
+    irParaAba("disparo");
   });
   document.getElementById("btnExcluirSelecionadasProsp").addEventListener("click", function(){
     var selecionadas = todas.filter(function(m){ return m.selecionada; });
@@ -2890,6 +2905,7 @@ var pularRepetidosDisparo = true;
 var modoRascunhoDisparo = false;
 var filaRascunhoDisparo = [];
 var cacheMarcasDisparo = [];
+var cacheProspDisparo = [];   // marcas selecionadas na aba Prospecção (cada uma leva _tabela: "prospeccao")
 
 function debounce(fn, ms){
   var timer = null;
@@ -2988,6 +3004,42 @@ function normalizarEmailsMarcasDisparo(lista){
   });
 }
 
+// Busca as marcas que estão selecionadas na aba Prospecção, pra entrarem no disparo
+// junto com as selecionadas da aba Marcas. Cada uma leva "_tabela" pra eu saber
+// em qual tabela anotar o envio (os números de id das duas tabelas se repetem).
+async function carregarSelecionadasProspDisparo(){
+  var res = await buscarSeguro(banco.from("prospeccao").select("*").order("criado_em", { ascending: false }).order("id", { ascending: true }));
+  if(!res.ok){ cacheProspDisparo = []; return res; }
+  var todas = res.dados;
+  // mesma regra da aba Prospecção: sem a coluna "selecionada", a seleção mora no navegador
+  selecaoProspSoNoNavegador = todas.length > 0 && !("selecionada" in todas[0]);
+  if(selecaoProspSoNoNavegador){
+    carregarSelecaoProspDoNavegador();
+    todas.forEach(function(m){ m.selecionada = selecaoProspMemoria.has(m.id); });
+  }
+  var marcadas = todas.filter(function(m){ return m.selecionada; }).map(function(m){
+    return Object.assign({}, m, { _tabela: "prospeccao" });
+  });
+  cacheProspDisparo = normalizarEmailsMarcasDisparo(marcadas);
+  return res;
+}
+
+// Depois de enviar, anota na tabela de origem de cada marca: em Marcas fica a data do
+// último envio; na Prospecção a marca passa de "A enviar" para "Enviado".
+async function registrarEnvioNaBaseDisparo(destinatarios){
+  var idsMarcas = [], idsProsp = [];
+  destinatarios.forEach(function(m){
+    if(!m.id) return;
+    if(m._tabela === "prospeccao") idsProsp.push(m.id); else idsMarcas.push(m.id);
+  });
+  if(idsMarcas.length > 0){
+    await buscarSeguro(banco.from("marcas").update({ ultimo_envio_email: dataDeHojeISO() }).in("id", idsMarcas));
+  }
+  if(idsProsp.length > 0){
+    await buscarSeguro(banco.from("prospeccao").update({ status: "enviado" }).in("id", idsProsp).eq("status", "a_enviar"));
+  }
+}
+
 function deduplicarPorEmail(lista){
   var vistos = {};
   var resultado = [];
@@ -3020,7 +3072,7 @@ function opcoesOrigemDisparo(todasMarcas){
 // Marcas que batem com a origem escolhida, ANTES de filtrar por ter e-mail
 // (usado só pra calcular quantas "ficaram de fora por não ter e-mail").
 function origemDisparoSemFiltroEmail(origem, todasMarcas){
-  if(origem === "selecionadas") return todasMarcas.filter(function(m){ return m.selecionada; });
+  if(origem === "selecionadas") return todasMarcas.filter(function(m){ return m.selecionada; }).concat(cacheProspDisparo);
   if(origem === "todas") return todasMarcas;
   if(origem.indexOf("situacao:") === 0){
     var valor = origem.slice("situacao:".length);
@@ -3344,12 +3396,7 @@ async function iniciarDisparoReal(destinatariosFinal, assunto, htmlFinal, rotulo
 
   var idsOk = {};
   resultadosTotais.forEach(function(r){ if(r.status === "ok") idsOk[r.email] = true; });
-  var idsParaMarcar = destinatariosFinal
-    .filter(function(m){ return m.id && idsOk[(m.email||"").trim().toLowerCase()]; })
-    .map(function(m){ return m.id; });
-  if(idsParaMarcar.length > 0){
-    await buscarSeguro(banco.from("marcas").update({ ultimo_envio_email: dataDeHojeISO() }).in("id", idsParaMarcar));
-  }
+  await registrarEnvioNaBaseDisparo(destinatariosFinal.filter(function(m){ return idsOk[(m.email||"").trim().toLowerCase()]; }));
 
   mostrarResumoFinalDisparo({
     enviados: enviadosTotal, agendados: agendadosTotal, agendarPara: agendarPara,
@@ -3399,7 +3446,11 @@ function mostrarResumoFinalDisparo(info){
     var selecionadas = cacheMarcasDisparo.filter(function(m){ return m.selecionada; });
     var ids = selecionadas.map(function(m){ return m.id; });
     if(ids.length > 0) await buscarSeguro(banco.from("marcas").update({ selecionada: false }).in("id", ids));
+    var idsProsp = cacheProspDisparo.map(function(m){ return m.id; });
+    if(idsProsp.length > 0) await salvarSelecaoProsp(idsProsp, false);
     btnSim.parentElement.parentElement.remove();
+    await atualizarCartoesDisparo();
+    atualizarContadorDestinatariosDisparo();
   });
 }
 
@@ -3417,6 +3468,7 @@ function montarFilaRascunhoDisparo(destinatariosFinal, assunto, corpoTextoBruto,
     }
     return {
       id: m.id,
+      _tabela: m._tabela,
       email: m.email,
       nomeMarca: m.nome,
       assunto: personalizarDisparo(assunto, m.nome),
@@ -3454,7 +3506,7 @@ function renderizarFilaRascunhoDisparo(){
     try{ await navigator.clipboard.writeText(item.corpoTexto); }catch(e){}
   });
   document.getElementById("btnMarcarEnviadaFilaRascunho").addEventListener("click", async function(){
-    if(item.id) await buscarSeguro(banco.from("marcas").update({ ultimo_envio_email: dataDeHojeISO() }).eq("id", item.id));
+    await registrarEnvioNaBaseDisparo([item]);
     filaRascunhoDisparo.shift();
     renderizarFilaRascunhoDisparo();
     atualizarCartoesDisparo();
@@ -3489,6 +3541,15 @@ async function sincronizarProgramadosVencidosDisparo(envios){
   for(var dia in idsPorDia){
     await buscarSeguro(banco.from("marcas").update({ ultimo_envio_email: dia }).in("id", idsPorDia[dia]));
   }
+
+  // na Prospecção, quem estava "A enviar" e já recebeu o programado passa pra "Enviado"
+  var resProsp = await buscarSeguro(banco.from("prospeccao").select("id,email").eq("status", "a_enviar"));
+  var idsProspEnviados = (resProsp.dados || []).filter(function(m){
+    return !!diaPorEmail[limparEmail(m.email).toLowerCase()];
+  }).map(function(m){ return m.id; });
+  if(idsProspEnviados.length > 0){
+    await buscarSeguro(banco.from("prospeccao").update({ status: "enviado" }).in("id", idsProspEnviados).eq("status", "a_enviar"));
+  }
 }
 
 async function atualizarCartoesDisparo(){
@@ -3498,6 +3559,7 @@ async function atualizarCartoesDisparo(){
 
   if(resMarcas.ok) cacheMarcasDisparo = normalizarEmailsMarcasDisparo(resMarcas.dados);
   if(resMarcas.ok && resEnvios.ok) await sincronizarProgramadosVencidosDisparo(resEnvios.dados);
+  await carregarSelecionadasProspDisparo();
 
   var comEmail = cacheMarcasDisparo.filter(function(m){ return temEmailValido(m.email); });
   var aEnviar = comEmail.filter(function(m){ return !m.ultimo_envio_email; });
@@ -3743,15 +3805,16 @@ async function abaDisparo(painel){
 
   var resMarcas = await buscarSeguro(banco.from("marcas").select("*").order("criado_em", { ascending: false }));
   cacheMarcasDisparo = resMarcas.ok ? normalizarEmailsMarcasDisparo(resMarcas.dados) : [];
+  await carregarSelecionadasProspDisparo();
 
-  var todasComEmail = cacheMarcasDisparo.filter(function(m){ return temEmailValido(m.email); });
+  var todasComEmail = cacheMarcasDisparo.concat(cacheProspDisparo).filter(function(m){ return temEmailValido(m.email); });
 
   var areaPrincipal = document.getElementById("areaPrincipalDisparo");
   if(!resMarcas.ok){
     areaPrincipal.innerHTML = faixaAviso("Não consegui carregar a tabela de marcas.", "erro");
   } else if(todasComEmail.length === 0){
     areaPrincipal.innerHTML = '<div class="painel-branco">' +
-      '<p class="vazio-explicacao">Sua base ainda está sem nenhuma marca com e-mail cadastrado. Cadastre à mão ou importe uma planilha na aba Marcas antes de montar um disparo.</p>' +
+      '<p class="vazio-explicacao">Sua base ainda está sem nenhuma marca com e-mail cadastrado. Cadastre à mão ou importe uma planilha na aba Marcas (ou selecione marcas com e-mail na aba Prospecção) antes de montar um disparo.</p>' +
       '<div style="text-align:center; margin-top:14px;"><button class="btn btn-principal" id="btnIrParaMarcasDisparo">Ir para a aba Marcas</button></div>' +
     '</div>';
     document.getElementById("btnIrParaMarcasDisparo").addEventListener("click", function(){ irParaAba("marcas"); });
@@ -3774,7 +3837,7 @@ function montarFormularioDisparo(areaPrincipal){
 
   html += '<div class="painel-branco">';
   html += '<p class="painel-titulo">Pra quem vai</p>';
-  html += '<p style="font-size:.76rem; color:#725A50; margin-bottom:10px;">Os e-mails vêm da sua aba Marcas. Não é preciso cadastrar nada aqui.</p>';
+  html += '<p style="font-size:.76rem; color:#725A50; margin-bottom:10px;">Os e-mails vêm das suas abas Marcas e Prospecção (as marcas selecionadas nas duas entram juntas). Não é preciso cadastrar nada aqui.</p>';
   html += '<div class="campo"><label>Destinatários</label><select id="dpOrigem">' +
     opcoesOrigem.map(function(o){ return '<option value="' + o.valor + '" ' + (o.valor === origemDisparoAtual ? "selected" : "") + '>' + escapa(o.rotulo) + '</option>'; }).join("") +
   '</select></div>';
@@ -3959,7 +4022,7 @@ function montarFormularioDisparo(areaPrincipal){
 
     if(destinatariosFinal.length === 0){
       if(origemDisparoAtual === "selecionadas"){
-        document.getElementById("resultadoDisparoArea").innerHTML = faixaAviso("Nenhuma marca selecionada. Vá na aba Marcas e escolha as marcas primeiro.", "erro");
+        document.getElementById("resultadoDisparoArea").innerHTML = faixaAviso("Nenhuma marca selecionada. Vá na aba Marcas ou Prospecção e escolha as marcas primeiro.", "erro");
       } else {
         document.getElementById("resultadoDisparoArea").innerHTML = faixaAviso("Nenhum destinatário encontrado pra essa opção.", "erro");
       }
