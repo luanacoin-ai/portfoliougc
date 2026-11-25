@@ -781,6 +781,7 @@
   }
   .metric-label{ font-size:.8rem; margin-top:6px; font-weight:600; opacity:.85; }
 
+  #numeros[hidden], .nav-links li[hidden]{ display:none; }
   .resultados-bloco[hidden], .depoimentos-bloco[hidden]{ display:none; }
   .results-title, .testimonials-title{
     font-size:.85rem;
@@ -1098,7 +1099,7 @@
         <li><a href="#destaques">Destaques</a></li>
         <li><a href="#trabalhos">Trabalhos</a></li>
         <li><a href="#servicos">Serviços</a></li>
-        <li><a href="#numeros">Números</a></li>
+        <li hidden><a href="#numeros">Números</a></li>
         <li><a href="#contato">Contato</a></li>
       </ul>
     </nav>
@@ -1225,7 +1226,8 @@
   </section>
 
   <!-- ====== 6. NUMEROS E DEPOIMENTOS ====== -->
-  <section id="numeros">
+  <!-- Escondida por pedido seu (ainda não tem números reais): pra mostrar de novo, tire o atributo "hidden" desta section e da linha "Números" no menu lá em cima. -->
+  <section id="numeros" hidden>
     <div class="container">
       <div class="section-head reveal">
         <span class="section-sub">Prova</span>
