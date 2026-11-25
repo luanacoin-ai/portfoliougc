@@ -6,10 +6,17 @@
     física de onda amortecida: ela balança e volta sozinha pro lugar;
   - passar o mouse por cima "esfrega" a pele, e clicar e arrastar puxa ela;
   - a cabeça inclina de leve na direção do mouse;
-  - quando a pele aperta, a foto escurece um pouquinho; quando estica, clareia.
+  - quando a pele aperta, a foto escurece um pouquinho; quando estica, clareia;
+  - os olhos: a íris se desloca dentro do olho pra acompanhar o mouse, ela pisca de
+    tempos em tempos, aperta os olhos quando o rosto é puxado, fica brava se for
+    puxado várias vezes e os olhos viram corações quando o mouse passa no botão.
 
   Sem WebGL, ou com "reduzir movimento" ligado no aparelho, nada disso roda:
   a foto simplesmente fica parada, do jeito que está no HTML.
+
+  OS OLHOS SÃO MEDIDOS PRA FOTO ATUAL (midia/capa-luana.webp, 1000 x 1187 px). Se você
+  trocar a foto por outra, as posições em OLHOS (mais abaixo) precisam ser refeitas;
+  enquanto isso o código só desliga o efeito dos olhos (o resto da animação continua).
 */
 (function(){
   "use strict";
@@ -37,13 +44,128 @@
   var VS = "attribute vec2 a, d; attribute float s; varying vec2 vUv; varying float vS;" +
     "uniform vec2 lean; uniform float overS;" +
     "void main(){ vUv = a; vS = s; vec2 p = a + d + lean; gl_Position = vec4(vec2(p.x-.5, .5-p.y)*2./overS, 0., 1.); }";
-  var FS = "precision highp float; varying vec2 vUv; varying float vS; uniform sampler2D face;" +
-    "void main(){" +
-    "  if(vUv.x<0.||vUv.y<0.||vUv.x>1.||vUv.y>1.){ gl_FragColor = vec4(0.); return; }" +
-    "  vec4 c = texture2D(face, vUv);" +
-    "  if(c.a<.004){ gl_FragColor = vec4(0.); return; }" +
-    "  gl_FragColor = vec4(c.rgb*vS, c.a);" +
-    "}";
+  /* ---------- os olhos (medidas em pixels da foto de 1000 x 1187) ----------
+     iris:    centro x, centro y e raio da íris
+     amendoa: o formato da abertura do olho, por dentro dos cílios:
+              centro x, centro y, meia-largura, altura pra cima, altura pra baixo, inclinação (graus)
+     pele:    cor da pálpebra (usada quando o olho fecha)                                      */
+  var FOTO_W = 1000, FOTO_H = 1187;
+  var OLHOS = [
+    { iris: [338, 486, 22.5], amendoa: [337, 489, 44, 17, 21, 0.5], pele: [0.69, 0.43, 0.38] },
+    { iris: [558, 462, 24.0], amendoa: [551.5, 472.5, 47, 20, 17, -5.5], pele: [0.81, 0.56, 0.50] }
+  ];
+  var GAZE_MAX_X = 13, GAZE_MAX_Y = 1.6;   // quanto a íris pode andar (em pixels da foto)
+
+  var FS = [
+    "precision highp float; varying vec2 vUv; varying float vS;",
+    "uniform sampler2D face; uniform vec2 imgSize;",
+    "uniform vec4 eyeA[6];        // 3 blocos por olho (veja OLHOS no JavaScript)",
+    "uniform vec2 gaze;           // quanto a iris anda, em pixels da foto",
+    "uniform float lid;           // 0 olho aberto ... 1 fechado",
+    "uniform float heart;         // 0 ... 1: olhos de coracao",
+    "uniform float eyesOn;        // 0 desliga o efeito dos olhos",
+    "",
+    "float dot2(vec2 v){ return dot(v, v); }",
+    "float sdHeart(vec2 p){",
+    "  p.x = abs(p.x);",
+    "  if(p.y + p.x > 1.0) return sqrt(dot2(p - vec2(0.25, 0.75))) - sqrt(2.0) / 4.0;",
+    "  return sqrt(min(dot2(p - vec2(0.0, 1.0)), dot2(p - 0.5 * max(p.x + p.y, 0.0)))) * sign(p.x - p.y);",
+    "}",
+    "",
+    "// 1 dentro da abertura do olho (formato de amendoa), 0 fora",
+    "float almond(vec2 px, vec4 g0, vec4 g1){",
+    "  vec2 d = px - g0.xy;",
+    "  float cs = cos(g0.w), sn = sin(g0.w);",
+    "  vec2 q = vec2(cs * d.x + sn * d.y, -sn * d.x + cs * d.y);",
+    "  float u = q.x / g0.z;",
+    "  if(abs(u) >= 1.0) return 0.0;",
+    "  float k = pow(1.0 - u * u, 0.7);",
+    "  return (q.y > -g1.x * k && q.y < g1.y * k) ? 1.0 : 0.0;",
+    "}",
+    "",
+    "// coracao vermelho do tamanho do olho, por cima da abertura e dos cilios",
+    "vec3 heartFx(vec3 col, vec2 px, vec4 g0){",
+    "  float s = g0.z * 1.05;",
+    "  vec2 d = px - g0.xy;",
+    "  if(abs(d.x) > 1.5 * s || abs(d.y) > 1.5 * s) return col;",
+    "  vec2 p = vec2(d.x / s, -d.y / s + 0.55);",
+    "  float a = (1.0 - smoothstep(-0.025, 0.025, sdHeart(p))) * heart;",
+    "  float brilho = 1.0 - smoothstep(0.0, 0.16, length((p - vec2(-0.3, 0.85)) * vec2(1.0, 1.7)));",
+    "  vec3 h = mix(vec3(0.89, 0.14, 0.24), vec3(1.0, 0.82, 0.84), brilho * 0.85);",
+    "  return mix(col, h, a);",
+    "}",
+    "",
+    "vec3 eyeFx(vec3 col, vec2 px, vec4 g0, vec4 g1, vec4 g2){",
+    "  // g0 = (centro x, centro y, meia-largura, inclinacao)  g1 = (cima, baixo, iris x, iris y)  g2 = (raio da iris, pele rgb)",
+    "  vec2 d = px - g0.xy;",
+    "  float cs = cos(g0.w), sn = sin(g0.w);",
+    "  vec2 q = vec2(cs * d.x + sn * d.y, -sn * d.x + cs * d.y);",
+    "  float u = q.x / g0.z;",
+    "  if(abs(u) >= 1.0) return col;",
+    "  float k = pow(1.0 - u * u, 0.7);",
+    "  float top = -g1.x * k, bot = g1.y * k;",
+    "  if(q.y < top - 1.0 || q.y > bot + 3.0) return col;",
+    "  float inside = smoothstep(top, top + 1.4, q.y) * (1.0 - smoothstep(bot - 1.4, bot, q.y));",
+    "  // com a palpebra descendo, a cobertura vai 2 px alem da abertura, pra nao sobrar uma fresta de branco embaixo",
+    "  float insideLid = smoothstep(top, top + 1.4, q.y) * (1.0 - smoothstep(bot + 0.8, bot + 2.4, q.y));",
+    "  if(max(inside, insideLid) <= 0.0) return col;",
+    "  bool mexe = length(gaze) > 0.05;",
+    "  if(!mexe && lid < 0.002 && heart < 0.002) return col;",
+    "",
+    "  vec3 res = col;",
+    "  vec2 ic = g1.zw; float ir = g2.x + 2.0;   // +2: leva junto o anel escuro da borda da iris",
+    "  if(mexe){",
+    "    // a iris e a mesma imagem, so que deslocada; o buraco que sobra e preenchido",
+    "    // espelhando o branco do olho que esta do lado de onde ela saiu",
+    "    float dOld = length(px - ic);",
+    "    if(dOld < ir + 0.6){",
+    "      float sgn = gaze.x >= 0.0 ? -1.0 : 1.0;",
+    "      float dy = px.y - ic.y;",
+    "      float edge = ic.x + sgn * (sqrt(max(ir * ir - dy * dy, 0.0)) + 3.5);",
+    "      res = texture2D(face, vec2(2.0 * edge - px.x, px.y) / imgSize).rgb;",
+    "    }",
+    "    vec2 src = px - gaze;",
+    "    float shifted = (1.0 - smoothstep(ir - 1.0, ir + 0.6, length(src - ic))) * almond(src, g0, g1);",
+    "    res = mix(res, texture2D(face, src / imgSize).rgb, shifted);",
+    "  }",
+    "",
+    "  // olhos de coracao: o olho vira branco (o coracao e desenhado depois, por cima de tudo)",
+    "  if(heart > 0.002) res = mix(res, vec3(0.94, 0.89, 0.91), heart);",
+    "",
+    "  // palpebra: desce de cima pra baixo (piscar, apertar os olhos, olhar bravo)",
+    "  if(lid > 0.002){",
+    "    float lidY = top + lid * (bot + 2.0 - top);",
+    "    float cov = 1.0 - smoothstep(lidY - 0.7, lidY + 0.7, q.y);",
+    "    // a pele da palpebra de cima (a faixa logo acima dos cilios) e esticada pra baixo e cobre o olho",
+    "    float s = clamp((q.y - top) / max(lidY - top, 1.0), 0.0, 1.0);",
+    "    vec2 qs = vec2(q.x, top - 22.0 + 14.0 * s);",
+    "    vec2 ps = g0.xy + vec2(cs * qs.x - sn * qs.y, sn * qs.x + cs * qs.y);",
+    "    vec3 pele = texture2D(face, ps / imgSize).rgb;",
+    "    float fundo = clamp((lidY - q.y) / 14.0, 0.0, 1.0);",
+    "    vec3 lidCol = mix(g2.yzw, pele, 0.85) * (0.86 + 0.14 * fundo);",
+    "    float cilios = (1.0 - smoothstep(0.0, 2.2, abs(q.y - lidY))) * smoothstep(0.02, 0.2, lid);",
+    "    lidCol = mix(lidCol, vec3(0.16, 0.09, 0.08), cilios * 0.9);",
+    "    res = mix(res, lidCol, cov * (1.0 - heart));",
+    "  }",
+    "  return mix(col, res, lid > 0.002 ? insideLid : inside);",
+    "}",
+    "",
+    "void main(){",
+    "  if(vUv.x < 0. || vUv.y < 0. || vUv.x > 1. || vUv.y > 1.){ gl_FragColor = vec4(0.); return; }",
+    "  vec4 c = texture2D(face, vUv);",
+    "  if(c.a < .004){ gl_FragColor = vec4(0.); return; }",
+    "  if(eyesOn > 0.5){",
+    "    vec2 px = vUv * imgSize;",
+    "    c.rgb = eyeFx(c.rgb, px, eyeA[0], eyeA[1], eyeA[2]);",
+    "    c.rgb = eyeFx(c.rgb, px, eyeA[3], eyeA[4], eyeA[5]);",
+    "    if(heart > 0.002){",
+    "      c.rgb = heartFx(c.rgb, px, eyeA[0]);",
+    "      c.rgb = heartFx(c.rgb, px, eyeA[3]);",
+    "    }",
+    "  }",
+    "  gl_FragColor = vec4(c.rgb * vS, c.a);",
+    "}"
+  ].join("\n");
 
   function compilar(tipo, codigo){
     var o = gl.createShader(tipo);
@@ -62,6 +184,22 @@
   var uLean = gl.getUniformLocation(prog, "lean");
   gl.uniform1f(gl.getUniformLocation(prog, "overS"), OVER);
   gl.uniform1i(gl.getUniformLocation(prog, "face"), 0);
+
+  // as medidas dos olhos viram números que o shader entende (3 blocos de 4 por olho)
+  var uGaze = gl.getUniformLocation(prog, "gaze");
+  var uLid = gl.getUniformLocation(prog, "lid");
+  var uHeart = gl.getUniformLocation(prog, "heart");
+  var uEyesOn = gl.getUniformLocation(prog, "eyesOn");
+  var blocosOlhos = [];
+  OLHOS.forEach(function(o){
+    var am = o.amendoa;
+    blocosOlhos.push(am[0], am[1], am[2], am[5] * Math.PI / 180);
+    blocosOlhos.push(am[3], am[4], o.iris[0], o.iris[1]);
+    blocosOlhos.push(o.iris[2], o.pele[0], o.pele[1], o.pele[2]);
+  });
+  gl.uniform2f(gl.getUniformLocation(prog, "imgSize"), FOTO_W, FOTO_H);
+  gl.uniform4fv(gl.getUniformLocation(prog, "eyeA"), new Float32Array(blocosOlhos));
+  gl.uniform1f(uEyesOn, 0);
 
   /* ---------- a folha: deslocamento (u), velocidade (v) e posição de repouso de cada ponto ---------- */
   var total = M * M;
@@ -193,6 +331,25 @@
   /* ---------- mouse e dedo ---------- */
   var pu = 0.5, pv = 0.5, acordada = false, sobreACabeca = false;
   var apertando = false, apertouEm = 0, apertouU = 0, apertouV = 0, ultimoX = 0, ultimoY = 0;
+
+  /* ---------- humor dos olhos ---------- */
+  var olhosLigados = false;                 // só liga se a foto for a que foi medida (veja OLHOS)
+  var gazeX = 0, gazeY = 0;                 // onde a íris está agora (suavizado)
+  var lid = 0;                              // quanto a pálpebra está fechada agora (0 a 1)
+  var coracao = 0, coracaoAlvo = 0;         // olhos de coração: agora e pra onde vai
+  var piscaEm = 0, piscaProxima = 2500;     // hora do próximo piscar (ms)
+  var puxoes = [], humor = null, humorAte = 0, ultimoMovimento = 0;
+
+  function piscarAgora(agora){ piscaEm = agora; piscaProxima = agora + 2200 + Math.random() * 3400; }
+
+  // o mouse em cima do botão deixa ela apaixonada
+  Array.prototype.forEach.call(document.querySelectorAll(".capa-base .btn"), function(b){
+    b.addEventListener("pointerenter", function(){ coracaoAlvo = 1; });
+    b.addEventListener("pointerleave", function(){ coracaoAlvo = 0; });
+    b.addEventListener("focus", function(){ coracaoAlvo = 1; });
+    b.addEventListener("blur", function(){ coracaoAlvo = 0; });
+  });
+
   function paraUv(x, y){
     var r = canvas.getBoundingClientRect();
     return [((x - r.left) / r.width - 0.5) * OVER + 0.5, ((y - r.top) / r.height - 0.5) * OVER + 0.5];
@@ -204,6 +361,7 @@
     var uv = paraUv(e.clientX, e.clientY);
     pu = uv[0]; pv = uv[1];
     acordada = true;
+    ultimoMovimento = performance.now();
     sobreACabeca = solido(pu, pv);
     retrato.style.cursor = apertando ? "grabbing" : (sobreACabeca ? "grab" : "");
     // o mouse passando por cima esfrega a pele
@@ -227,10 +385,20 @@
   function soltar(){
     if(!apertando) return;
     var L = pincel ? Math.hypot(pincel.px, pincel.py) : 0;
-    var rapido = performance.now() - apertouEm < 380;
+    var agora = performance.now();
+    var rapido = agora - apertouEm < 380;
     apertando = false; pincel = null;
     retrato.style.cursor = sobreACabeca ? "grab" : "";
-    if(L < 0.03 && rapido) empurrar(apertouU, apertouV, 0, 0.5, 0.06);   // um toque: um solavanco
+    if(L < 0.03 && rapido){
+      empurrar(apertouU, apertouV, 0, 0.5, 0.06);   // um toque: um solavanco e uma piscada de susto
+      piscarAgora(agora);
+    } else {
+      // um puxão de verdade: dói. Se for puxada várias vezes seguidas, fica brava
+      puxoes = puxoes.filter(function(t){ return agora - t < 14000; });
+      puxoes.push(agora);
+      if(puxoes.length >= 5){ humor = "brava"; humorAte = agora + 2600; }
+      else { humor = "dor"; humorAte = agora + 250 + L * 2800; }
+    }
     dormindo = false;
   }
   window.addEventListener("pointerup", soltar);
@@ -303,6 +471,38 @@
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, dinamico);
     }
 
+    if(olhosLigados){
+      // pra onde ela olha: pro mouse; se o mouse fica parado um tempo, os olhos voltam pro centro
+      var parado = agora - ultimoMovimento > 5000;
+      var alvoX = 0, alvoY = 0;
+      if(acordada && !parado){
+        alvoX = Math.max(-1, Math.min(1, (pu - 0.448) * 2.2)) * GAZE_MAX_X;
+        alvoY = Math.max(-1, Math.min(1, (pv - 0.399) * 2.2)) * GAZE_MAX_Y;
+      }
+      var suave = 1 - Math.exp(-dt * 12);
+      gazeX += (alvoX - gazeX) * suave;
+      gazeY += (alvoY - gazeY) * suave;
+
+      // pálpebras: piscar, apertar os olhos (dor) e olhar bravo
+      var alvoLid = 0;
+      if(apertando && pincel){
+        var puxao = Math.hypot(pincel.px, pincel.py);
+        alvoLid = puxao > 0.10 ? 1 : (puxao > 0.02 ? 0.55 : 0);
+      } else if(humor && agora < humorAte){
+        alvoLid = humor === "brava" ? 0.42 : 1;
+      }
+      var tPisca = agora - piscaEm;
+      var pisca = (tPisca >= 0 && tPisca < 150) ? Math.sin(Math.PI * tPisca / 150) : 0;
+      if(agora > piscaProxima && coracaoAlvo === 0) piscarAgora(agora);
+      alvoLid = Math.max(alvoLid, pisca);
+      lid += (alvoLid - lid) * (1 - Math.exp(-dt * (alvoLid > lid ? 40 : 18)));
+      coracao += (coracaoAlvo - coracao) * (1 - Math.exp(-dt * 14));
+
+      gl.uniform2f(uGaze, gazeX, gazeY);
+      gl.uniform1f(uLid, lid);
+      gl.uniform1f(uHeart, coracao);
+    }
+
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, textura);
@@ -323,6 +523,9 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     mapaDeToque(img);
+    // os olhos foram medidos pra uma foto de 1000 x 1187: com outra proporção, o efeito dos olhos fica desligado
+    olhosLigados = Math.abs(img.naturalWidth / img.naturalHeight - FOTO_W / FOTO_H) < 0.01;
+    gl.uniform1f(uEyesOn, olhosLigados ? 1 : 0);
     ajustarTela();
     foto.style.visibility = "hidden";      // a foto comum sai de cena: quem aparece agora é a da malha
     retrato.classList.add("viva");
