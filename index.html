@@ -335,10 +335,10 @@
     to{ opacity:1; transform:translate(-50%, 0); }
   }
   @media (max-width: 700px){
-    .capa{ height:clamp(600px, 100svh, 800px); padding-top:88px; }
+    .capa{ height:clamp(560px, 88svh, 720px); padding-top:88px; }
     .capa-titulo{ font-size:13.6vw; }
     .capa-titulo span{ display:block; }
-    .capa-retrato{ height:64%; bottom:88px; }
+    .capa-retrato{ height:min(64%, 110vw); bottom:88px; }
   }
   @media (prefers-reduced-motion: reduce){
     .capa-titulo, .capa-retrato, .capa-base{ animation:none; }
@@ -994,7 +994,7 @@
            JA RECORTADA (sem fundo, formato webp ou png) com o mesmo nome.
            A animacao de gelatina que segue o mouse esta em js/capa-retrato.js. -->
       <div class="capa-retrato" id="capaRetrato">
-        <img id="capaFoto" src="midia/capa-luana.webp" alt="Luana Coin, criadora UGC" width="1000" height="1331" fetchpriority="high">
+        <img id="capaFoto" src="midia/capa-luana.webp" alt="Luana Coin, criadora UGC" width="1000" height="1187" fetchpriority="high">
         <canvas class="capa-canvas" id="capaCanvas" aria-hidden="true"></canvas>
       </div>
 
