@@ -251,224 +251,101 @@
   }
 
   /* ====== HERO / CAPA ====== */
+  /* Capa com a foto recortada da Luana na frente do titulo gigante.
+     A animacao de gelatina (a foto balanca e segue o mouse) esta em js/capa-retrato.js. */
   .hero{
-    padding-top:150px;
-    padding-bottom:50px;
+    padding:0;
     overflow:hidden;
   }
-  .hero-grid{
-    display:grid;
-    grid-template-columns:1fr .95fr;
-    gap:56px;
-    align-items:center;
+  .capa{
+    position:relative;
+    height:clamp(580px, 100svh, 880px);
+    padding:96px 20px 0;
   }
-  .hero-name{
-    font-size:clamp(2.4rem, 6.4vw, 4.4rem);
-  }
-  .hero-tag{
-    font-weight:600;
-    color:var(--gray-text);
-    display:block;
-    margin:14px 0 18px;
-  }
-  .hero-desc{
-    font-size:1.08rem;
-    max-width:520px;
-    margin-bottom:30px;
-    color:var(--cafe);
-    font-weight:300;
-  }
-  .hero-actions{
-    display:flex;
-    flex-wrap:wrap;
-    gap:14px;
-    margin-bottom:44px;
-  }
-  .hero-stats{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:14px;
-  }
-  .hero-stats[hidden]{ display:none; }
-  .stat-card{
-    background:var(--card);
-    border-radius:var(--radius-sm);
-    box-shadow:var(--shadow-soft-sm);
-    padding:16px 12px;
+  .capa-titulo{
+    position:relative;
+    z-index:1;
+    margin:0;
+    font-weight:700;
+    text-transform:uppercase;
+    line-height:.85;
+    letter-spacing:-.02em;
     text-align:center;
+    white-space:nowrap;
+    font-size:min(12.2vw, 22svh);
+    color:var(--cafe);
+    background:linear-gradient(180deg, var(--cafe) 0%, var(--terracota) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation:capaEntra .8s cubic-bezier(.25,.1,.25,1) .15s both;
   }
-  .stat-num{
-    font-family:var(--ff-titulo);
-    font-weight:600;
-    font-size:1.7rem;
-  }
-  .stat-label{
-    font-size:.76rem;
-    margin-top:4px;
-    font-weight:600;
-    color:var(--gray-text);
-  }
-
-  /* ---- visual flutuante ---- */
-  .hero-visual{
-    position:relative;
-    width:100%;
-    padding:34px 30px 56px;
-  }
-  .hero-photo{
-    position:relative;
-    aspect-ratio:4/5;
-    border-radius:var(--radius);
-    background:linear-gradient(150deg, #EADBC4, #FBF6EC);
-    box-shadow:var(--shadow-soft);
-    overflow:hidden;
+  .capa-retrato{
+    position:absolute;
+    left:50%;
+    bottom:0;
+    height:84%;
+    transform:translateX(-50%);
     z-index:2;
+    touch-action:pan-y;
+    animation:capaEntraRetrato .9s cubic-bezier(.25,.1,.25,1) .5s both;
   }
-  .hero-video{
-    position:absolute;
-    inset:0;
-    width:100%;
+  .capa-retrato img{
+    display:block;
     height:100%;
-    object-fit:cover;
+    width:auto;
+    max-width:none;
+    user-select:none;
+    -webkit-user-drag:none;
   }
-  .select-frame{
+  .capa-canvas{
     position:absolute;
-    inset:14px;
-    border:2px dashed var(--rosa-po);
-    border-radius:12px;
+    left:-35%;
+    top:-35%;
+    width:170%;
+    height:170%;
     pointer-events:none;
   }
-  .select-frame i{
+  .capa-base{
     position:absolute;
-    width:9px; height:9px;
-    background:var(--card);
-    border:2px solid var(--terracota);
-    border-radius:50%;
-  }
-  .select-frame i:nth-child(1){ top:-5px; left:-5px; }
-  .select-frame i:nth-child(2){ top:-5px; right:-5px; }
-  .select-frame i:nth-child(3){ bottom:-5px; left:-5px; }
-  .select-frame i:nth-child(4){ bottom:-5px; right:-5px; }
-
-  .float-ui{
-    position:absolute;
-    background:var(--card);
-    box-shadow:var(--shadow-soft);
-    border-radius:14px;
+    left:20px;
+    right:20px;
+    bottom:28px;
     z-index:3;
-  }
-  .float-toolbar{
-    top:8%;
-    left:-8%;
-    padding:10px 8px;
     display:flex;
-    flex-direction:column;
-    gap:10px;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:16px;
+    animation:capaEntra .7s cubic-bezier(.25,.1,.25,1) .55s both;
   }
-  .float-toolbar span{
-    width:26px; height:26px;
-    border-radius:8px;
-    background:var(--bg-alt);
+  .capa-tag{
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    line-height:1.4;
+    font-size:clamp(.8rem, 1.4vw, 1.3rem);
+    color:var(--cafe);
   }
-  .float-toolbar span.on{ background:var(--terracota); }
-  .float-balloon{
-    top:-6%;
-    right:-4%;
-    padding:10px 16px;
-    font-size:.82rem;
-    font-weight:600;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    border-radius:999px 999px 999px 4px;
+  @keyframes capaEntra{
+    from{ opacity:0; transform:translateY(30px); }
+    to{ opacity:1; transform:none; }
   }
-  .float-chip{
-    bottom:14%;
-    left:-10%;
-    background:var(--cafe);
-    color:var(--sobre-escuro);
-    padding:10px 16px;
-    font-size:.84rem;
-    font-weight:600;
-    border-radius:999px 999px 999px 4px;
+  @keyframes capaEntraRetrato{
+    from{ opacity:0; transform:translate(-50%, 30px); }
+    to{ opacity:1; transform:translate(-50%, 0); }
   }
-  .float-cursor{
-    position:absolute;
-    top:38%;
-    right:-2%;
-    width:30px;
-    height:30px;
-    z-index:4;
-    animation:cursorFloat 5s ease-in-out infinite;
+  @media (max-width: 700px){
+    .capa{ height:clamp(600px, 100svh, 800px); padding-top:88px; }
+    .capa-titulo{ font-size:13.6vw; }
+    .capa-titulo span{ display:block; }
+    .capa-retrato{ height:64%; bottom:88px; }
   }
-  @keyframes cursorFloat{
-    0%,100%{ transform:translate(0,0); }
-    25%{ transform:translate(-10px,10px); }
-    50%{ transform:translate(6px,18px); }
-    75%{ transform:translate(-4px,4px); }
-  }
-
-  .timeline{
-    position:relative;
-    z-index:2;
-    margin-top:-30px;
-    background:var(--card);
-    border-radius:14px;
-    box-shadow:var(--shadow-soft);
-    padding:14px 16px;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    overflow:hidden;
-  }
-  .timeline .clip{
-    height:22px;
-    background:var(--rosa-po);
-    border-radius:8px;
-    flex:1;
-  }
-  .timeline .clip:nth-child(4){ background:var(--salvia); }
-  .timeline .clip:nth-child(2){ flex:1.6; }
-  .timeline .clip:nth-child(4){ flex:.7; }
-  .timeline .playhead{
-    position:absolute;
-    top:6px;
-    bottom:6px;
-    width:2px;
-    background:var(--cafe);
-    border-radius:2px;
-    animation:playheadMove 6s linear infinite;
-  }
-  .timeline .playhead::before{
-    content:'';
-    position:absolute;
-    top:-5px;
-    left:50%;
-    transform:translateX(-50%);
-    width:10px; height:10px;
-    border-radius:50%;
-    background:var(--cafe);
-  }
-  @keyframes playheadMove{
-    0%{ left:4%; }
-    50%{ left:92%; }
-    100%{ left:4%; }
-  }
-
   @media (prefers-reduced-motion: reduce){
-    .float-cursor{ animation:none; }
-    .timeline .playhead{ animation:none; left:8%; }
-  }
-
-  @media (max-width: 860px){
-    .hero-grid{ grid-template-columns:1fr; }
-    .hero-visual{ max-width:340px; margin:0 auto; padding:20px 16px 44px; }
-    .float-toolbar, .float-balloon, .float-chip, .float-cursor{ display:none; }
-    .select-frame{ inset:10px; }
+    .capa-titulo, .capa-retrato, .capa-base{ animation:none; }
   }
 
   .brand-strip{
-    margin-top:64px;
+    margin-top:0;
     border-top:1px solid var(--gray-line);
     border-bottom:1px solid var(--gray-line);
     background:var(--cafe);
@@ -1110,49 +987,20 @@
 
   <!-- ====== 1. CAPA ====== -->
   <section id="topo" class="hero">
-    <div class="container">
-      <div class="hero-grid">
-        <div>
-          <span class="eyebrow">UGC Creator</span>
-          <h1 class="hero-name">Luana <span class="hl">Coin</span></h1>
-          <span class="hero-tag">@luanacoin · Cabo de Santo Agostinho</span>
-          <p class="hero-desc">Eu crio vídeos e fotos autênticos que fazem a sua marca parar o scroll e conquistar a confiança de quem assiste, do roteiro à entrega final.</p>
-          <div class="hero-actions">
-            <a class="btn btn-terracota" href="#contato">Falar comigo</a>
-            <a class="btn btn-outline" href="#trabalhos">Ver os trabalhos</a>
-          </div>
-          <div class="hero-stats" id="heroStats" hidden>
-            <!-- números preenchidos via JavaScript a partir do array heroStats. Escondidos por pedido seu: pra mostrar de novo, tire o atributo "hidden" desta div. -->
-          </div>
-        </div>
+    <div class="capa">
+      <h1 class="capa-titulo"><span>Oii,</span> <span>Luana aqui</span></h1>
 
-        <div class="hero-visual">
-          <!-- TROQUE AQUI: pra trocar o video, substitua midia/apresentacao.mp4 e midia/apresentacao-capa.jpg
-               por outro vídeo (mesmo nome) ou volte a ser foto trocando a tag video por
-               <img src="sua-foto.jpg" alt="Foto de Luana Coin"> -->
-          <div class="hero-photo">
-            <video class="hero-video" src="midia/apresentacao.mp4" poster="midia/apresentacao-capa.jpg" autoplay muted loop playsinline aria-label="Vídeo de apresentação de Luana Coin"></video>
-            <div class="select-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-          </div>
+      <!-- TROQUE AQUI: pra trocar a foto, substitua o arquivo midia/capa-luana.webp por outra foto
+           JA RECORTADA (sem fundo, formato webp ou png) com o mesmo nome.
+           A animacao de gelatina que segue o mouse esta em js/capa-retrato.js. -->
+      <div class="capa-retrato" id="capaRetrato">
+        <img id="capaFoto" src="midia/capa-luana.webp" alt="Luana Coin, criadora UGC" width="1000" height="1331" fetchpriority="high">
+        <canvas class="capa-canvas" id="capaCanvas" aria-hidden="true"></canvas>
+      </div>
 
-          <!-- decoracoes flutuantes, so enfeite, somem no celular -->
-          <div class="float-ui float-toolbar" aria-hidden="true">
-            <span class="on"></span><span></span><span></span><span></span>
-          </div>
-          <div class="float-ui float-balloon" aria-hidden="true">✨ Efeitos</div>
-          <div class="float-ui float-chip" aria-hidden="true">Oi ✌️</div>
-          <svg class="float-cursor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 2l16 8-7 2-2 7-7-17z" fill="#4A2E26" stroke="#FBF6EC" stroke-width="1.2" stroke-linejoin="round"/>
-          </svg>
-
-          <div class="timeline" aria-hidden="true">
-            <div class="playhead"></div>
-            <div class="clip"></div>
-            <div class="clip"></div>
-            <div class="clip"></div>
-            <div class="clip"></div>
-          </div>
-        </div>
+      <div class="capa-base">
+        <p class="capa-tag">Criadora UGC</p>
+        <a class="btn btn-terracota" href="#contato">Falar comigo</a>
       </div>
     </div>
     <div class="brand-strip" aria-label="Marcas que já trabalharam com Luana Coin">
@@ -1338,33 +1186,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/banco.js"></script>
+<script src="js/capa-retrato.js?v=20261125a" defer></script>
 <script>
 (function(){
   "use strict";
-
-  // Quem prefere menos movimento nao precisa do video da capa tocando
-  // sozinho: para nesse caso e fica so na primeira imagem (poster).
-  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    var videoHero = document.querySelector(".hero-video");
-    if(videoHero){
-      videoHero.removeAttribute("autoplay");
-      videoHero.pause();
-      videoHero.currentTime = 0;
-    }
-  }
 
   /* =========================================================================
      DADOS DO PORTFOLIO
      Edite os valores abaixo para atualizar o site sem mexer no HTML/CSS.
   ========================================================================= */
-
-  // Números curtos mostrados na primeira dobra (capa).
-  // EXEMPLO: troque "valor" pelos seus números reais.
-  var heroStats = [
-    { valor: "120+", rotulo: "vídeos entregues" },
-    { valor: "18", rotulo: "marcas atendidas" },
-    { valor: "5M+", rotulo: "views somadas" }
-  ];
 
   // Marcas que já trabalharam com você. Troque ou adicione quantas quiser.
   var marcas = [
@@ -1466,15 +1296,6 @@
     texto.style.flexDirection = "column";
     card.appendChild(texto);
     contactSideEl.appendChild(card);
-  });
-
-  // Hero stats
-  var heroStatsEl = document.getElementById("heroStats");
-  heroStats.forEach(function(item){
-    var card = el("div", "stat-card");
-    card.appendChild(el("div", "stat-num", item.valor));
-    card.appendChild(el("div", "stat-label", item.rotulo));
-    heroStatsEl.appendChild(card);
   });
 
   // Faixa de marcas (duplicada para permitir loop continuo)
