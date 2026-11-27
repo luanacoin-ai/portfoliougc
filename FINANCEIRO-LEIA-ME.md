@@ -74,3 +74,15 @@ PDF for uma foto (escaneado) não dá pra ler: use o CSV ou o OFX.
   `luanacoin@gmail.com`. Se um dia trocar o e-mail do painel, troque também no `financeiro.sql`
   (procure por `luanacoin@gmail.com`) e rode de novo.
 - Para ler PDF, o painel baixa o leitor de PDF (pdf.js) da internet na primeira vez que você usa.
+
+## Aba Precificação (Financeiro > Precificação)
+
+Calcula o seu **preço de tabela** por trabalho e diz se uma oferta vale a pena.
+
+- Preço = (custos fixos + equipamento dividido pela vida útil + renda desejada) dividido pelos
+  trabalhos por mês, mais o gasto direto, mais a margem de lucro e os impostos (em **Avançado**).
+- **Quão cheia está sua agenda?** Com a agenda vazia o mínimo pra aceitar cai (nunca abaixo do
+  custo direto); equilibrada é o preço de tabela; cheia, só acima da tabela.
+- Digite o valor em **Me ofereceram** e veja se aceita, negocia ou recusa.
+- **Salvar cálculo:** pra guardar no Supabase, rode o arquivo `precificacao.sql` no SQL Editor
+  (depois do `financeiro.sql`). Sem ele, o cálculo fica salvo só no navegador.

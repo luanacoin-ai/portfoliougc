@@ -1274,6 +1274,72 @@
     .fin-importar-intro h2{ font-size:1.4rem; }
   }
 
+  /* ---------- precificação ---------- */
+  .prec-grade{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px; align-items:start; }
+  .prec-coluna{ display:flex; flex-direction:column; gap:18px; min-width:0; }
+  .prec-card{ background:var(--card); border:1.5px solid #E6D8C4; border-radius:20px; padding:22px; min-width:0; }
+  .prec-card-titulo{ font-size:1.08rem; font-weight:600; margin:0 0 16px; display:flex; align-items:center; gap:10px; }
+  .prec-card-titulo svg{ width:20px; height:20px; color:var(--terracota); flex-shrink:0; }
+  .prec-campo{ margin-bottom:16px; }
+  .prec-campo label{ display:block; font-size:.84rem; font-weight:500; margin-bottom:6px; }
+  .prec-campo small{ display:block; font-size:.74rem; color:#725A50; margin-top:6px; line-height:1.45; }
+  .prec-input{ display:flex; align-items:center; gap:8px; border:1.5px solid #E2D4BF; border-radius:999px; padding:0 16px; background:var(--creme); transition:border-color .15s; }
+  .prec-input:focus-within{ border-color:var(--terracota); }
+  .prec-input span{ font-size:.86rem; font-weight:500; color:#725A50; }
+  .prec-input input{ flex:1; min-width:0; border:none; background:none; outline:none; padding:11px 0; font:inherit; font-size:.92rem; color:var(--cafe); }
+  .prec-input input::placeholder{ color:#A8968A; }
+  .prec-duas{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .prec-avancado-btn{ display:inline-flex; align-items:center; gap:6px; border:none; background:none; padding:4px 0; font:inherit; font-size:.88rem; font-weight:500; color:var(--cafe); }
+  .prec-avancado-btn svg{ width:16px; height:16px; transition:transform .15s; }
+  .prec-avancado-btn[aria-expanded="true"] svg{ transform:rotate(180deg); }
+  .prec-avancado{ margin-top:12px; }
+  .prec-destaque{ background:var(--cafe); color:var(--sobre-terracota); border-radius:18px; padding:28px 18px; text-align:center; }
+  .prec-destaque-rotulo{ display:block; font-size:.72rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; opacity:.85; }
+  .prec-destaque strong{ display:block; font-family:var(--ff-titulo); font-size:2.6rem; font-weight:600; line-height:1.15; margin:6px 0 4px; overflow-wrap:anywhere; }
+  .prec-destaque-sub{ font-size:.82rem; opacity:.85; }
+  .prec-nota{ display:flex; gap:10px; align-items:flex-start; margin-top:14px; background:#F1E6D4; border-radius:14px; padding:13px 15px; font-size:.86rem; line-height:1.5; }
+  .prec-nota svg{ width:20px; height:20px; flex-shrink:0; color:var(--terracota-escura); }
+  .prec-agenda-topo{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:10px; }
+  .prec-agenda-topo label{ font-size:.88rem; font-weight:500; }
+  .prec-agenda-topo strong{ font-family:var(--ff-titulo); font-size:1.35rem; font-weight:600; }
+  .prec-range{ -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:99px; outline:none; cursor:pointer;
+    background:linear-gradient(to right, var(--cafe) 0, var(--cafe) var(--p,70%), #E6D8C4 var(--p,70%)); }
+  .prec-range::-webkit-slider-thumb{ -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--terracota); border:3px solid var(--card); box-shadow:0 1px 4px rgba(74,46,38,.35); }
+  .prec-range::-moz-range-thumb{ width:18px; height:18px; border-radius:50%; background:var(--terracota); border:3px solid var(--card); box-shadow:0 1px 4px rgba(74,46,38,.35); }
+  .prec-agenda-frase{ font-size:.8rem; color:#725A50; margin:10px 0 16px; }
+  .prec-mini-duas{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px; }
+  .prec-mini{ display:flex; align-items:center; gap:12px; border:1.5px solid #EFE3D0; border-radius:14px; padding:12px 14px; min-width:0; }
+  .prec-mini small{ display:block; font-size:.74rem; color:#725A50; }
+  .prec-mini b{ display:block; font-family:var(--ff-titulo); font-size:1.08rem; font-weight:600; overflow-wrap:anywhere; }
+  .prec-mini-icone{ width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .prec-mini-icone svg{ width:19px; height:19px; }
+  .prec-mini-icone.perigo{ background:#F8E1DC; color:#8A2A1E; }
+  .prec-mini-icone.atencao{ background:#F8EBD2; color:#7A5A22; }
+  .prec-regua-barra{ position:relative; height:8px; border-radius:99px; background:linear-gradient(to right, #E8B4B0, #F2D7A8, #8A9A6E); }
+  .prec-regua-min{ position:absolute; top:-4px; width:2px; height:16px; background:var(--cafe); border-radius:2px; transform:translateX(-1px); }
+  .prec-regua-ponto{ position:absolute; top:50%; width:16px; height:16px; border-radius:50%; background:var(--cafe); border:3px solid var(--card); transform:translate(-50%,-50%); box-shadow:0 1px 4px rgba(74,46,38,.35); transition:left .2s; }
+  .prec-regua-ponto.vazio{ opacity:.35; }
+  .prec-regua-rotulos{ display:flex; justify-content:space-between; gap:8px; font-size:.74rem; color:#725A50; margin-top:8px; }
+  .prec-regua{ padding-top:22px; }
+  .prec-regua-min span{ position:absolute; bottom:20px; left:50%; transform:translateX(-50%); white-space:nowrap; font-size:.72rem; font-weight:600; color:var(--cafe); }
+  .prec-veredito{ border-radius:14px; padding:12px 14px; font-size:.85rem; line-height:1.5; }
+  .prec-veredito.ruim{ background:#F8E1DC; color:#8A2A1E; }
+  .prec-veredito.atencao{ background:#F8EBD2; color:#6B4E1C; }
+  .prec-veredito.ok{ background:#EAE0CF; color:#4A2E26; }
+  .prec-veredito.otimo{ background:#E3E8D3; color:#3F4D2B; }
+  .prec-salvar{ display:flex; align-items:center; justify-content:center; gap:10px; width:100%; border:none; border-radius:999px; padding:16px; background:var(--terracota); color:var(--sobre-terracota); font:inherit; font-size:.95rem; font-weight:600; transition:background .15s; }
+  .prec-salvar:hover{ background:var(--terracota-escura); }
+  .prec-salvar:disabled{ opacity:.6; }
+  .prec-salvar svg{ width:18px; height:18px; }
+  .prec-salvo{ text-align:center; font-size:.8rem; color:#4F5E38; margin:-8px 0 0; }
+  .prec-salvo.erro{ color:#8A2A1E; }
+  @media (max-width:900px){ .prec-grade{ grid-template-columns:1fr; } }
+  @media (max-width:520px){
+    .prec-card{ padding:18px 16px; }
+    .prec-mini-duas{ grid-template-columns:1fr; }
+    .prec-destaque strong{ font-size:2.1rem; }
+  }
+
   /* ---------- marca: Fraunces abre, Poppins explica, Caveat assina ---------- */
   h1,h2,h3{ font-family:var(--ff-titulo); font-weight:500; letter-spacing:-.01em; }
   .cabecalho-aba h1{ font-size:1.55rem; }
@@ -1337,6 +1403,7 @@
       </button>
       <div class="grupo-itens" id="itensFinanceiro" hidden>
         <button class="item-menu" data-tab="financeiro"></button>
+        <button class="item-menu" data-tab="precificacao"></button>
       </div>
     </nav>
     <div class="sidebar-rodape">
@@ -1408,6 +1475,7 @@ var ICONES = {
   estrategia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>',
   cadeado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   banco: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',
+  calculadora: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><rect x="8" y="5" width="8" height="4" rx="1"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01"/></svg>',
   cartao: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg>'
 };
 
@@ -1642,7 +1710,8 @@ var ABAS = {
   checklist: { titulo: "Brainstorm", icone: "checklist" },
   roteiros: { titulo: "Roteiros", icone: "roteiros" },
   instagram: { titulo: "Instagram", icone: "instagram" },
-  financeiro: { titulo: "Financeiro", icone: "financeiro" }
+  financeiro: { titulo: "Financeiro", icone: "financeiro" },
+  precificacao: { titulo: "Precificação", icone: "calculadora" }
 };
 
 var botoesMenu = document.querySelectorAll(".item-menu");
@@ -1703,6 +1772,7 @@ async function renderizarAba(nome){
     else if(nome === "roteiros") await abaRoteiros(painel);
     else if(nome === "instagram") await abaInstagram(painel);
     else if(nome === "financeiro") await abaFinanceiro(painel);
+    else if(nome === "precificacao") await abaPrecificacao(painel);
   }catch(erro){
     console.error(erro);
     painel.innerHTML = faixaAviso("Essa aba encontrou um problema para carregar. Tente clicar em outra aba e voltar aqui.", "erro");
@@ -5174,6 +5244,7 @@ iniciar();
 <script src="../js/instagram-analises.js?v=20261022e"></script>
 <script src="../js/financeiro-leitura.js?v=20261028b"></script>
 <script src="../js/financeiro.js?v=20261102b"></script>
+<script src="../js/precificacao.js?v=20261127a"></script>
 <script src="../js/estrategia.js?v=20261102c"></script>
 </body>
 </html>
