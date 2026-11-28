@@ -1340,6 +1340,86 @@
     .prec-destaque strong{ font-size:2.1rem; }
   }
 
+  /* ---------- abordagens ---------- */
+  .abd-abas{ display:inline-flex; gap:4px; background:#EADCC6; border-radius:999px; padding:4px; margin-bottom:18px; }
+  .abd-abas button{ border:none; background:none; border-radius:999px; padding:9px 20px; font:inherit; font-size:.9rem; font-weight:500; color:var(--cafe); }
+  .abd-abas button[aria-selected="true"]{ background:var(--card); box-shadow:0 1px 3px rgba(74,46,38,.15); font-weight:600; }
+  .abd-intro{ font-size:.88rem; line-height:1.55; color:#5E4A40; margin:0 0 16px; max-width:760px; }
+  .abd-regras{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; margin-bottom:18px; }
+  .abd-regra{ background:var(--card); border:1.5px solid #E6D8C4; border-radius:16px; padding:14px 16px; font-size:.82rem; line-height:1.5; }
+  .abd-regra b{ display:block; font-family:var(--ff-titulo); font-size:1rem; font-weight:600; margin-bottom:4px; }
+  .abd-regra .num{ font-family:var(--ff-titulo); color:var(--terracota); font-weight:600; margin-right:6px; }
+  .abd-grade{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:18px; align-items:start; }
+  .abd-coluna{ display:flex; flex-direction:column; gap:18px; min-width:0; }
+  .abd-campo{ margin-bottom:14px; }
+  .abd-campo label{ display:block; font-size:.84rem; font-weight:500; margin-bottom:6px; }
+  .abd-campo label i{ font-style:normal; font-weight:400; color:#8A7366; }
+  .abd-campo small{ display:block; font-size:.74rem; color:#725A50; margin-top:6px; line-height:1.45; }
+  .abd-campo input, .abd-campo textarea, .abd-campo select{ width:100%; border:1.5px solid #E2D4BF; border-radius:14px; padding:10px 14px; background:var(--creme); color:var(--cafe); font:inherit; font-size:.9rem; outline:none; transition:border-color .15s; }
+  .abd-campo textarea{ resize:vertical; min-height:62px; line-height:1.5; }
+  .abd-campo input:focus, .abd-campo textarea:focus, .abd-campo select:focus{ border-color:var(--terracota); }
+  .abd-duas{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .abd-letra{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--terracota); color:var(--sobre-terracota); font-family:var(--ff-titulo); font-size:.9rem; font-weight:600; flex-shrink:0; }
+  .abd-sub{ font-size:.8rem; color:#725A50; margin:-8px 0 14px; line-height:1.5; }
+  .abd-evite{ font-size:.76rem; background:#F8EBD2; color:#6B4E1C; border-radius:12px; padding:9px 12px; margin-top:4px; line-height:1.45; }
+  .abd-busca{ margin-bottom:12px; }
+  .abd-nichos{ display:flex; flex-direction:column; gap:12px; max-height:340px; overflow:auto; padding-right:4px; }
+  .abd-grupo-rotulo{ font-size:.7rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#8A7366; margin-bottom:6px; }
+  .abd-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .abd-chip{ border:1.5px solid #E2D4BF; background:var(--creme); border-radius:999px; padding:6px 12px; font:inherit; font-size:.8rem; color:var(--cafe); }
+  .abd-chip:hover{ border-color:var(--terracota); }
+  .abd-chip[aria-pressed="true"]{ background:var(--cafe); border-color:var(--cafe); color:var(--sobre-terracota); }
+  .abd-nicho-info{ background:#F1E6D4; border-radius:14px; padding:12px 14px; margin-top:14px; font-size:.82rem; line-height:1.5; }
+  .abd-nicho-info b{ font-family:var(--ff-titulo); font-size:1rem; font-weight:600; }
+  .abd-link{ border:none; background:none; padding:0; font:inherit; font-size:.78rem; font-weight:500; color:var(--terracota-escura); text-decoration:underline; }
+  .abd-msg{ background:var(--card); border:1.5px solid #E6D8C4; border-radius:20px; padding:18px 20px; min-width:0; }
+  .abd-msg-topo{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .abd-msg-topo .t{ flex:1; min-width:160px; }
+  .abd-msg-topo .t b{ display:block; font-family:var(--ff-titulo); font-size:1.05rem; font-weight:600; }
+  .abd-msg-topo .t span{ font-size:.78rem; color:#725A50; }
+  .abd-status{ font-size:.72rem; font-weight:600; border-radius:999px; padding:4px 10px; }
+  .abd-status.ok{ background:#E3E8D3; color:#3F4D2B; }
+  .abd-status.falta{ background:#F8EBD2; color:#6B4E1C; }
+  .abd-copiar{ border:none; border-radius:999px; padding:8px 16px; background:var(--terracota); color:var(--sobre-terracota); font:inherit; font-size:.82rem; font-weight:600; }
+  .abd-copiar:hover{ background:var(--terracota-escura); }
+  .abd-copiar.feito{ background:var(--salvia-escura); }
+  .abd-msg-corpo{ white-space:pre-wrap; font-size:.9rem; line-height:1.6; background:var(--creme); border-radius:14px; padding:14px 16px; overflow-wrap:anywhere; }
+  .abd-tok{ background:#EAD9C2; border-radius:4px; padding:0 3px; }
+  .abd-vazio{ background:#F7E4B8; color:#7A5A22; border-radius:4px; padding:0 4px; font-weight:500; }
+  .abd-check{ display:flex; flex-direction:column; gap:8px; }
+  .abd-check label{ display:flex; gap:10px; align-items:flex-start; font-size:.86rem; line-height:1.45; cursor:pointer; }
+  .abd-check input{ width:18px; height:18px; accent-color:var(--terracota); margin:1px 0 0; flex-shrink:0; }
+  .abd-rodape{ font-family:var(--ff-assinatura); font-size:1.3rem; color:var(--terracota); text-align:center; margin-top:4px; }
+  .abd-texto{ width:100%; min-height:300px; border:1.5px solid #E2D4BF; border-radius:14px; padding:14px 16px; background:var(--creme); color:var(--cafe); font:inherit; font-size:.9rem; line-height:1.6; resize:vertical; outline:none; }
+  .abd-texto:focus{ border-color:var(--terracota); }
+  .abd-medidor{ margin-top:12px; }
+  .abd-medidor-topo{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .abd-medidor-topo strong{ font-family:var(--ff-titulo); font-size:1.3rem; font-weight:600; }
+  .abd-medidor-topo strong small{ font-family:var(--ff); font-size:.74rem; font-weight:400; color:#725A50; }
+  .abd-medidor-topo span{ font-size:.8rem; font-weight:500; }
+  .abd-barra{ position:relative; height:8px; border-radius:99px; background:#E6D8C4; }
+  .abd-barra i{ position:absolute; left:0; top:0; bottom:0; border-radius:99px; transition:width .15s; }
+  .abd-barra .marca{ position:absolute; top:-4px; width:2px; height:16px; background:var(--cafe); }
+  .abd-barra .marca span{ position:absolute; top:18px; left:50%; transform:translateX(-50%); font-size:.7rem; color:#725A50; }
+  .abd-ok{ color:#4F5E38; } .abd-ok-bg{ background:var(--salvia); }
+  .abd-atencao{ color:#7A5A22; } .abd-atencao-bg{ background:var(--caramelo); }
+  .abd-ruim{ color:#8A2A1E; } .abd-ruim-bg{ background:var(--vermelho); }
+  .abd-alertas{ margin-top:26px; display:flex; flex-direction:column; gap:6px; }
+  .abd-alertas p{ font-size:.8rem; border-radius:10px; padding:8px 12px; background:#F8EBD2; color:#6B4E1C; }
+  .abd-alertas p.ruim{ background:#F8E1DC; color:#8A2A1E; }
+  .abd-acoes{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .abd-btn-sec{ border:1.5px solid #E2D4BF; background:var(--card); border-radius:999px; padding:7px 14px; font:inherit; font-size:.8rem; font-weight:500; color:var(--cafe); }
+  .abd-btn-sec:hover{ border-color:var(--terracota); }
+  .abd-editado{ font-size:.72rem; color:#8A7366; }
+  .abd-placar{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .abd-bolinhas{ display:flex; gap:6px; flex-wrap:wrap; }
+  .abd-bolinhas i{ width:22px; height:22px; border-radius:50%; border:2px solid #D9C7AE; }
+  .abd-bolinhas i.cheia{ background:var(--terracota); border-color:var(--terracota); }
+  .abd-placar strong{ font-family:var(--ff-titulo); font-size:1.2rem; font-weight:600; }
+  @media (max-width:980px){ .abd-grade{ grid-template-columns:1fr; } }
+  @media (max-width:700px){ .abd-regras{ grid-template-columns:1fr; } }
+  @media (max-width:520px){ .abd-duas{ grid-template-columns:1fr; } .abd-msg{ padding:16px; } .abd-abas{ display:flex; } .abd-abas button{ flex:1; padding:9px 10px; } }
+
   /* ---------- marca: Fraunces abre, Poppins explica, Caveat assina ---------- */
   h1,h2,h3{ font-family:var(--ff-titulo); font-weight:500; letter-spacing:-.01em; }
   .cabecalho-aba h1{ font-size:1.55rem; }
@@ -1375,7 +1455,7 @@
     </div>
     <nav class="menu">
       <button type="button" class="grupo-menu" aria-expanded="false" aria-controls="itensRotina">
-        <span>Minha rotina</span>
+        <span>Empresa</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="grupo-itens" id="itensRotina" hidden>
@@ -1384,6 +1464,7 @@
         <button class="item-menu" data-tab="prospeccao"></button>
         <button class="item-menu" data-tab="disparo"></button>
         <button class="item-menu" data-tab="pitch"></button>
+        <button class="item-menu" data-tab="abordagens"></button>
       </div>
       <button type="button" class="grupo-menu" aria-expanded="false" aria-controls="itensConteudos">
         <span>Conteúdos</span>
@@ -1476,6 +1557,7 @@ var ICONES = {
   cadeado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   banco: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',
   calculadora: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><rect x="8" y="5" width="8" height="4" rx="1"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01"/></svg>',
+  conversa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/><path d="M8.5 10.5h7M8.5 13.5h4.5"/></svg>',
   cartao: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg>'
 };
 
@@ -1704,6 +1786,7 @@ var ABAS = {
   prospeccao: { titulo: "Prospecção", icone: "prospeccao" },
   disparo: { titulo: "Disparo de E-mails", icone: "disparo" },
   pitch: { titulo: "Pitch", icone: "envelope" },
+  abordagens: { titulo: "Abordagens", icone: "conversa" },
   estrategia: { titulo: "Estratégia", icone: "estrategia" },
   calendario: { titulo: "Calendário", icone: "calendario" },
   campanhas: { titulo: "Campanhas", icone: "campanhas" },
@@ -1724,7 +1807,7 @@ botoesMenu.forEach(function(botao){
   });
 });
 
-// Categorias do menu (Minha rotina / Conteúdos): clicar abre ou fecha as abas dela.
+// Categorias do menu (Empresa / Conteúdos / Financeiro): clicar abre ou fecha as abas dela.
 function definirGrupoMenuAberto(cabecalho, aberto){
   var itens = document.getElementById(cabecalho.getAttribute("aria-controls"));
   cabecalho.setAttribute("aria-expanded", aberto ? "true" : "false");
@@ -1765,6 +1848,7 @@ async function renderizarAba(nome){
     else if(nome === "prospeccao") await abaProspeccao(painel);
     else if(nome === "disparo") await abaDisparo(painel);
     else if(nome === "pitch") await abaPitch(painel);
+    else if(nome === "abordagens") await abaAbordagens(painel);
     else if(nome === "estrategia") await abaEstrategia(painel);
     else if(nome === "calendario") await abaCalendario(painel);
     else if(nome === "campanhas") await abaCampanhas(painel);
@@ -5240,6 +5324,7 @@ iniciar();
 </script>
 <script src="../js/roteiros.js?v=20261001a"></script>
 <script src="../js/pitch.js?v=20260924b"></script>
+<script src="../js/abordagens.js?v=20261128a"></script>
 <script src="../js/instagram.js?v=20261022e"></script>
 <script src="../js/instagram-analises.js?v=20261022e"></script>
 <script src="../js/financeiro-leitura.js?v=20261028b"></script>
